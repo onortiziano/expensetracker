@@ -17,6 +17,8 @@ import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +56,10 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+				. imePadding()
+				.verticalScroll(rememberScrollState()
+				),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -100,7 +105,7 @@ fun AddTransactionScreen(
             // Nota: Qui in seguito metteremo un menu a tendina reale con le categorie del DB
             Text(text = "Categoria ID: $selectedCategoryId", fontSize = 14.sp, color = androidx.compose.ui.graphics.Color.Gray)
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(32.dp))
 
             // --- BOTTONE SALVA ---
             Button(
