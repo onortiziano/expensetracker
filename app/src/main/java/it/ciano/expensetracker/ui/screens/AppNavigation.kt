@@ -1,10 +1,12 @@
 package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavHostController
+import androidx.navigation.navArgument
 
 // Definiamo le "rotte" (gli indirizzi) delle nostre pagine
 object Routes {
@@ -12,6 +14,8 @@ object Routes {
     const val ADD_TRANSACTION = "add_transaction"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
+    const val MODIFY_TRANSACTION = "modify_transaction/{transactionId}"
+    const val REMOVE_TRANSACTION = "remove_transaction/{transactionId}"
 }
 
 @Composable
@@ -28,18 +32,31 @@ fun AppNavigation() {
         }
         
         composable(Routes.ADD_TRANSACTION) {
-            // Questa schermata la creeremo tra poco
             AddTransactionScreen(navController)
         }
         
         composable(Routes.HISTORY) {
-            // Questa schermata la creeremo tra poco
             HistoryScreen(navController)
         }
         
         composable(Routes.SETTINGS) {
-            // Questa schermata la creeremo tra poco
             SettingsScreen(navController)
         }
+
+        // Nuova rotta per la modifica (con parametro ID)
+        composable(
+            route = Routes.MODIFY_TRANSACTION,
+            arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
+        ) {
+            ModifyTransactionScreen(navController)
+        }
+
+        // Nuova rotta per la rimozione (con parametro ID)
+        composable(
+            route = Routes.REMOVE_TRANSACTION,
+            arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
+        ) {
+            RemoveTransactionScreen(navController)
+        }
     }
-}
+}=

@@ -32,4 +32,8 @@ interface TransactionDao {
     // PRELIEVO PER DATA: Prende le transazioni tra due timestamp (inizio e fine mese)
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getTransactionsByPeriod(startDate: Long, endDate: Long): Flow<List<Transaction>>
+	
+	// MODIFICA
+	@Update
+    suspend fun updateTransaction(transaction: Transaction)
 }

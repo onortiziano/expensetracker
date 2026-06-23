@@ -48,4 +48,11 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
             repository.deleteTransaction(transaction)
         }
     }
+	
+	// Funzione per aggiornare una transazione esistente
+    fun updateTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repository.updateTransaction(transaction)
+        }
+    }
 }
