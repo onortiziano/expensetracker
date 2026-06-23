@@ -37,6 +37,8 @@ public final class TransactionDao_Impl implements TransactionDao {
 
   private final EntityDeletionOrUpdateAdapter<Transaction> __deletionAdapterOfTransaction;
 
+  private final EntityDeletionOrUpdateAdapter<Transaction> __updateAdapterOfTransaction;
+
   public TransactionDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfTransaction = new EntityInsertionAdapter<Transaction>(__db) {
@@ -70,6 +72,25 @@ public final class TransactionDao_Impl implements TransactionDao {
         statement.bindLong(1, entity.getId());
       }
     };
+    this.__updateAdapterOfTransaction = new EntityDeletionOrUpdateAdapter<Transaction>(__db) {
+      @Override
+      @NonNull
+      protected String createQuery() {
+        return "UPDATE OR ABORT `transactions` SET `id` = ?,`amount` = ?,`type` = ?,`categoryId` = ?,`date` = ?,`note` = ? WHERE `id` = ?";
+      }
+
+      @Override
+      protected void bind(@NonNull final SupportSQLiteStatement statement,
+          @NonNull final Transaction entity) {
+        statement.bindLong(1, entity.getId());
+        statement.bindDouble(2, entity.getAmount());
+        statement.bindString(3, entity.getType());
+        statement.bindLong(4, entity.getCategoryId());
+        statement.bindLong(5, entity.getDate());
+        statement.bindString(6, entity.getNote());
+        statement.bindLong(7, entity.getId());
+      }
+    };
   }
 
   @Override
@@ -101,6 +122,25 @@ public final class TransactionDao_Impl implements TransactionDao {
         __db.beginTransaction();
         try {
           __deletionAdapterOfTransaction.handle(transaction);
+          __db.setTransactionSuccessful();
+          return Unit.INSTANCE;
+        } finally {
+          __db.endTransaction();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object updateTransaction(final Transaction transaction,
+      final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        __db.beginTransaction();
+        try {
+          __updateAdapterOfTransaction.handle(transaction);
           __db.setTransactionSuccessful();
           return Unit.INSTANCE;
         } finally {
