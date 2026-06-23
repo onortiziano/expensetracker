@@ -1,6 +1,8 @@
 package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,28 +19,22 @@ import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     navController: NavHostController
 ) {
-    // --- CORREZIONE QUI ---
-    // Recuperiamo il contesto reale dell'app
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
-    val viewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+    val viewModel: TransactionViewModel = viewModel(
         factory = ViewModelFactory(app)
     )
 
-    // Stati per i campi del modulo
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("EXPENSE") }
     var selectedCategoryId by remember { mutableIntStateOf(1) }
-
 
     Scaffold(
         topBar = {
@@ -52,81 +48,100 @@ fun AddTransactionScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        // Usiamo BoxWithConstraints per conoscere l'altezza massima dello schermo
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-				. imePadding()
-				.verticalScroll(rememberScrollState()
-				),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- CAMPO IMPORTA ---
-            OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
-                label = { Text("Importo") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true
-            )
+            val screenHeight = maxHeight // Altezza disponibile nello schermo
 
-            // --- CAMPO NOTA ---
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text("Nota (opzionale)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            // --- SCELTA TIPO (ENTRATA/USCITA) ---
-            Text(text = "Tipo di operazione", fontWeight = FontWeight.Bold)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .heightIn(min = screenHeight) // Obbliga la colonna a essere almeno alta quanto lo schermo
+                    .imePadding() // Gestisce l'altezza quando appare la tastiera
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween // Spinge i blocchi agli estremi
             ) {
-                FilterChip(
-                    selected = type == "EXPENSE",
-                    onClick = { type = "EXPENSE" },
-                    label = { Text("Uscita") }
-                )
-                FilterChip(
-				selected = type == "INCOME",
-                    onClick = { type = "INCOME" },
-                    label = { Text("Entrata") }
-                )
-            }
+                // --- GRUPPO SUPERIORE (Campi di input) ---
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // CAMPO IMPORTA
+                    OutlinedTextField(
+                        value = amount,
+                        onValueChange = { amount = it },
+							label = { Text("Importo") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true
+                    )
 
-            // --- SELEZIONE CATEGORIA (Semplificata per ora) ---
-            Text(text = "Categoria", fontWeight = FontWeight.Bold)
-            // Nota: Qui in seguito metteremo un menu a tendina reale con le categorie del DB
-            Text(text = "Categoria ID: $selectedCategoryId", fontSize = 14.sp, color = androidx.compose.ui.graphics.Color.Gray)
+                    // CAMPO NOTA
+                    OutlinedTextField(
+                        value = note,
+                        onValueChange = { note = it },
+                        label = { Text("Nota (opzionale)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
 
-            Spacer(modifier = Modifier.weight(32.dp))
-
-            // --- BOTTONE SALVA ---
-            Button(
-                onClick = {
-                    val amountValue = amount.toDoubleOrNull() ?: 0.0
-                    if (amountValue > 0) {
-                        val transaction = Transaction(
-                            amount = amountValue,
-                            type = type,
-                            categoryId = selectedCategoryId,
-                            note = note,
-                            date = System.currentTimeMillis()
+                    // SCELTA TIPO
+                    Text(text = "Tipo di operazione", fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        FilterChip(
+                            selected = type == "EXPENSE",
+                            onClick = { type = "EXPENSE" },
+                            label = { Text("Uscita") }
                         )
-                        viewModel.addTransaction(transaction)
-                        navController.popBackStack() // Torna alla Home
+                        FilterChip(
+                            selected = type == "INCOME",
+                            onClick = { type = "INCOME" },
+                            label = { Text("Entrata") }
+                        )
                     }
-                },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text("Salva Transazione", fontSize = 18.sp)
+
+                    // SELEZIONE CATEGORIA
+                    Text(text = "Categoria", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Categoria ID: $selectedCategoryId", 
+                        fontSize = 14.sp, 
+                        color = androidx.compose.ui.graphics.Color.Gray
+                    )
+                }
+
+                // --- GRUPPO INFERIORE (Bottone) ---
+                Button(
+                    onClick = {
+                        val amountValue = amount.toDoubleOrNull() ?: 0.0
+                        if (amountValue > 0) {
+                            val transaction = Transaction(
+                                amount = amountValue,
+                                type = type,
+                                categoryId = selectedCategoryId,
+                                note = note,
+                                date = System.currentTimeMillis()
+                            )
+                            viewModel.addTransaction(transaction)
+                            navController.popBackStack()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .padding(bottom = 16.dp), // Un po' di respiro dal bordo inferiore
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text("Salva Transazione", fontSize = 18.sp)
+                }
             }
         }
     }
