@@ -3,6 +3,7 @@ package it.ciano.expensetracker.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -113,7 +114,10 @@ fun HomeScreen(navController: NavHostController) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(transactions) { transaction ->
-                        TransactionItem(transaction)
+                        TransactionItem(transaction = transaction, 
+                            onClick = { 
+                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}")
+                            })
                     }
                 }
             }
@@ -123,9 +127,10 @@ fun HomeScreen(navController: NavHostController) {
 
 // Componente per ogni singola riga della lista
 @Composable
-fun TransactionItem(transaction: Transaction) {
+fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+		.clickable { onClick () },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(

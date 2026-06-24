@@ -14,8 +14,8 @@ object Routes {
     const val ADD_TRANSACTION = "add_transaction"
     const val HISTORY = "history"
     const val SETTINGS = "settings"
-    const val MODIFY_TRANSACTION = "modify_transaction/{transactionId}"
-    const val REMOVE_TRANSACTION = "remove_transaction/{transactionId}"
+    const val MODIFY_TRANSACTION = "modify_transaction"
+    const val REMOVE_TRANSACTION = "remove_transaction"
 }
 
 @Composable
@@ -45,7 +45,7 @@ fun AppNavigation() {
 
         // Per la Modifica
         composable(
-            route = Routes.MODIFY_TRANSACTION,
+            route = "${Routes.MODIFY_TRANSACTION}/{transactionId}",
             arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
         ) { backStackEntry ->
             val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: -1
@@ -54,7 +54,7 @@ fun AppNavigation() {
 
         // Per la Rimozione
         composable(
-            route = Routes.REMOVE_TRANSACTION,
+            route = "${Routes.REMOVE_TRANSACTION}/{transactionId}",
             arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
         ) { backStackEntry ->
             val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: -1
