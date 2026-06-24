@@ -19,18 +19,16 @@ import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
+import androidx.navigation.compose.currentBackStackEntryAsState
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModifyTransactionScreen(
-    navController: NavHostController
+    navController: NavHostController,
+	transactionId: Int
 ) {
-    // 1. RECUPERO ID DALLA ROTTA
-    // Recuperiamo l'ID della transazione passato tramite l'AppNavigation
-    val backStackEntry = androidx.navigation.compose.currentBackStackEntryAsState()
-    val transactionId = backStackEntry.value?.arguments?.getInt("transactionId") ?: -1
-
-    // 2. SETUP VIEWMODEL
+    // SETUP VIEWMODEL
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     val viewModel: TransactionViewModel = viewModel(

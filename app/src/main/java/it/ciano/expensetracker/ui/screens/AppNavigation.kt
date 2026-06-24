@@ -43,20 +43,22 @@ fun AppNavigation() {
             SettingsScreen(navController)
         }
 
-        // Nuova rotta per la modifica (con parametro ID)
+        // Per la Modifica
         composable(
             route = Routes.MODIFY_TRANSACTION,
             arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
-        ) {
-            ModifyTransactionScreen(navController)
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: -1
+            ModifyTransactionScreen(navController, transactionId)
         }
 
-        // Nuova rotta per la rimozione (con parametro ID)
+        // Per la Rimozione
         composable(
             route = Routes.REMOVE_TRANSACTION,
             arguments = listOf(navArgument("transactionId") { type = NavType.IntType })
-        ) {
-            RemoveTransactionScreen(navController)
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: -1
+            RemoveTransactionScreen(navController, transactionId)
         }
     }
-}=
+}
