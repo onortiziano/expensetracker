@@ -1,13 +1,14 @@
 package it.ciano.expensetracker.ui.screens
 
+import android.app.Application
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,134 +20,172 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.ui.navigation.Routes
+import it.ciano.expensetracker.ui.viewmodels.MainViewModel
+import it.ciano.expensetracker.ui.viewmodels.TransactionViewModel
+import it.ciano.expensetracker.ui.viewmodels.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
-import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
-import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    // --- RECUPERO CORRETTO DEL VIEWMODEL ---
-    // Usiamo il contesto reale dell'app per evitare il crash
+    // 1. Recupero dei ViewModel e dello Stato
     val context = LocalContext.current
-    val app = context.applicationContext as android.app.Application
-    val viewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
-    // ---------------------------------------
-
-    // "Collezioniamo" i dati dal ViewModel in tempo reale
-    val transactions by viewModel.allTransactions.collectAsState()
-    val income by viewModel.totalIncome.collectAsState()
-    val expenses by viewModel.totalExpenses.collectAsState()
-
-    // Calcoliamo il saldo finale (Entrate - Uscite)
-    val balance = income - expenses
+    val app = context.applicationContext as Application
+    val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
+    val mainViewModel: MainViewModel = viewModel()
+    
+    // Collezioniamo la valuta e le transazioni in tempo reale
+    val currency by mainViewModel.currency.collectAsState()
+    val transactions by transactionViewModel.getAllTransactions().collectAsState(initial = emptyList())
+    
+    // Stato per il menu a tendina (panino)
+    var menuExpanded by remember { mutableStateOf(false) }
+    
+    // Stato per l'eliminazione (quale transazione vogliamo cancellare?)
+    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Expense Tracker", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = { navController.navigate(Routes.HISTORY) }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Storico")
-                    }
-                    IconButton(onClick = { navController.navigate(Routes.SETTINGS) }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Impostazioni")
+            CenterAlignedTopAppBar(
+                title = { Text("Expense Tracker") },
+                navigationIcon = {
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Cronologia") },
+                                onClick = { 
+                                    menuExpanded = false
+                                    navController.navigate(Routes.HISTORY) 
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Impostazioni") },
+                                onClick = { 
+                                    menuExpanded = false
+                                    navController.navigate(Routes.SETTINGS) 
+                                }
+                            )
+                        }
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate(Routes.ADD_TRANSACTION) },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Aggiungi")
+			FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
+                Text("+", fontSize = 24.sp)
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // --- CARD DEL SALDO ---
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "Saldo Attuale", fontSize = 16.sp)
-                    Text(
-                        text = String.format("%.2f €", balance), 
-                        fontSize = 32.sp, 
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-						)
+                items(transactions) { transaction ->
+                    TransactionItem(
+                        transaction = transaction, 
+                        currency = currency,
+                        onClick = { 
+                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                        },
+                        onSwipeToDelete = { 
+                            transactionToDelete = transaction 
+                        }
+                    )
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Ultime Transazioni", 
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // --- LISTA DELLE TRANSAZIONI ---
-            if (transactions.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Nessuna transazione trovata", color = Color.Gray)
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(transactions) { transaction ->
-                        TransactionItem(transaction = transaction, 
-                            onClick = { 
-                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}")
-                            })
+        // --- DIALOG DI CONFERMA ELIMINAZIONE ---
+        if (transactionToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { transactionToDelete = null },
+                title = { Text(text = "Elimina Transazione") },
+                text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            transactionViewModel.deleteTransaction(transactionToDelete!!.id)
+                            transactionToDelete = null
+                        }
+                    ) {
+                        Text("Sì, elimina", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { transactionToDelete = null }) {
+                        Text("Annulla")
                     }
                 }
-            }
+            )
         }
     }
 }
 
-// Componente per ogni singola riga della lista
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionItem(transaction: Transaction, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
-		.clickable { onClick () },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = transaction.note, fontWeight = FontWeight.Bold)
-                Text(text = "Categoria ID: ${transaction.categoryId}", fontSize = 12.sp)
+fun TransactionItem(
+    transaction: Transaction, 
+    currency: String, 
+    onClick: () -> Unit, 
+    onSwipeToDelete: () -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { it * 0.4f },
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart || value == SwipeToDismissBoxValue.StartToEnd) {
+                onSwipeToDelete()
             }
-            Text(
-                text = if (transaction.type == "INCOME") "+${transaction.amount} €" else "-${transaction.amount} €",
-                color = if (transaction.type == "INCOME") Color(0xFF4CAF50) else Color.Red,
-                fontWeight = FontWeight.Bold
-            )
+            false // L'elemento torna al centro (effetto molla)
         }
-    }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val isSwipingLeft = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
+            val color = if (isSwipingLeft || dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) 
+                        Color(0xFFD32F2F) else Color.Transparent
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = if (isSwipingLeft) Alignment.CenterEnd else Alignment.CenterStart
+            ) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.White)
+            }
+        },
+        content = {
+            Card(
+                modifier = Modifier.fillMaxWidth().clickable { onClick() },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(text = transaction.note, fontWeight = FontWeight.Bold)
+						Text(text = "Categoria ID: ${transaction.categoryId}", fontSize = 12.sp)
+                    }
+                    Text(
+                        text = if (transaction.type == "INCOME") "+${transaction.amount} $currency" else "-${transaction.amount} $currency",
+                        color = if (transaction.type == "INCOME") Color(0xFF4CAF50) else Color.Red,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    )
 }

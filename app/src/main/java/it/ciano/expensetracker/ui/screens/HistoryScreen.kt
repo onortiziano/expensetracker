@@ -73,75 +73,13 @@ fun HistoryScreen(
                 items(transactions) { transaction ->
                     TransactionItem(
                         transaction = transaction,
-                        onModify = { 
-                            navController.navigate("modify_transaction/${transaction.id}") 
+                        onClick = { 
+                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                         },
-                        onRemove = { 
-                            navController.navigate("remove_transaction/${transaction.id}") 
+                        onSwipeToDelete = { 
+                                // Per ora vuoto, lo gestiremo nel prossimo Task
                         }
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun TransactionItem(
-    transaction: Transaction,
-	onModify: () -> Unit,
-    onRemove: () -> Unit
-) {
-    val isExpense = transaction.type == "EXPENSE"
-    val amountColor = if (isExpense) Color(0xFFE57373) else Color(0xFF81C784) // Rosso chiaro o Verde chiaro
-    val amountPrefix = if (isExpense) "-" else "+"
-
-    // Formattazione della data
-    val dateFormatted = remember(transaction.date) {
-        val sdf = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
-        sdf.format(Date(transaction.date))
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Informazioni Transazione
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (transaction.note.isBlank()) "Senza nota" else transaction.note,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = dateFormatted,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-
-            // Importo
-            Text(
-                text = "$amountPrefix${String.format("%.2f", transaction.amount)} €",
-                color = amountColor,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp
-            )
-
-            // Azioni rapide (Modifica e Elimina)
-            Row {
-                IconButton(onClick = onModify) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifica", modifier = Modifier.size(20.dp))
-                }
-                IconButton(onClick = onRemove) {
-                    Icon(Icons.Default.Delete, contentDescription = "Elimina", modifier = Modifier.size(20.dp), tint = Color.Red)
                 }
             }
         }
