@@ -21,6 +21,7 @@ import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
+import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,22 +32,28 @@ fun HistoryScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     
-    // ViewModel per le transazioni
+    // 1. ViewModel per le transazioni
     val transactionViewModel: TransactionViewModel = viewModel(
         factory = ViewModelFactory(app)
-	    val mainViewModel: MainViewModel = viewModel()
-        val categories by mainViewModel.allCategories.collectAsState(initial = emptyList())
-        val categoryMap = remember(categories) { 
-            categories.associate { it.id to it.name } 
-        }
     )
     
-    // ViewModel per la valuta
+    // 2. ViewModel per la valuta
     val mainViewModel: MainViewModel = viewModel()
     
-    // Osserviamo i dati in tempo reale
+    // 3. ViewModel per le categorie
+    val categoryViewModel: CategoryViewModel = viewModel(
+        factory = ViewModelFactory(app)
+    )
+    
+    // 4. Osserviamo i dati in tempo reale
     val transactions by transactionViewModel.allTransactions.collectAsState()
     val currency by mainViewModel.currency.collectAsState()
+    
+    // 5. Recupero categorie e creazione mappa (Usando CategoryViewModel)
+    val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+    val categoryMap = remember(categories) { 
+        categories.associate { it.id to it.name } 
+    }
     
     // Stato per l'eliminazione (quale transazione vogliamo cancellare?)
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
@@ -83,9 +90,9 @@ fun HistoryScreen(
             ) {
                 items(transactions) { transaction ->
                     TransactionItem(
-                        transaction = transaction,
+					    transaction = transaction,
                         currency = currency,
-						categoryMap = categoryMap,
+                        categoryMap = categoryMap,
                         onClick = { 
                             navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                         },
@@ -93,7 +100,7 @@ fun HistoryScreen(
                             transactionToDelete = transaction 
                         }
                     )
-					}
+                }
             }
         }
 
