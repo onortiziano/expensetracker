@@ -20,10 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import it.ciano.expensetracker.ui.navigation.Routes
-import it.ciano.expensetracker.ui.viewmodels.MainViewModel
-import it.ciano.expensetracker.ui.viewmodels.TransactionViewModel
-import it.ciano.expensetracker.ui.viewmodels.ViewModelFactory
+import it.ciano.expensetracker.ui.screens.Routes
+import it.ciano.expensetracker.ui.viewmodel.MainViewModel
+import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
+import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,7 +37,8 @@ fun HomeScreen(navController: NavHostController) {
     
     // Collezioniamo la valuta e le transazioni in tempo reale
     val currency by mainViewModel.currency.collectAsState()
-    val transactions by transactionViewModel.getAllTransactions().collectAsState(initial = emptyList())
+    // CORREZIONE: allTransactions è una proprietà StateFlow, non una funzione
+    val transactions by transactionViewModel.allTransactions.collectAsState()
     
     // Stato per il menu a tendina (panino)
     var menuExpanded by remember { mutableStateOf(false) }
@@ -69,7 +70,7 @@ fun HomeScreen(navController: NavHostController) {
                                 text = { Text("Impostazioni") },
                                 onClick = { 
                                     menuExpanded = false
-                                    navController.navigate(Routes.SETTINGS) 
+									navController.navigate(Routes.SETTINGS) 
                                 }
                             )
                         }
@@ -78,7 +79,7 @@ fun HomeScreen(navController: NavHostController) {
             )
         },
         floatingActionButton = {
-			FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
+            FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
                 Text("+", fontSize = 24.sp)
             }
         }
@@ -113,7 +114,8 @@ fun HomeScreen(navController: NavHostController) {
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            transactionViewModel.deleteTransaction(transactionToDelete!!.id)
+                            // CORREZIONE: Passiamo l'oggetto Transaction intero, non solo l'ID
+                            transactionViewModel.deleteTransaction(transactionToDelete!!)
                             transactionToDelete = null
                         }
                     ) {
@@ -172,12 +174,12 @@ fun TransactionItem(
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+					horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
                         Text(text = transaction.note, fontWeight = FontWeight.Bold)
-						Text(text = "Categoria ID: ${transaction.categoryId}", fontSize = 12.sp)
+                        Text(text = "Categoria ID: ${transaction.categoryId}", fontSize = 12.sp)
                     }
                     Text(
                         text = if (transaction.type == "INCOME") "+${transaction.amount} $currency" else "-${transaction.amount} $currency",

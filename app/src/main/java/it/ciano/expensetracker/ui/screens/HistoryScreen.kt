@@ -20,9 +20,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
+import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,12 +30,21 @@ fun HistoryScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
-    val viewModel: TransactionViewModel = viewModel(
+    
+    // ViewModel per le transazioni
+    val transactionViewModel: TransactionViewModel = viewModel(
         factory = ViewModelFactory(app)
     )
-
-    // Osserviamo la lista delle transazioni in tempo reale dal ViewModel
-    val transactions by viewModel.allTransactions.collectAsState()
+    
+    // ViewModel per la valuta
+    val mainViewModel: MainViewModel = viewModel()
+    
+    // Osserviamo i dati in tempo reale
+    val transactions by transactionViewModel.allTransactions.collectAsState()
+    val currency by mainViewModel.currency.collectAsState()
+    
+    // Stato per l'eliminazione (quale transazione vogliamo cancellare?)
+    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
 
     Scaffold(
         topBar = {
@@ -51,7 +59,6 @@ fun HistoryScreen(
         }
     ) { paddingValues ->
         if (transactions.isEmpty()) {
-            // Stato vuoto: mostriamo un messaggio se non ci sono transazioni
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -61,7 +68,6 @@ fun HistoryScreen(
                 Text(text = "Nessuna transazione registrata", fontSize = 18.sp, color = Color.Gray)
             }
         } else {
-            // Lista delle transazioni
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -73,15 +79,40 @@ fun HistoryScreen(
                 items(transactions) { transaction ->
                     TransactionItem(
                         transaction = transaction,
+                        currency = currency,
                         onClick = { 
                             navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                         },
                         onSwipeToDelete = { 
-                                // Per ora vuoto, lo gestiremo nel prossimo Task
+                            transactionToDelete = transaction 
                         }
                     )
-                }
+					}
             }
+        }
+
+        // --- DIALOG DI CONFERMA ELIMINAZIONE ---
+        if (transactionToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { transactionToDelete = null },
+                title = { Text(text = "Elimina Transazione") },
+                text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            transactionViewModel.deleteTransaction(transactionToDelete!!)
+                            transactionToDelete = null
+                        }
+                    ) {
+                        Text("Sì, elimina", color = Color.Red)
+                    }
+                },
+                dismissButton = { 
+                    TextButton(onClick = { transactionToDelete = null }) {
+                        Text("Annulla")
+                    }
+                }
+            )
         }
     }
 }
