@@ -34,6 +34,11 @@ fun HistoryScreen(
     // ViewModel per le transazioni
     val transactionViewModel: TransactionViewModel = viewModel(
         factory = ViewModelFactory(app)
+	    val mainViewModel: MainViewModel = viewModel()
+        val categories by mainViewModel.allCategories.collectAsState(initial = emptyList())
+        val categoryMap = remember(categories) { 
+            categories.associate { it.id to it.name } 
+        }
     )
     
     // ViewModel per la valuta
@@ -80,6 +85,7 @@ fun HistoryScreen(
                     TransactionItem(
                         transaction = transaction,
                         currency = currency,
+						categoryMap = categoryMap,
                         onClick = { 
                             navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                         },

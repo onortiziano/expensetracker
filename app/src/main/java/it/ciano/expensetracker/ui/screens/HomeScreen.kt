@@ -30,6 +30,7 @@ import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
+import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +42,13 @@ fun HomeScreen(navController: NavHostController) {
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val mainViewModel: MainViewModel = viewModel()
-    
+	val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+	
+    val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+	val categoryMap = remember(categories) { 
+        categories.associate { it.id to it.name } 
+    }
+	
     val currency by mainViewModel.currency.collectAsState()
     val transactions by transactionViewModel.allTransactions.collectAsState()
     
@@ -150,6 +157,7 @@ fun HomeScreen(navController: NavHostController) {
                         TransactionItem(
                             transaction = transaction, 
                             currency = currency,
+							categoryMap = categoryMap,
                             onClick = { 
                                 navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                             },
@@ -193,6 +201,7 @@ fun HomeScreen(navController: NavHostController) {
 fun TransactionItem(
     transaction: Transaction, 
     currency: String, 
+    categoryMap: Map<Int, String>,
     onClick: () -> Unit, 
     onSwipeToDelete: () -> Unit
 ) {
@@ -235,7 +244,8 @@ fun TransactionItem(
                 ) {
                     Column {
                         Text(text = transaction.note, fontWeight = FontWeight.Bold)
-                        Text(text = "Categoria ID: ${transaction.categoryId}", fontSize = 12.sp)
+                        val categoryName = categoryMap[transaction.categoryId] ?: "Senza Categoria"
+                        Text(text = "Categoria: $categoryName", fontSize = 12.sp)
                     }
                     Text(
                         text = if (transaction.type == "INCOME") "+${transaction.amount} $currency" else "-${transaction.amount} $currency",
