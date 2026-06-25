@@ -8,7 +8,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,109 +28,162 @@ import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
+import kotlinx.coroutines.launch
+import androidx.activity.compose.BackHandler
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    // 1. Recupero dei ViewModel e dello Stato
+    // --- STATI E VIEWMODEL ---
     val context = LocalContext.current
     val app = context.applicationContext as Application
+    val scope = rememberCoroutineScope()
+    
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val mainViewModel: MainViewModel = viewModel()
     
-    // Collezioniamo la valuta e le transazioni in tempo reale
     val currency by mainViewModel.currency.collectAsState()
-    // CORREZIONE: allTransactions è una proprietà StateFlow, non una funzione
     val transactions by transactionViewModel.allTransactions.collectAsState()
     
-    // Stato per il menu a tendina (panino)
-    var menuExpanded by remember { mutableStateOf(false) }
-    
-    // Stato per l'eliminazione (quale transazione vogliamo cancellare?)
+    // Stato per l'apertura/chiusura del menu laterale (Drawer)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+	    // Intercetta il tasto indietro di sistema
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
+
+    // Stato per l'eliminazione
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Expense Tracker") },
-                navigationIcon = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-                        }
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Cronologia") },
-                                onClick = { 
-                                    menuExpanded = false
-                                    navController.navigate(Routes.HISTORY) 
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Impostazioni") },
-                                onClick = { 
-                                    menuExpanded = false
-									navController.navigate(Routes.SETTINGS) 
-                                }
-                            )
-                        }
+    // --- STRUTTURA CON NAVIGATION DRAWER ---
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                // Intestazione del Menu
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(24.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Expense Tracker",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Gestione Spese",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 14.sp
+                        )
                     }
                 }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
-                Text("+", fontSize = 24.sp)
-            }
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(transactions) { transaction ->
-                    TransactionItem(
-                        transaction = transaction, 
-                        currency = currency,
-                        onClick = { 
-                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
-                        },
-                        onSwipeToDelete = { 
-                            transactionToDelete = transaction 
-                        }
-                    )
-                }
-            }
-        }
 
-        // --- DIALOG DI CONFERMA ELIMINAZIONE ---
-        if (transactionToDelete != null) {
-            AlertDialog(
-                onDismissRequest = { transactionToDelete = null },
-                title = { Text(text = "Elimina Transazione") },
-                text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            // CORREZIONE: Passiamo l'oggetto Transaction intero, non solo l'ID
-                            transactionViewModel.deleteTransaction(transactionToDelete!!)
-                            transactionToDelete = null
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Voci del Menu
+                NavigationDrawerItem(
+                    label = { Text("Home") },
+                    selected = true,
+                    onClick = { 
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Routes.HOME) 
+                    },
+                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                
+                NavigationDrawerItem(
+                    label = { Text("Cronologia") },
+                    selected = false,
+                    onClick = { 
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Routes.HISTORY) 
+						},
+                    icon = { Icon(Icons.Default.List, contentDescription = null) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                
+                NavigationDrawerItem(
+                    label = { Text("Impostazioni") },
+                    selected = false,
+                    onClick = { 
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Routes.SETTINGS) 
+                    },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+            }
+        }
+    ) {
+        // --- CONTENUTO PRINCIPALE ---
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Expense Tracker") },
+                    navigationIcon = {
+                        IconButton(onClick = { 
+                            scope.launch { drawerState.open() } 
+                        }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Apri Menu")
                         }
-                    ) {
-                        Text("Sì, elimina", color = Color.Red)
                     }
-                },
-                dismissButton = {
-                    TextButton(onClick = { transactionToDelete = null }) {
-                        Text("Annulla")
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
+                    Text("+", fontSize = 24.sp)
+                }
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(transactions) { transaction ->
+                        TransactionItem(
+                            transaction = transaction, 
+                            currency = currency,
+                            onClick = { 
+                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                            },
+                            onSwipeToDelete = { 
+                                transactionToDelete = transaction 
+                            }
+                        )
                     }
                 }
-            )
+            }
+
+            // DIALOG DI CONFERMA ELIMINAZIONE
+            if (transactionToDelete != null) {
+                AlertDialog(
+                    onDismissRequest = { transactionToDelete = null },
+                    title = { Text(text = "Elimina Transazione") },
+                    text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                transactionViewModel.deleteTransaction(transactionToDelete!!)
+                                transactionToDelete = null
+                            }
+                        ) {
+                            Text("Sì, elimina", color = Color.Red)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { transactionToDelete = null }) {
+                            Text("Annulla")
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -146,13 +202,13 @@ fun TransactionItem(
             if (value == SwipeToDismissBoxValue.EndToStart || value == SwipeToDismissBoxValue.StartToEnd) {
                 onSwipeToDelete()
             }
-            false // L'elemento torna al centro (effetto molla)
+            false
         }
     )
 
     SwipeToDismissBox(
         state = dismissState,
-        backgroundContent = {
+		backgroundContent = {
             val isSwipingLeft = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
             val color = if (isSwipingLeft || dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) 
                         Color(0xFFD32F2F) else Color.Transparent
@@ -174,7 +230,7 @@ fun TransactionItem(
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp).fillMaxWidth(),
-					horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
