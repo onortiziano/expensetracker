@@ -157,7 +157,7 @@ fun HomeScreen(navController: NavHostController) {
                         TransactionItem(
                             transaction = transaction, 
                             currency = currency,
-							categoryMap = categoryMap,
+                            categories = categories,
                             onClick = { 
                                 navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                             },
@@ -201,7 +201,7 @@ fun HomeScreen(navController: NavHostController) {
 fun TransactionItem(
     transaction: Transaction, 
     currency: String, 
-    categoryMap: Map<Int, String>,
+    categories: List<Category>,
     onClick: () -> Unit, 
     onSwipeToDelete: () -> Unit
 ) {
@@ -244,8 +244,21 @@ fun TransactionItem(
                 ) {
                     Column {
                         Text(text = transaction.note, fontWeight = FontWeight.Bold)
-                        val categoryName = categoryMap[transaction.categoryId] ?: "Senza Categoria"
-                        Text(text = "Categoria: $categoryName", fontSize = 12.sp)
+                        
+                        // LOGICA PADRE > FIGLIO
+                        val category = categories.find { it.id == transaction.categoryId }
+                        val categoryDisplayName = if (category != null) {
+                            if (category.parentCategoryId != null) {
+                                val parent = categories.find { it.id == category.parentCategoryId }
+                                "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                            } else {
+                                category.name
+                            }
+                        } else {
+                            "Senza Categoria"
+                        }
+                        
+                        Text(text = "Categoria: $categoryDisplayName", fontSize = 12.sp)
                     }
                     Text(
                         text = if (transaction.type == "INCOME") "+${transaction.amount} $currency" else "-${transaction.amount} $currency",
