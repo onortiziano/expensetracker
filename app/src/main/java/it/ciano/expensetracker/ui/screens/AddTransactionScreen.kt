@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,13 +39,11 @@ fun AddTransactionScreen(
         factory = ViewModelFactory(app)
     )
 
-    // STATO PER IL DIALOG DI AGGIUNTA CATEGORIA
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
-    var categoryType by remember { mutableStateOf("MAIN") } // "MAIN" o "SUB"
+    var categoryType by remember { mutableStateOf("MAIN") }
 
-    // MAPPA PER I NOMI
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val categoryMap = remember(categories) {
         categories.associate { it.id to it.name }
@@ -71,7 +70,7 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
             val screenHeight = maxHeight
 
@@ -82,111 +81,149 @@ fun AddTransactionScreen(
                     .imePadding()
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // --- CARD 1: DETTAGLI ECONOMICI ---
+                ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
                 ) {
-                    OutlinedTextField(
-                        value = amount,
-                        onValueChange = { amount = it },
-                        label = { Text("Importo") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true
-                    )
-
-                    OutlinedTextField(
-                        value = note,
-                        onValueChange = { note = it },
-                        label = { Text("Nota (opzionale)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    Text(text = "Tipo di operazione", fontWeight = FontWeight.Bold)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        FilterChip(
-                            selected = type == "EXPENSE",
-                            onClick = { type = "EXPENSE" },
-                            label = { Text("Uscita") }
+                        Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        
+                        OutlinedTextField(
+                            value = amount,
+                            onValueChange = { amount = it },
+                            label = { Text("Importo") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true
                         )
-                        FilterChip(
-                            selected = type == "INCOME",
-                            onClick = { type = "INCOME" },
-                            label = { Text("Entrata") }
+
+                        OutlinedTextField(
+                            value = note,
+                            onValueChange = { note = it },
+                            label = { Text("Nota (opzionale)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
                         )
                     }
+                }
 
-                    var expanded by remember { mutableStateOf(false) }
-                    val selectedCategoryName = categoryMap[selectedCategoryId] ?: "Seleziona categoria"
-
-                    Text(text = "Categoria", fontWeight = FontWeight.Bold)
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                        modifier = Modifier.fillMaxWidth()
+                // --- CARD 2: CLASSIFICAZIONE ---
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        OutlinedTextField(
-                            readOnly = true,
-                            value = selectedCategoryName,
-                            onValueChange = {},
-                            label = { Text("Categoria") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                            modifier = Modifier.menuAnchor()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                        Text(text = "Classificazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+
+                        Text(text = "Tipo di operazione", fontSize = 13.sp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            categories.forEach { category ->
+                            FilterChip(
+                                selected = type == "EXPENSE",
+                                onClick = { type = "EXPENSE" },
+                                label = { Text("Uscita") },
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilterChip(
+                                selected = type == "INCOME",
+                                onClick = { type = "INCOME" },
+                                label = { Text("Entrata") },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(text = "Categoria", fontSize = 13.sp)
+                        var expanded by remember { mutableStateOf(false) }
+                        val selectedCategoryName = categoryMap[selectedCategoryId] ?: "Seleziona categoria"
+
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = it },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                readOnly = true,
+                                value = selectedCategoryName,
+                                onValueChange = {},
+                                label = { Text("Scegli Categoria") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                categories.forEach { category ->
+                                    DropdownMenuItem(
+                                        text = { Text(category.name) },
+                                        onClick = {
+                                            selectedCategoryId = category.id
+                                            expanded = false
+                                        }
+                                    )
+                                }
                                 DropdownMenuItem(
-                                    text = { Text(category.name) },
+                                    text = { Text("+ Aggiungi Nuova", color = MaterialTheme.colorScheme.primary) },
                                     onClick = {
-                                        selectedCategoryId = category.id
                                         expanded = false
+                                        showAddCategoryDialog = true
                                     }
                                 )
                             }
-                            DropdownMenuItem(
-                                text = { Text("+ Aggiungi Categoria", color = MaterialTheme.colorScheme.primary) },
-                                onClick = {
-                                    expanded = false
-                                    showAddCategoryDialog = true
-                                }
-                            )
                         }
                     }
                 }
 
-                Button(
-                    onClick = {
-                        val amountValue = amount.toDoubleOrNull() ?: 0.0
-                        if (amountValue > 0) {
-                            val transaction = Transaction(
-                                amount = amountValue,
-                                type = type,
-                                categoryId = selectedCategoryId,
-                                note = note,
-                                date = System.currentTimeMillis()
-                            )
-                            viewModel.addTransaction(transaction)
-                            navController.popBackStack()
-                        }
-                    },
+                // --- BARRA AZIONE (SALVA) ---
+                // Inserita come Surface per dare l'idea di una barra integrata ma scrollabile
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(bottom = 16.dp),
+                        .padding(vertical = 16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Salva Transazione", fontSize = 18.sp)
+                    Button(
+                        onClick = {
+                            val amountValue = amount.toDoubleOrNull() ?: 0.0
+                            if (amountValue > 0) {
+                                val transaction = Transaction(
+                                    amount = amountValue,
+                                    type = type,
+                                    categoryId = selectedCategoryId,
+                                    note = note,
+                                    date = System.currentTimeMillis()
+                                )
+                                viewModel.addTransaction(transaction)
+                                navController.popBackStack()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                            .height(56.dp),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("Salva Transazione", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
+                
+                Spacer(modifier = Modifier.height(32.dp)) // Spazio finale per non stare attaccati al bordo
             }
         }
 
@@ -201,7 +238,6 @@ fun AddTransactionScreen(
                 title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        // 1. NOME CATEGORIA
                         OutlinedTextField(
                             value = newCategoryName,
                             onValueChange = { newCategoryName = it },
@@ -210,7 +246,6 @@ fun AddTransactionScreen(
                             singleLine = true
                         )
 
-                        // 2. TIPO DI CATEGORIA
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -230,7 +265,6 @@ fun AddTransactionScreen(
                             }
                         }
 
-                        // 3. SELEZIONE PADRE (solo se SUB)
                         if (categoryType == "SUB") {
                             var parentExpanded by remember { mutableStateOf(false) }
                             val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
@@ -248,7 +282,7 @@ fun AddTransactionScreen(
                                         onValueChange = {},
                                         label = { Text("Scegli il Padre") },
                                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
-                                        modifier = Modifier.menuAnchor()
+                                        modifier = Modifier.menuAnchor().fillMaxWidth()
                                     )
                                     ExposedDropdownMenu(
                                         expanded = parentExpanded,
@@ -277,7 +311,6 @@ fun AddTransactionScreen(
                             }
                             
                             if (isDuplicate) {
-                                // Qui potremmo aggiungere un toast, per ora blocchiamo il salvataggio
                                 return@Button 
                             }
 
