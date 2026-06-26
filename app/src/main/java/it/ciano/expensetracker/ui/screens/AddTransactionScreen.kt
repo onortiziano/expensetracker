@@ -19,6 +19,8 @@ import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
+import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +32,13 @@ fun AddTransactionScreen(
     val viewModel: TransactionViewModel = viewModel(
         factory = ViewModelFactory(app)
     )
+	val categoryViewModel: CategoryViewModel = viewModel(
+        factory = ViewModelFactory(app)
+    )
+    val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+    val categoryMap = remember(categories) { 
+        categories.associate { it.id to it.name } 
+    }
 
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
@@ -109,13 +118,48 @@ fun AddTransactionScreen(
                         )
                     }
 
-                    // SELEZIONE CATEGORIA
+                    // SELEZIONE CATEGORIA CON MENU A TENDINA
+					
+                    var expanded by remember { mutableStateOf(false) }
+                    val selectedCategoryName = categoryMap[selectedCategoryId] ?: "Seleziona categoria"
+                    
                     Text(text = "Categoria", fontWeight = FontWeight.Bold)
-                    Text(
-                        text = "Categoria ID: $selectedCategoryId", 
-                        fontSize = 14.sp, 
-                        color = androidx.compose.ui.graphics.Color.Gray
-                    )
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = selectedCategoryName,
+                            onValueChange = {},
+                            label = { Text("Categoria") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            modifier = Modifier.menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            categories.forEach { category ->
+                                DropdownMenuItem(
+                                    text = { Text(category.name) },
+                                    onClick = {
+                                        selectedCategoryId = category.id
+                                        expanded = false
+                                    }
+                                )
+                            }
+                            // TASTO "+ AGGIUNGI CATEGORIA"
+                            DropdownMenuItem(
+                                text = { Text("+ Aggiungi Categoria", color = MaterialTheme.colorScheme.primary) },
+                                onClick = {
+                                    expanded = false
+                                    // Qui apriremo il dialog di creazione
+                                }
+                            )
+                        }
+                    }
                 }
 
                 // --- GRUPPO INFERIORE (Bottone) ---
