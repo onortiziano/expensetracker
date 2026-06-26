@@ -1,5 +1,7 @@
 package it.ciano.expensetracker.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,7 +37,7 @@ fun ModifyTransactionScreen(
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
 
-    // Osserviamo lo stato dal ViewModel (Sopravvive alla rotazione)
+    // STATI PER I CAMPI (Sopravvivono alla rotazione tramite ViewModel)
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
     val type by transactionViewModel.type.collectAsState()
@@ -46,6 +48,12 @@ fun ModifyTransactionScreen(
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
     val categoryMap by categoryViewModel.categoryMap.collectAsState()
+
+    // STATI PER IL DIALOG DI AGGIUNTA CATEGORIA
+    var showAddCategoryDialog by remember { mutableStateOf(false) }
+    var newCategoryName by remember { mutableStateOf("") }
+    var selectedParentId by remember { mutableStateOf<Int?>(null) }
+    var categoryType by remember { mutableStateOf("MAIN") }
 
     // CARICAMENTO DATI INIZIALI
     LaunchedEffect(transactionId) {
@@ -63,6 +71,7 @@ fun ModifyTransactionScreen(
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -186,6 +195,13 @@ fun ModifyTransactionScreen(
                                         }
                                     )
                                 }
+                                DropdownMenuItem(
+                                    text = { Text("+ Aggiungi Nuova", color = MaterialTheme.colorScheme.primary) },
+                                    onClick = {
+                                        mainExpanded = false
+                                        showAddCategoryDialog = true
+                                    }
+                                )
                             }
                         }
 
@@ -265,6 +281,114 @@ fun ModifyTransactionScreen(
                 
                 Spacer(modifier = Modifier.height(32.dp))
             }
+        }
+
+        if (showAddCategoryDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showAddCategoryDialog = false
+                    newCategoryName = ""
+                    selectedParentId = null
+                    categoryType = "MAIN"
+                },
+                title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = newCategoryName,
+                            onValueChange = { newCategoryName = it },
+                            label = { Text("Nome Categoria") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                FilterChip(
+                                    selected = categoryType == "MAIN",
+                                    onClick = { 
+                                        categoryType = "MAIN"
+                                        selectedParentId = null 
+                                    },
+                                    label = { Text("Principale") }
+                                )
+                                FilterChip(
+                                    selected = categoryType == "SUB",
+                                    onClick = { categoryType = "SUB" },
+                                    label = { Text("Sottocategoria") }
+                                )
+                            }
+                        }
+
+                        if (categoryType == "SUB") {
+                            var parentExpanded by remember { mutableStateOf(false) }
+                            val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
+                            
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                ExposedDropdownMenuBox(
+                                    expanded = parentExpanded,
+                                    onExpandedChange = { parentExpanded = it },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    OutlinedTextField(
+                                        readOnly = true,
+                                        value = parentName,
+                                        onValueChange = {},
+                                        label = { Text("Scegli il Padre") },
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
+                                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = parentExpanded,
+                                        onDismissRequest = { parentExpanded = false }
+                                    ) {
+                                        mainCategories.forEach { parent ->
+                                            DropdownMenuItem(
+                                                text = { Text(parent.name) },
+                                                onClick = {
+                                                    selectedParentId = parent.id
+                                                    parentExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val isDuplicate = allCategories.any { 
+                                it.name == newCategoryName && it.parentCategoryId == selectedParentId 
+                            }
+                            
+                            if (isDuplicate) {
+                                return@Button 
+                            }
+
+                            if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
+                                categoryViewModel.addCategory(
+                                    Category(name = newCategoryName, parentCategoryId = selectedParentId)
+                                )
+                                showAddCategoryDialog = false
+                                newCategoryName = ""
+                                selectedParentId = null
+                                categoryType = "MAIN"
+                            }
+                        },
+                        enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
+                    ) { Text("Salva") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddCategoryDialog = false }) {
+                        Text("Annulla")
+                    }
+                }
+            )
         }
     }
 }
