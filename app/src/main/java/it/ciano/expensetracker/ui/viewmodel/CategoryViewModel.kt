@@ -40,9 +40,9 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
         }
     }
 
-    fun deleteCategory(categoryId: Int) {
+    fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            repository.deleteCategory(categoryId)
+            repository.deleteCategory(category)
         }
     }
 }
