@@ -9,50 +9,65 @@ import kotlinx.coroutines.launch
 
 class TransactionViewModel(private val repository: TransactionRepository) : ViewModel() {
 
-    // 1. Lista di tutte le transazioni (aggiornata in tempo reale)
+    // --- DATI PERSISTENTI ---
     val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
 
-    // 2. Totale Entrate (aggiornato in tempo reale)
     val totalIncome: StateFlow<Double> = repository.getTotalIncome()
-        .map { it ?: 0.0 } // Se è null, mettiamo 0.0
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0.0
-        )
+        .map { it ?: 0.0 }
+        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0.0)
 
-    // 3. Totale Uscite (aggiornato in tempo reale)
     val totalExpenses: StateFlow<Double> = repository.getTotalExpenses()
         .map { it ?: 0.0 }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0.0
-        )
+        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0.0)
 
-    // Funzione per aggiungere una transazione
+    // --- STATO UI PER AGGIUNTA/MODIFICA (Sopravvive alla rotazione) ---
+    private val _amount = MutableStateFlow("")
+    val amount: StateFlow<String> = _amount
+
+    private val _note = MutableStateFlow("")
+    val note: StateFlow<String> = _note
+
+    private val _type = MutableStateFlow("EXPENSE")
+    val type: StateFlow<String> = _type
+
+    private val _selectedMainCategoryId = MutableStateFlow(0)
+    val selectedMainCategoryId: StateFlow<Int> = _selectedMainCategoryId
+
+    private val _selectedSubCategoryId = MutableStateFlow(0)
+    val selectedSubCategoryId: StateFlow<Int> = _selectedSubCategoryId
+
+    // --- FUNZIONI AGGIORNAMENTO STATO ---
+    fun updateAmount(value: String) { _amount.value = value }
+    fun updateNote(value: String) { _note.value = value }
+    fun updateType(value: String) { _type.value = value }
+    fun updateMainCategory(id: Int) { 
+        _selectedMainCategoryId.value = id 
+        _selectedSubCategoryId.value = 0 
+    }
+    fun updateSubCategory(id: Int) { _selectedSubCategoryId.value = id }
+
+    // --- OPERAZIONI DB ---
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
             repository.insertTransaction(transaction)
+            resetForm() // Pulisce il form dopo il salvataggio
         }
     }
 
-    // Funzione per eliminare una transazione
     fun deleteTransaction(transaction: Transaction) {
-        viewModelScope.launch {
-            repository.deleteTransaction(transaction)
-        }
+        viewModelScope.launch { repository.deleteTransaction(transaction) }
     }
-	
-	// Funzione per aggiornare una transazione esistente
+
     fun updateTransaction(transaction: Transaction) {
-        viewModelScope.launch {
-            repository.updateTransaction(transaction)
-        }
+        viewModelScope.launch { repository.updateTransaction(transaction) }
+    }
+
+    private fun resetForm() {
+        _amount.value = ""
+        _note.value = ""
+        _type.value = "EXPENSE"
+        _selectedMainCategoryId.value = 0
+        _selectedSubCategoryId.value = 0
     }
 }

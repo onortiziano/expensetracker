@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 
 class CategoryViewModel(private val repository: CategoryRepository) : ViewModel() {
 
-    // 1. Tutte le categorie (per la pagina Settings)
+    // 1. Tutte le categorie
     val allCategories: StateFlow<List<Category>> = repository.getAllCategories()
         .stateIn(
             scope = viewModelScope,
@@ -17,7 +17,7 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
             initialValue = emptyList()
         )
 
-    // 2. Solo le categorie principali (per il menu a tendina dell'inserimento)
+    // 2. Solo le categorie principali (Padri)
     val mainCategories: StateFlow<List<Category>> = repository.getMainCategories()
         .stateIn(
             scope = viewModelScope,
@@ -25,23 +25,24 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
             initialValue = emptyList()
         )
 
-    // 3. Sottocategorie di un padre specifico
-    // Nota: qui non usiamo StateFlow perché il parentId cambia in base a cosa clicca l'utente
-    fun getSubCategories(parentId: Int): Flow<List<Category>> {
-        return repository.getSubCategories(parentId)
-    }
+    // 3. MAPPA ID -> NOME (Spostata qui per coerenza e performance)
+    val categoryMap: StateFlow<Map<Int, String>> = allCategories.map { list ->
+        list.associate { it.id to it.name }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+    )
 
-    // Aggiungi o aggiorna una categoria
     fun addCategory(category: Category) {
         viewModelScope.launch {
             repository.insertCategory(category)
         }
     }
 
-    // Elimina una categoria
-    fun deleteCategory(category: Category) {
+    fun deleteCategory(categoryId: Int) {
         viewModelScope.launch {
-            repository.deleteCategory(category)
+            repository.deleteCategory(categoryId)
         }
     }
 }
