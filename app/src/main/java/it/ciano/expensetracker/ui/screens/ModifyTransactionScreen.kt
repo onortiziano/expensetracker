@@ -51,20 +51,18 @@ fun ModifyTransactionScreen(
     LaunchedEffect(transactionId) {
         transactionViewModel.allTransactions.collect { transactions ->
             val transaction = transactions.find { it.id == transactionId }
-            transaction?.let {
-                transactionViewModel.loadTransaction(it)
+            transaction?.let { trans ->
+                transactionViewModel.loadTransaction(trans)
                 
-                // Logica per gestire il caricamento corretto della gerarchia
-                val category = allCategories.find { it.id == it.categoryId }
+                val category = allCategories.find { cat -> cat.id == trans.categoryId }
                 if (category?.parentCategoryId != null) {
-                    transactionViewModel.updateSubCategory(it.categoryId)
+                    transactionViewModel.updateSubCategory(trans.categoryId)
                 } else {
                     transactionViewModel.updateSubCategory(0)
                 }
             }
         }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -201,7 +199,7 @@ fun ModifyTransactionScreen(
                             ExposedDropdownMenuBox(
                                 expanded = subExpanded,
                                 onExpandedChange = { subExpanded = it },
-                                modifier = Modifier.fillMaxWidth
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 OutlinedTextField(
                                     readOnly = true,
