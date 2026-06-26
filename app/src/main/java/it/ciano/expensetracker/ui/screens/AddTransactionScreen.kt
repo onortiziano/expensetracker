@@ -20,12 +20,8 @@ import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.Clear
 import it.ciano.expensetracker.data.model.Category
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,16 +36,14 @@ fun AddTransactionScreen(
 	val categoryViewModel: CategoryViewModel = viewModel(
         factory = ViewModelFactory(app)
     )
-	
-	// STATO PER IL DIALOG DI AGGIUNTA CATEGORIA
-	
+
+    // STATO PER IL DIALOG DI AGGIUNTA CATEGORIA
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
     var parentSearchText by remember { mutableStateOf("") }
-		
-		//MAPPA PER I NOMI
-		
+
+    // MAPPA PER I NOMI
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val categoryMap = remember(categories) { 
         categories.associate { it.id to it.name } 
@@ -170,7 +164,7 @@ fun AddTransactionScreen(
                                 text = { Text("+ Aggiungi Categoria", color = MaterialTheme.colorScheme.primary) },
                                 onClick = {
                                     expanded = false
-                                    // Qui apriremo il dialog di creazione
+                                    showAddCategoryDialog = true
                                 }
                             )
                         }
@@ -201,105 +195,102 @@ fun AddTransactionScreen(
                 ) {
                     Text("Salva Transazione", fontSize = 18.sp)
                 }
-            }
-        }
-		if (showAddCategoryDialog) {
-        AlertDialog(
-            onDismissRequest = { 
-                showAddCategoryDialog = false 
-                newCategoryName = ""
-                selectedParentId = null
-                parentSearchText = ""
+            } // Chiude BoxWithConstraints
+
+            if (showAddCategoryDialog) {
+            AlertDialog(
+            onDismissRequest = {
+            showAddCategoryDialog = false
+            newCategoryName = ""
+            selectedParentId = null
+            parentSearchText = ""
             },
             title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // NOME CATEGORIA
-                    OutlinedTextField(
-                        value = newCategoryName,
-                        onValueChange = { newCategoryName = it },
-                        label = { Text("Nome Categoria") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            OutlinedTextField(
+            value = newCategoryName,
+            onValueChange = { newCategoryName = it },
+            label = { Text("Nome Categoria") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+            )
 
-                    // SOTTOCATEGORIA DI... (Filtro Padre)
-                    Column {
-                        Text(
-                            text = "Sottocategoria di...", 
-                            fontSize = 12.sp, 
-                            color = androidx.compose.ui.graphics.Color.Gray
-                        )
-                        OutlinedTextField(
-                            value = if (selectedParentId == null) "" else categoryMap[selectedParentId] ?: "",
-                            onValueChange = { 
-                                parentSearchText = it
-                                selectedParentId = null // Resetta la selezione se l'utente inizia a scrivere
-                            },
-                            label = { Text("Cerca Categoria Padre (lascia vuoto per principale)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            trailingIcon = {
-                                if (selectedParentId != null) {
-                                    IconButton(onClick = { selectedParentId = null }) {
-                                        Icon(Icons.Default.Clear, contentDescription = "Rimuovi Padre")
-                                    }
-                                }
-                            }
-                        )
-                        
-                        // LISTA SUGGERIMENTI FILTRATI (Semplificata)
-                        if (parentSearchText.isNotEmpty()) {
-                            val filteredParents = categories.filter { 
-                                it.parentCategoryId == null && 
-                                it.name.contains(parentSearchText, ignoreCase = true) 
-                            }
-                            
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                            ) {
-                                filteredParents.forEach { parent ->
-                                    Text(
-                                        text = parent.name,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable { 
-                                                selectedParentId = parent.id 
-                                                parentSearchText = parent.name
-                                            }
-                                            .padding(8.dp),
-                                        fontSize = 14.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+            Column {
+            Text(
+            text = "Sottocategoria di...",
+            fontSize = 12.sp,
+            color = androidx.compose.ui.graphics.Color.Gray
+            )
+            OutlinedTextField(
+            value = if (selectedParentId == null) "" else categoryMap[selectedParentId] ?: "",
+            onValueChange = {
+            parentSearchText = it
+            selectedParentId = null
+            },
+            label = { Text("Cerca Categoria Padre (lascia vuoto per principale)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            trailingIcon = {
+            if (selectedParentId != null) {
+            IconButton(onClick = { selectedParentId = null }) {
+            Icon(Icons.Default.Clear, contentDescription = "Rimuovi Padre")
+            }
+            }
+            }
+            )
+
+            if (parentSearchText.isNotEmpty()) {
+            val filteredParents = categories.filter {
+            it.parentCategoryId == null &&
+            it.name.contains(parentSearchText, ignoreCase = true)
+            }
+
+            Column(
+            modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+            filteredParents.forEach { parent ->
+            Text(
+            text = parent.name,
+            modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+            selectedParentId = parent.id
+            parentSearchText = parent.name
+            }
+            .padding(8.dp),
+            fontSize = 14.sp
+            )
+            }
+            }
+            }
+            }
+            }
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        if (newCategoryName.isNotBlank()) {
-                            categoryViewModel.addCategory(
-                                Category(name = newCategoryName, parentCategoryId = selectedParentId)
-                            )
-							showAddCategoryDialog = false
-                            newCategoryName = ""
-                            selectedParentId = null
-                            parentSearchText = ""
-                        }
-                    },
-                    enabled = newCategoryName.isNotBlank()
-                ) { Text("Salva") }
+            Button(
+            onClick = {
+            if (newCategoryName.isNotBlank()) {
+            categoryViewModel.addCategory(
+            Category(name = newCategoryName, parentCategoryId = selectedParentId)
+            )
+            showAddCategoryDialog = false
+            newCategoryName = ""
+            selectedParentId = null
+            parentSearchText = ""
+            }
+            },
+            enabled = newCategoryName.isNotBlank()
+            ) { Text("Salva") }
             },
             dismissButton = {
-                TextButton(onClick = { showAddCategoryDialog = false }) { 
-                    Text("Annulla") 
-                }
+            TextButton(onClick = { showAddCategoryDialog = false }) {
+            Text("Annulla")
             }
-        )
-        }
-      }
-}
+            }
+            )
+            }
+            }
+            }
