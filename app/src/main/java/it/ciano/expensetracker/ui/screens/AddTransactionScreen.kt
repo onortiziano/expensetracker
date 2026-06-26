@@ -8,7 +8,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,7 +42,7 @@ fun AddTransactionScreen(
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
-    var parentSearchText by remember { mutableStateOf("") }
+    var categoryType by remember { mutableStateOf("MAIN") } // "MAIN" o "SUB"
 
     // MAPPA PER I NOMI
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
@@ -85,13 +84,11 @@ fun AddTransactionScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // --- GRUPPO SUPERIORE (Campi di input) ---
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // CAMPO IMPORTA
                     OutlinedTextField(
                         value = amount,
                         onValueChange = { amount = it },
@@ -101,7 +98,6 @@ fun AddTransactionScreen(
                         singleLine = true
                     )
 
-                    // CAMPO NOTA
                     OutlinedTextField(
                         value = note,
                         onValueChange = { note = it },
@@ -110,7 +106,6 @@ fun AddTransactionScreen(
                         singleLine = true
                     )
 
-                    // SCELTA TIPO
                     Text(text = "Tipo di operazione", fontWeight = FontWeight.Bold)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -128,7 +123,6 @@ fun AddTransactionScreen(
                         )
                     }
 
-                    // SELEZIONE CATEGORIA CON MENU A TENDINA
                     var expanded by remember { mutableStateOf(false) }
                     val selectedCategoryName = categoryMap[selectedCategoryId] ?: "Seleziona categoria"
 
@@ -159,7 +153,6 @@ fun AddTransactionScreen(
                                     }
                                 )
                             }
-                            // TASTO "+ AGGIUNGI CATEGORIA"
                             DropdownMenuItem(
                                 text = { Text("+ Aggiungi Categoria", color = MaterialTheme.colorScheme.primary) },
                                 onClick = {
@@ -171,7 +164,6 @@ fun AddTransactionScreen(
                     }
                 }
 
-                // --- GRUPPO INFERIORE (Bottone) ---
                 Button(
                     onClick = {
                         val amountValue = amount.toDoubleOrNull() ?: 0.0
@@ -204,12 +196,12 @@ fun AddTransactionScreen(
                     showAddCategoryDialog = false
                     newCategoryName = ""
                     selectedParentId = null
-                    parentSearchText = ""
+                    categoryType = "MAIN"
                 },
                 title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        // NOME CATEGORIA
+                        // 1. NOME CATEGORIA
                         OutlinedTextField(
                             value = newCategoryName,
                             onValueChange = { newCategoryName = it },
@@ -218,57 +210,59 @@ fun AddTransactionScreen(
                             singleLine = true
                         )
 
-                        // SOTTOCATEGORIA DI... (Filtro Padre)
-                        Column {
-                            Text(
-                                text = "Sottocategoria di...",
-                                fontSize = 12.sp,
-                                color = androidx.compose.ui.graphics.Color.Gray
-                            )
-                            OutlinedTextField(
-                                value = parentSearchText,
-                                onValueChange = { 
-                                    parentSearchText = it
-                                    selectedParentId = null 
-                                },
-                                label = { Text("Cerca Categoria Padre (lascia vuoto per principale)") },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                trailingIcon = {
-                                    if (selectedParentId != null || parentSearchText.isNotEmpty()) {
-                                        IconButton(onClick = { 
-                                            selectedParentId = null 
-                                            parentSearchText = ""
-                                        }) {
-                                            Icon(Icons.Default.Clear, contentDescription = "Rimuovi Padre")
-                                        }
-                                    }
-                                }
-                            )
+                        // 2. TIPO DI CATEGORIA
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                FilterChip(
+                                    selected = categoryType == "MAIN",
+                                    onClick = { 
+                                        categoryType = "MAIN"
+                                        selectedParentId = null 
+                                    },
+                                    label = { Text("Principale") }
+                                )
+                                FilterChip(
+                                    selected = categoryType == "SUB",
+                                    onClick = { categoryType = "SUB" },
+                                    label = { Text("Sottocategoria") }
+                                )
+                            }
+                        }
 
-                            if (parentSearchText.isNotEmpty()) {
-                                val filteredParents = categories.filter {
-                                    it.parentCategoryId == null &&
-                                            it.name.contains(parentSearchText, ignoreCase = true)
-                                }
-
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        // 3. SELEZIONE PADRE (solo se SUB)
+                        if (categoryType == "SUB") {
+                            var parentExpanded by remember { mutableStateOf(false) }
+                            val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
+                            
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                ExposedDropdownMenuBox(
+                                    expanded = parentExpanded,
+                                    onExpandedChange = { parentExpanded = it },
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    filteredParents.forEach { parent ->
-                                        Text(
-                                            text = parent.name,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
+                                    OutlinedTextField(
+                                        readOnly = true,
+                                        value = parentName,
+                                        onValueChange = {},
+                                        label = { Text("Scegli il Padre") },
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
+                                        modifier = Modifier.menuAnchor()
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = parentExpanded,
+                                        onDismissRequest = { parentExpanded = false }
+                                    ) {
+                                        categories.filter { it.parentCategoryId == null }.forEach { parent ->
+                                            DropdownMenuItem(
+                                                text = { Text(parent.name) },
+                                                onClick = {
                                                     selectedParentId = parent.id
-                                                    parentSearchText = parent.name
+                                                    parentExpanded = false
                                                 }
-                                                .padding(8.dp),
-                                            fontSize = 14.sp
-                                        )
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -278,17 +272,26 @@ fun AddTransactionScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            if (newCategoryName.isNotBlank()) {
+                            val isDuplicate = categories.any { 
+                                it.name == newCategoryName && it.parentCategoryId == selectedParentId 
+                            }
+                            
+                            if (isDuplicate) {
+                                // Qui potremmo aggiungere un toast, per ora blocchiamo il salvataggio
+                                return@Button 
+                            }
+
+                            if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
                                 categoryViewModel.addCategory(
                                     Category(name = newCategoryName, parentCategoryId = selectedParentId)
                                 )
                                 showAddCategoryDialog = false
                                 newCategoryName = ""
                                 selectedParentId = null
-                                parentSearchText = ""
+                                categoryType = "MAIN"
                             }
                         },
-                        enabled = newCategoryName.isNotBlank()
+                        enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
                     ) { Text("Salva") }
                 },
                 dismissButton = {
