@@ -27,9 +27,8 @@ import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModifyTransactionScreen(
-    navController: NavHostController,
-    transactionId: Int
+fun AddTransactionScreen(
+    navController: NavHostController
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
@@ -52,26 +51,10 @@ fun ModifyTransactionScreen(
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
     var categoryType by remember { mutableStateOf("MAIN") }
 
-    LaunchedEffect(transactionId) {
-        transactionViewModel.allTransactions.collect { transactions ->
-            val transaction = transactions.find { it.id == transactionId }
-            transaction?.let { trans ->
-                transactionViewModel.loadTransaction(trans)
-                
-                val category = allCategories.find { cat -> cat.id == trans.categoryId }
-                if (category?.parentCategoryId != null) {
-                    transactionViewModel.updateSubCategory(trans.categoryId)
-                } else {
-                    transactionViewModel.updateSubCategory(0)
-                }
-            }
-        }
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Modifica Transazione", fontWeight = FontWeight.Bold) },
+                title = { Text("Nuova Transazione", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Torna indietro")
@@ -230,7 +213,7 @@ fun ModifyTransactionScreen(
                                                 transactionViewModel.updateSubCategory(sub.id)
                                                 subExpanded = false
                                             }
-                                        }
+                                        )
                                     }
                                 }
                             }
@@ -245,32 +228,32 @@ fun ModifyTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
+                    // VALIDAZIONE: Bottone attivo solo se importo > 0
+                    val isFormValid = (amount.toDoubleOrNull() ?: 0.0) > 0.0
+                    
                     Button(
                         onClick = {
                             val amountValue = amount.toDoubleOrNull() ?: 0.0
-                            if (amountValue > 0) {
-                                val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
-                                
-                                val updatedTransaction = Transaction(
-                                    id = transactionId,
-                                    amount = amountValue,
-                                    type = type,
-                                    categoryId = finalCategoryId,
-                                    note = note,
-                                    date = System.currentTimeMillis()
-                                )
-                                transactionViewModel.updateTransaction(updatedTransaction)
-                                navController.popBackStack()
-                            }
+                            val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
+                            
+                            val transaction = Transaction(
+                                amount = amountValue,
+                                type = type,
+                                categoryId = finalCategoryId,
+                                note = note,
+                                date = System.currentTimeMillis()
+                            )
+                            transactionViewModel.addTransaction(transaction)
+                            navController.popBackStack()
                         },
-                        enabled = (amount.toDoubleOrNull() ?: 0.0) > 0.0,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp)
                             .height(56.dp),
+                        enabled = isFormValid,
                         shape = MaterialTheme.shapes.medium
                     ) {
-                        Text("Aggiorna Transazione", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text("Salva Transazione", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 
@@ -352,7 +335,8 @@ fun ModifyTransactionScreen(
                         }
                     }
                 },
-                confirmButton = { {
+                confirmButton = {
+                    Button(
                         onClick = {
                             val isDuplicate = allCategories.any { 
                                 it.name == newCategoryName && it.parentCategoryId == selectedParentId 
