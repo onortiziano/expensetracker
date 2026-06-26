@@ -1,7 +1,5 @@
 package it.ciano.expensetracker.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -37,12 +35,12 @@ fun ModifyTransactionScreen(
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
 
-    // STATI PER I CAMPI (Usiamo rememberSaveable per la rotazione, anche se ora l'app è in portrait)
-    var amount by rememberSaveable { mutableStateOf("") }
-    var note by rememberSaveable { mutableStateOf("") }
-    var type by rememberSaveable { mutableStateOf("EXPENSE") }
-    var selectedMainCategoryId by rememberSaveable { mutableIntStateOf(0) }
-    var selectedSubCategoryId by rememberSaveable { mutableIntStateOf(0) }
+    // Osserviamo lo stato dal ViewModel (Sopravvive alla rotazione)
+    val amount by transactionViewModel.amount.collectAsState()
+    val note by transactionViewModel.note.collectAsState()
+    val type by transactionViewModel.type.collectAsState()
+    val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
+    val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
 
     // CATEGORIE
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
@@ -54,19 +52,14 @@ fun ModifyTransactionScreen(
         transactionViewModel.allTransactions.collect { transactions ->
             val transaction = transactions.find { it.id == transactionId }
             transaction?.let {
-                amount = it.amount.toString()
-                note = it.note
-                type = it.type
-                selectedMainCategoryId = it.categoryId
+                transactionViewModel.loadTransaction(it)
                 
-                // Se la categoria selezionata è un figlio, dobbiamo resettare il padre
-                // per far sì che il dropdown mostri correttamente la gerarchia
+                // Logica per gestire il caricamento corretto della gerarchia
                 val category = allCategories.find { it.id == it.categoryId }
                 if (category?.parentCategoryId != null) {
-                    selectedMainCategoryId = category.parentCategoryId!!
-                    selectedSubCategoryId = it.categoryId
+                    transactionViewModel.updateSubCategory(it.categoryId)
                 } else {
-                    selectedSubCategoryId = 0
+                    transactionViewModel.updateSubCategory(0)
                 }
             }
         }
@@ -116,7 +109,7 @@ fun ModifyTransactionScreen(
                         
                         OutlinedTextField(
                             value = amount,
-                            onValueChange = { amount = it },
+                            onValueChange = { transactionViewModel.updateAmount(it) },
                             label = { Text("Importo") },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -125,7 +118,7 @@ fun ModifyTransactionScreen(
 
                         OutlinedTextField(
                             value = note,
-                            onValueChange = { note = it },
+                            onValueChange = { transactionViewModel.updateNote(it) },
                             label = { Text("Nota (opzionale)") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
@@ -151,13 +144,13 @@ fun ModifyTransactionScreen(
                         ) {
                             FilterChip(
                                 selected = type == "EXPENSE",
-                                onClick = { type = "EXPENSE" },
+                                onClick = { transactionViewModel.updateType("EXPENSE") },
                                 label = { Text("Uscita") },
                                 modifier = Modifier.weight(1f)
                             )
                             FilterChip(
                                 selected = type == "INCOME",
-                                onClick = { type = "INCOME" },
+                                onClick = { transactionViewModel.updateType("INCOME") },
                                 label = { Text("Entrata") },
                                 modifier = Modifier.weight(1f)
                             )
@@ -190,19 +183,11 @@ fun ModifyTransactionScreen(
                                     DropdownMenuItem(
                                         text = { Text(category.name) },
                                         onClick = {
-                                            selectedMainCategoryId = category.id
-                                            selectedSubCategoryId = 0
+                                            transactionViewModel.updateMainCategory(category.id)
                                             mainExpanded = false
                                         }
                                     )
                                 }
-                                DropdownMenuItem(
-                                    text = { Text("+ Aggiungi Nuova", color = MaterialTheme.colorScheme.primary) },
-                                    onClick = {
-                                        mainExpanded = false
-                                        // In una versione completa, qui apriremo il dialog
-                                    }
-                                )
                             }
                         }
 
@@ -216,7 +201,7 @@ fun ModifyTransactionScreen(
                             ExposedDropdownMenuBox(
                                 expanded = subExpanded,
                                 onExpandedChange = { subExpanded = it },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth
                             ) {
                                 OutlinedTextField(
                                     readOnly = true,
@@ -234,7 +219,7 @@ fun ModifyTransactionScreen(
                                         DropdownMenuItem(
                                             text = { Text(sub.name) },
                                             onClick = {
-                                                selectedSubCategoryId = sub.id
+                                                transactionViewModel.updateSubCategory(sub.id)
                                                 subExpanded = false
                                             }
                                         )

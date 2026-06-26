@@ -21,7 +21,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         .map { it ?: 0.0 }
         .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0.0)
 
-    // --- STATO UI PER AGGIUNTA/MODIFICA (Sopravvive alla rotazione) ---
+    // --- STATO UI PER MODIFICA/AGGIUNTA (Sopravvive alla rotazione) ---
     private val _amount = MutableStateFlow("")
     val amount: StateFlow<String> = _amount
 
@@ -37,7 +37,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     private val _selectedSubCategoryId = MutableStateFlow(0)
     val selectedSubCategoryId: StateFlow<Int> = _selectedSubCategoryId
 
-    // --- FUNZIONI AGGIORNAMENTO STATO ---
+    // --- FUNZIONI DI AGGIORNAMENTO ---
     fun updateAmount(value: String) { _amount.value = value }
     fun updateNote(value: String) { _note.value = value }
     fun updateType(value: String) { _type.value = value }
@@ -47,23 +47,35 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     }
     fun updateSubCategory(id: Int) { _selectedSubCategoryId.value = id }
 
-    // --- OPERAZIONI DB ---
+    // Carica i dati di una transazione nel ViewModel
+    fun loadTransaction(transaction: Transaction) {
+        _amount.value = transaction.amount.toString()
+        _note.value = transaction.note
+        _type.value = transaction.type
+        _selectedMainCategoryId.value = transaction.categoryId
+        _selectedSubCategoryId.value = 0 // Reset sub per sicurezza
+    }
+
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch {
             repository.insertTransaction(transaction)
-            resetForm() // Pulisce il form dopo il salvataggio
+            resetForm()
+        }
+    }
+
+    fun updateTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repository.updateTransaction(transaction)
         }
     }
 
     fun deleteTransaction(transaction: Transaction) {
-        viewModelScope.launch { repository.deleteTransaction(transaction) }
+        viewModelScope.launch {
+            repository.deleteTransaction(transaction)
+        }
     }
 
-    fun updateTransaction(transaction: Transaction) {
-        viewModelScope.launch { repository.updateTransaction(transaction) }
-    }
-
-    private fun resetForm() {
+    fun resetForm() {
         _amount.value = ""
         _note.value = ""
         _type.value = "EXPENSE"
