@@ -28,6 +28,7 @@ import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
+import it.ciano.expensetracker.data.model.Category
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
