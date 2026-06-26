@@ -49,11 +49,8 @@ fun HistoryScreen(
     val transactions by transactionViewModel.allTransactions.collectAsState()
     val currency by mainViewModel.currency.collectAsState()
     
-    // 5. Recupero categorie e creazione mappa (Usando CategoryViewModel)
+    // 5. Recupero categorie
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    val categoryMap = remember(categories) { 
-        categories.associate { it.id to it.name } 
-    }
     
     // Stato per l'eliminazione (quale transazione vogliamo cancellare?)
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
@@ -90,9 +87,9 @@ fun HistoryScreen(
             ) {
                 items(transactions) { transaction ->
                     TransactionItem(
-					    transaction = transaction,
+                        transaction = transaction, 
                         currency = currency,
-                        categoryMap = categoryMap,
+                        categories = categories,
                         onClick = { 
                             navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
                         },
