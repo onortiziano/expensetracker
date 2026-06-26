@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,11 +40,11 @@ fun AddTransactionScreen(
         factory = ViewModelFactory(app)
     )
 
-    // STATO PER IL DIALOG DI AGGIUNTA CATEGORIA
-    var showAddCategoryDialog by remember { mutableStateOf(false) }
-    var newCategoryName by remember { mutableStateOf("") }
-    var selectedParentId by remember { mutableStateOf<Int?>(null) }
-    var categoryType by remember { mutableStateOf("MAIN") }
+    // STATO PER IL DIALOG DI AGGIUNTA CATEGORIA - Usiamo rememberSaveable per la rotazione
+    var showAddCategoryDialog by rememberSaveable { mutableStateOf(false) }
+    var newCategoryName by rememberSaveable { mutableStateOf("") }
+    var selectedParentId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var categoryType by rememberSaveable { mutableStateOf("MAIN") }
 
     // CATEGORIE
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
@@ -52,13 +53,13 @@ fun AddTransactionScreen(
         allCategories.associate { it.id to it.name }
     }
 
-    var amount by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("EXPENSE") }
+    // INPUTS - Usiamo rememberSaveable per non perdere i dati alla rotazione
+    var amount by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable { mutableStateOf("") }
+    var type by rememberSaveable { mutableStateOf("EXPENSE") }
     
-    // SELEZIONE GERARCHICA
-    var selectedMainCategoryId by remember { mutableIntStateOf(0) }
-    var selectedSubCategoryId by remember { mutableIntStateOf(0) }
+    var selectedMainCategoryId by rememberSaveable { mutableIntStateOf(0) }
+    var selectedSubCategoryId by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -91,7 +92,6 @@ fun AddTransactionScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- CARD 1: DETTAGLI ECONOMICI ---
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
@@ -121,7 +121,6 @@ fun AddTransactionScreen(
                     }
                 }
 
-                // --- CARD 2: CLASSIFICAZIONE ---
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
@@ -153,7 +152,6 @@ fun AddTransactionScreen(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        // --- SELEZIONE CATEGORIA PRINCIPALE ---
                         Text(text = "Categoria Principale", fontSize = 13.sp)
                         var mainExpanded by remember { mutableStateOf(false) }
                         val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Scegli Categoria"
@@ -180,7 +178,7 @@ fun AddTransactionScreen(
                                         text = { Text(category.name) },
                                         onClick = {
                                             selectedMainCategoryId = category.id
-                                            selectedSubCategoryId = 0 // Reset subcategory when main changes
+                                            selectedSubCategoryId = 0
                                             mainExpanded = false
                                         }
                                     )
@@ -195,7 +193,6 @@ fun AddTransactionScreen(
                             }
                         }
 
-                        // --- SELEZIONE SOTTOCATEGORIA (Condizionale) ---
                         val subCategories = allCategories.filter { it.parentCategoryId == selectedMainCategoryId }
                         if (selectedMainCategoryId != 0 && subCategories.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -235,7 +232,6 @@ fun AddTransactionScreen(
                     }
                 }
 
-                // --- BARRA AZIONE (SALVA) ---
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -247,7 +243,6 @@ fun AddTransactionScreen(
                         onClick = {
                             val amountValue = amount.toDoubleOrNull() ?: 0.0
                             if (amountValue > 0) {
-                                // Usiamo la sottocategoria se selezionata, altrimenti la principale
                                 val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else selectedMainCategoryId
                                 
                                 if (finalCategoryId != 0) {
