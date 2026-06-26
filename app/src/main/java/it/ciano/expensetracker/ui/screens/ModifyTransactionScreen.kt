@@ -161,7 +161,7 @@ fun ModifyTransactionScreen(
 
                         Text(text = "Categoria Principale", fontSize = 13.sp)
                         var mainExpanded by remember { mutableStateOf(false) }
-                        val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Scegli Categoria"
+                        val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Senza Categoria"
 
                         ExposedDropdownMenuBox(
                             expanded = mainExpanded,
@@ -346,13 +346,14 @@ fun ModifyTransactionScreen(
                                             selectedParentId = parent.id
                                             parentExpanded = false
                                         }
-                                    )
+                                    }
                                 }
                             }
                         }
                     }
                 },
-                confirmButton = { {
+                confirmButton = {
+                    Button(
                         onClick = {
                             val isDuplicate = allCategories.any { 
                                 it.name == newCategoryName && it.parentCategoryId == selectedParentId 
