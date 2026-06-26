@@ -226,17 +226,20 @@ fun AddTransactionScreen(
                                 color = androidx.compose.ui.graphics.Color.Gray
                             )
                             OutlinedTextField(
-                                value = if (selectedParentId == null) "" else categoryMap[selectedParentId] ?: "",
-                                onValueChange = {
+                                value = parentSearchText,
+                                onValueChange = { 
                                     parentSearchText = it
-                                    selectedParentId = null
+                                    selectedParentId = null 
                                 },
                                 label = { Text("Cerca Categoria Padre (lascia vuoto per principale)") },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 trailingIcon = {
-                                    if (selectedParentId != null) {
-                                        IconButton(onClick = { selectedParentId = null }) {
+                                    if (selectedParentId != null || parentSearchText.isNotEmpty()) {
+                                        IconButton(onClick = { 
+                                            selectedParentId = null 
+                                            parentSearchText = ""
+                                        }) {
                                             Icon(Icons.Default.Clear, contentDescription = "Rimuovi Padre")
                                         }
                                     }
