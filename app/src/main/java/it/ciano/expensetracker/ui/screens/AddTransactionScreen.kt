@@ -39,20 +39,26 @@ fun AddTransactionScreen(
         factory = ViewModelFactory(app)
     )
 
+    // STATO PER IL DIALOG DI AGGIUNTA CATEGORIA
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
     var categoryType by remember { mutableStateOf("MAIN") }
 
-    val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    val categoryMap = remember(categories) {
-        categories.associate { it.id to it.name }
+    // CATEGORIE
+    val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+    val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
+    val categoryMap = remember(allCategories) {
+        allCategories.associate { it.id to it.name }
     }
 
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("EXPENSE") }
-    var selectedCategoryId by remember { mutableIntStateOf(1) }
+    
+    // SELEZIONE GERARCHICA
+    var selectedMainCategoryId by remember { mutableIntStateOf(0) }
+    var selectedSubCategoryId by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -147,50 +153,89 @@ fun AddTransactionScreen(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(text = "Categoria", fontSize = 13.sp)
-                        var expanded by remember { mutableStateOf(false) }
-                        val selectedCategoryName = categoryMap[selectedCategoryId] ?: "Seleziona categoria"
+                        // --- SELEZIONE CATEGORIA PRINCIPALE ---
+                        Text(text = "Categoria Principale", fontSize = 13.sp)
+                        var mainExpanded by remember { mutableStateOf(false) }
+                        val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Scegli Categoria"
 
                         ExposedDropdownMenuBox(
-                            expanded = expanded,
-                            onExpandedChange = { expanded = it },
+                            expanded = mainExpanded,
+                            onExpandedChange = { mainExpanded = it },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             OutlinedTextField(
                                 readOnly = true,
-                                value = selectedCategoryName,
+                                value = mainCategoryName,
                                 onValueChange = {},
-                                label = { Text("Scegli Categoria") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                label = { Text("Categoria Principale") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mainExpanded) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth()
                             )
                             ExposedDropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false }
+                                expanded = mainExpanded,
+                                onDismissRequest = { mainExpanded = false }
                             ) {
-                                categories.forEach { category ->
+                                mainCategories.forEach { category ->
                                     DropdownMenuItem(
                                         text = { Text(category.name) },
                                         onClick = {
-                                            selectedCategoryId = category.id
-                                            expanded = false
+                                            selectedMainCategoryId = category.id
+                                            selectedSubCategoryId = 0 // Reset subcategory when main changes
+                                            mainExpanded = false
                                         }
                                     )
                                 }
                                 DropdownMenuItem(
                                     text = { Text("+ Aggiungi Nuova", color = MaterialTheme.colorScheme.primary) },
                                     onClick = {
-                                        expanded = false
+                                        mainExpanded = false
                                         showAddCategoryDialog = true
                                     }
                                 )
+                            }
+                        }
+
+                        // --- SELEZIONE SOTTOCATEGORIA (Condizionale) ---
+                        val subCategories = allCategories.filter { it.parentCategoryId == selectedMainCategoryId }
+                        if (selectedMainCategoryId != 0 && subCategories.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = "Sottocategoria", fontSize = 13.sp)
+                            var subExpanded by remember { mutableStateOf(false) }
+                            val subCategoryName = categoryMap[selectedSubCategoryId] ?: "Scegli Sottocategoria"
+
+                            ExposedDropdownMenuBox(
+                                expanded = subExpanded,
+                                onExpandedChange = { subExpanded = it },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OutlinedTextField(
+                                    readOnly = true,
+                                    value = subCategoryName,
+                                    onValueChange = {},
+                                    label = { Text("Sottocategoria") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subExpanded) },
+                                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = subExpanded,
+                                    onDismissRequest = { subExpanded = false }
+                                ) {
+                                    subCategories.forEach { sub ->
+                                        DropdownMenuItem(
+                                            text = { Text(sub.name) },
+                                            onClick = {
+                                                selectedSubCategoryId = sub.id
+                                                subExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
 
                 // --- BARRA AZIONE (SALVA) ---
-                // Inserita come Surface per dare l'idea di una barra integrata ma scrollabile
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -202,15 +247,20 @@ fun AddTransactionScreen(
                         onClick = {
                             val amountValue = amount.toDoubleOrNull() ?: 0.0
                             if (amountValue > 0) {
-                                val transaction = Transaction(
-                                    amount = amountValue,
-                                    type = type,
-                                    categoryId = selectedCategoryId,
-                                    note = note,
-                                    date = System.currentTimeMillis()
-                                )
-                                viewModel.addTransaction(transaction)
-                                navController.popBackStack()
+                                // Usiamo la sottocategoria se selezionata, altrimenti la principale
+                                val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else selectedMainCategoryId
+                                
+                                if (finalCategoryId != 0) {
+                                    val transaction = Transaction(
+                                        amount = amountValue,
+                                        type = type,
+                                        categoryId = finalCategoryId,
+                                        note = note,
+                                        date = System.currentTimeMillis()
+                                    )
+                                    viewModel.addTransaction(transaction)
+                                    navController.popBackStack()
+                                }
                             }
                         },
                         modifier = Modifier
@@ -223,7 +273,7 @@ fun AddTransactionScreen(
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp)) // Spazio finale per non stare attaccati al bordo
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
 
@@ -288,7 +338,7 @@ fun AddTransactionScreen(
                                         expanded = parentExpanded,
                                         onDismissRequest = { parentExpanded = false }
                                     ) {
-                                        categories.filter { it.parentCategoryId == null }.forEach { parent ->
+                                        mainCategories.forEach { parent ->
                                             DropdownMenuItem(
                                                 text = { Text(parent.name) },
                                                 onClick = {
@@ -306,7 +356,7 @@ fun AddTransactionScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            val isDuplicate = categories.any { 
+                            val isDuplicate = allCategories.any { 
                                 it.name == newCategoryName && it.parentCategoryId == selectedParentId 
                             }
                             
