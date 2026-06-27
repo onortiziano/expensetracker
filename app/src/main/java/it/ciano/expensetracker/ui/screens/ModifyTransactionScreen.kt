@@ -230,7 +230,7 @@ fun ModifyTransactionScreen(
                                                 transactionViewModel.updateSubCategory(sub.id)
                                                 subExpanded = false
                                             }
-                                        }
+                                        )
                                     }
                                 }
                             }
@@ -336,15 +336,17 @@ fun ModifyTransactionScreen(
                                         modifier = Modifier.menuAnchor().fillMaxWidth()
                                     )
                                     ExposedDropdownMenu(
-                                    expanded = parentExpanded,
-                                    onDismissRequest = { parentExpanded = false }
-                                ) {
-                                    mainCategories.forEach { parent ->
-                                        DropdownMenuItem(
-                                        text = { Text(parent.name) },
-                                        onClick = {
-                                            selectedParentId = parent.id
-                                            parentExpanded = false
+                                        expanded = parentExpanded,
+                                        onDismissRequest = { parentExpanded = false }
+                                    ) {
+                                        mainCategories.forEach { parent ->
+                                            DropdownMenuItem(
+                                                text = { Text(parent.name) },
+                                                onClick = {
+                                                    selectedParentId = parent.id
+                                                    parentExpanded = false
+                                                }
+                                            )
                                         }
                                     }
                                 }
