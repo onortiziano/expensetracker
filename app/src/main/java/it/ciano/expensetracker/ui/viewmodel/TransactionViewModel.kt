@@ -20,14 +20,18 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         viewModelScope.launch(Dispatchers.IO) {
             for (transaction in deleteChannel) {
                 try {
-                    repository.deleteTransaction(transaction)
+                    val deletedCount = repository.deleteTransaction(transaction)
+                    if (deletedCount == 0) {
+                        android.util.Log.e("TRANSACTION_VM", "FALLIMENTO: Il record con ID ${transaction.id} non è stato trovato nel DB. Possibile desincronizzazione della UI.")
+                    } else {
+                        android.util.Log.d("TRANSACTION_VM", "SUCCESSO: Record ${transaction.id} cancellato correttamente.")
+                    }
                 } catch (t: Throwable) {
-                    // Cattura TUTTO (Exception, Error, Throwable) per evitare che il worker muoia
-                    android.util.Log.e("TRANSACTION_VM", "Errore critico nella cancellazione di ${transaction.id}: ${t.message}")
+                    android.util.Log.e("TRANSACTION_VM", "ERRORE CRITICO durante la cancellazione di ${transaction.id}: ${t.message}")
                 }
             }
         }
-    }
+
 
     // --- DATI PERSISTENTI ---
     val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()

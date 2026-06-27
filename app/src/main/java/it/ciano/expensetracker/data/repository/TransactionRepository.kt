@@ -36,8 +36,8 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
         transactionDao.insertTransaction(transaction)
     }
 
-    suspend fun deleteTransaction(transaction: Transaction) {
-        transactionDao.deleteTransaction(transaction)
+    suspend fun deleteTransaction(transaction: Transaction): Int {
+        return transactionDao.deleteTransaction(transaction)
     }
 	
 	suspend fun updateTransaction(transaction: Transaction) {
