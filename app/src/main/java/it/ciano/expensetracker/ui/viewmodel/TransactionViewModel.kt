@@ -31,7 +31,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
                 }
             }
         }
-
+    }
 
     // --- DATI PERSISTENTI ---
     val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
@@ -84,11 +84,9 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         
         val category = allCategories.find { it.id == transaction.categoryId }
         if (category != null && category.parentCategoryId != null) {
-            // È una sottocategoria: imposta sia il padre che il figlio
             _selectedMainCategoryId.value = category.parentCategoryId!!
             _selectedSubCategoryId.value = category.id
         } else {
-            // È una categoria principale (o senza categoria)
             _selectedMainCategoryId.value = transaction.categoryId
             _selectedSubCategoryId.value = 0
         }
