@@ -7,12 +7,22 @@ import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Dispatchers
 
 class TransactionViewModel(private val repository: TransactionRepository) : ViewModel() {
+    
+    // Coda per le eliminazioni (garantisce l'esecuzione sequenziale)
+    private val deleteChannel = Channel<Transaction>(Channel.UNLIMITED)
 
-    private val dbMutex = Mutex()
+    init {
+        // Avvia l'unico worker che processa la coda delle eliminazioni
+        viewModelScope.launch(Dispatchers.IO) {
+            for (transaction in deleteChannel) {
+                repository.deleteTransaction(transaction)
+            }
+        }
+    }
 
     // --- DATI PERSISTENTI ---
     val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
@@ -90,9 +100,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
 
     fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            dbMutex.withLock {
-                repository.deleteTransaction(transaction)
-            }
+            deleteChannel.send(transaction)
         }
     }
 
