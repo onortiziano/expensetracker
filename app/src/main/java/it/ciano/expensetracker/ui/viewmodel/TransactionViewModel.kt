@@ -7,8 +7,12 @@ import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class TransactionViewModel(private val repository: TransactionRepository) : ViewModel() {
+
+    private val dbMutex = Mutex()
 
     // --- DATI PERSISTENTI ---
     val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
@@ -86,7 +90,9 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
 
     fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
-            repository.deleteTransaction(transaction)
+            dbMutex.withLock {
+                repository.deleteTransaction(transaction)
+            }
         }
     }
 
