@@ -19,7 +19,12 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         // Avvia l'unico worker che processa la coda delle eliminazioni
         viewModelScope.launch(Dispatchers.IO) {
             for (transaction in deleteChannel) {
-                repository.deleteTransaction(transaction)
+                try {
+                    repository.deleteTransaction(transaction)
+                } catch (e: Exception) {
+                    // Log dell'errore per debug, ma il worker NON muore
+                    println("Errore durante la cancellazione di ${transaction.id}: ${e.message}")
+                }
             }
         }
     }
