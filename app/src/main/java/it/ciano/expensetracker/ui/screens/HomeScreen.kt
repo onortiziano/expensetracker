@@ -36,6 +36,7 @@ import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
+    // --- STATI E VIEWMODEL ---
     val context = LocalContext.current
     val app = context.applicationContext as Application
     val scope = rememberCoroutineScope()
@@ -52,15 +53,19 @@ fun HomeScreen(navController: NavHostController) {
     val currency by mainViewModel.currency.collectAsState()
     val transactions by transactionViewModel.allTransactions.collectAsState()
     
+    // Stato per l'apertura/chiusura del menu laterale (Drawer)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    // Intercetta il tasto indietro di sistema
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
 
+    // --- STRUTTURA CON NAVIGATION DRAWER ---
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
+                // Intestazione del Menu
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -81,7 +86,10 @@ fun HomeScreen(navController: NavHostController) {
                         )
                     }
                 }
+
                 Spacer(modifier = Modifier.height(12.dp))
+
+                // Voci del Menu
                 NavigationDrawerItem(
                     label = { Text("Home") },
                     selected = true,
@@ -92,6 +100,7 @@ fun HomeScreen(navController: NavHostController) {
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
+                
                 NavigationDrawerItem(
                     label = { Text("Cronologia") },
                     selected = false,
@@ -102,6 +111,7 @@ fun HomeScreen(navController: NavHostController) {
                     icon = { Icon(Icons.Default.List, contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
+                
                 NavigationDrawerItem(
                     label = { Text("Impostazioni") },
                     selected = false,
@@ -115,6 +125,7 @@ fun HomeScreen(navController: NavHostController) {
             }
         }
     ) {
+        // --- CONTENUTO PRINCIPALE ---
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -140,6 +151,7 @@ fun HomeScreen(navController: NavHostController) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // --- CARD RIEPILOGO BILANCIO ---
                     item {
                         val totalIncome by transactionViewModel.totalIncome.collectAsState()
                         val totalExpenses by transactionViewModel.totalExpenses.collectAsState()
@@ -182,21 +194,20 @@ fun HomeScreen(navController: NavHostController) {
                     }
                     
                     items(transactions) { transaction ->
-                        items(transactions) { transaction ->
-                            TransactionItem(
-                                transaction = transaction, 
-                                currency = currency,
-                                categories = categories,
-                                onDeleteRequest = { trans ->
-                                    transactionViewModel.deleteTransaction(trans)
-                                },
-                                onClick = { 
-                                    navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
-                                }
-                            )
-                        }
-                        }
-                        }
-                        }
-                        }
-                        }
+                        TransactionItem(
+                            transaction = transaction, 
+                            currency = currency,
+                            categories = categories,
+                            onDeleteRequest = { trans ->
+                                transactionViewModel.deleteTransaction(trans)
+                            },
+                            onClick = { 
+                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
