@@ -147,13 +147,55 @@ fun HomeScreen(navController: NavHostController) {
                     Text("+", fontSize = 24.sp)
                 }
             }
-        ) { paddingValues ->
+        }) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // --- CARD RIEPILOGO BILANCIO ---
+                    item {
+                        val totalIncome by transactionViewModel.totalIncome.collectAsState()
+                        val totalExpenses by transactionViewModel.totalExpenses.collectAsState()
+                        val balance = totalIncome - totalExpenses
+
+                        ElevatedCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.elevatedCardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(text = "Bilancio Totale", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                                Text(
+                                    text = "$balance $currency",
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (balance >= 0) Color(0xFF4CAF50) else Color.Red
+                                )
+                                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
+                                        Text(text = "+$totalIncome $currency", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                    }
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
+                                        Text(text = "-$totalExpenses $currency", color = Color.Red, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     items(transactions) { transaction ->
                         TransactionItem(
                             transaction = transaction, 
