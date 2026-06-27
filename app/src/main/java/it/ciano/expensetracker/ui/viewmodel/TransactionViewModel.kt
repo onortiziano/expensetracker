@@ -21,9 +21,9 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
             for (transaction in deleteChannel) {
                 try {
                     repository.deleteTransaction(transaction)
-                } catch (e: Exception) {
-                    // Log dell'errore per debug, ma il worker NON muore
-                    println("Errore durante la cancellazione di ${transaction.id}: ${e.message}")
+                } catch (t: Throwable) {
+                    // Cattura TUTTO (Exception, Error, Throwable) per evitare che il worker muoia
+                    android.util.Log.e("TRANSACTION_VM", "Errore critico nella cancellazione di ${transaction.id}: ${t.message}")
                 }
             }
         }
