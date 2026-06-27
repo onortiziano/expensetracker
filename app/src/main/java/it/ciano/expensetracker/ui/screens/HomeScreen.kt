@@ -173,7 +173,7 @@ fun HomeScreen(navController: NavHostController) {
                             ) {
                                 Text(text = "Bilancio Totale", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                                 Text(
-                                    text = "$balance $currency",
+                                    text = "%.2f %s".format(balance, currency),
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = if (balance >= 0) Color(0xFF4CAF50) else Color.Red
