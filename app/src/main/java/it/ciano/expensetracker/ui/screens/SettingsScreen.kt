@@ -7,8 +7,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +36,7 @@ fun SettingsScreen(navController: NavHostController) {
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
         onResult = { uri ->
-            uri?.let { settingsViewModel.backupAll(it) { success -> /* Toast opzionale */ } }
+            uri?.let { settingsViewModel.backupAll(it) { success -> } }
         }
     )
 
@@ -55,12 +55,14 @@ fun SettingsScreen(navController: NavHostController) {
             title = { Text("Ripristino Completato") },
             text = { Text("L'app deve riavviarsi per applicare le nuove impostazioni.") },
             confirmButton = {
-                TextButton(onClick = {
-                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                    intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                    Process.killProcess(Process.myPid())
-                }) { Text("Riavvia Ora") }
+                TextButton(
+                    onClick = {
+                        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                        Process.killProcess(Process.myPid())
+                    }
+                ) { Text("Riavvia Ora") }
             }
         )
     }
@@ -98,7 +100,8 @@ fun SettingsScreen(navController: NavHostController) {
             )
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
-			Text(text = "Gestione Dati", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+
+            Text(text = "Gestione Dati", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(
@@ -106,7 +109,7 @@ fun SettingsScreen(navController: NavHostController) {
                     onClick = { backupLauncher.launch("backup_expenses.zip") },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.CloudUpload, contentDescription = null)
+                            Icon(Icons.Default.ArrowUpward, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Backup")
                         }
@@ -114,10 +117,10 @@ fun SettingsScreen(navController: NavHostController) {
                 )
                 Button(
                     modifier = Modifier.weight(1f),
-                    onClick = { importLauncher.launch(listOf("application/octet-stream")) },
+                    onClick = { importLauncher.launch(arrayOf("application/octet-stream")) },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.CloudDownload, contentDescription = null)
+                            Icon(Icons.Default.ArrowDownward, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Importa")
                         }
