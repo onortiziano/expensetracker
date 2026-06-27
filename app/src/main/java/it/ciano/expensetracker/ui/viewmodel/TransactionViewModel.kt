@@ -2,6 +2,7 @@ package it.ciano.expensetracker.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
