@@ -34,10 +34,8 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
         initialValue = emptyMap()
     )
 
-    fun addCategory(category: Category) {
-        viewModelScope.launch {
-            repository.insertCategory(category)
-        }
+    suspend fun addCategory(category: Category): Long {
+        return repository.insertCategory(category)
     }
 
     fun deleteCategory(category: Category) {

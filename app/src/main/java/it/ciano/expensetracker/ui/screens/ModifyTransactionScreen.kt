@@ -31,6 +31,7 @@ fun ModifyTransactionScreen(
     navController: NavHostController,
     transactionId: Int
 ) {
+    val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     
@@ -357,22 +358,31 @@ fun ModifyTransactionScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            val isDuplicate = allCategories.any { 
-                                it.name == newCategoryName && it.parentCategoryId == selectedParentId 
-                            }
-                            
-                            if (isDuplicate) {
-                                return@Button 
-                            }
+                            scope.launch {
+                                val isDuplicate = allCategories.any { 
+                                    it.name == newCategoryName && it.parentCategoryId == selectedParentId 
+                                }
+                                
+                                if (isDuplicate) {
+                                    return@launch 
+                                }
 
-                            if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
-                                categoryViewModel.addCategory(
-                                    Category(name = newCategoryName, parentCategoryId = selectedParentId)
-                                )
-                                showAddCategoryDialog = false
-                                newCategoryName = ""
-                                selectedParentId = null
-                                categoryType = "MAIN"
+                                if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
+                                    val newId = categoryViewModel.addCategory(
+                                        Category(name = newCategoryName, parentCategoryId = selectedParentId)
+                                    ).toInt()
+                                    
+                                    if (categoryType == "MAIN") {
+                                        transactionViewModel.updateMainCategory(newId)
+                                    } else {
+                                        transactionViewModel.updateSubCategory(newId)
+                                    }
+                                    
+                                    showAddCategoryDialog = false
+                                    newCategoryName = ""
+                                    selectedParentId = null
+                                    categoryType = "MAIN"
+                                }
                             }
                         },
                         enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)

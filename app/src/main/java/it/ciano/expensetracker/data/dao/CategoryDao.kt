@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCategory(category: Category)
+    suspend fun insertCategory(category: Category): Long
 
     @Delete
     suspend fun deleteCategory(category: Category)

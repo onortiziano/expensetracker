@@ -21,9 +21,9 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         return categoryDao.getSubCategories(parentId)
     }
 
-    // Aggiunge o aggiorna una categoria
-    suspend fun insertCategory(category: Category) {
-        categoryDao.insertCategory(category)
+    // Aggiunge o aggiorna una categoria e restituisce l'ID generato
+    suspend fun insertCategory(category: Category): Long {
+        return categoryDao.insertCategory(category)
     }
 
     // Elimina una categoria
