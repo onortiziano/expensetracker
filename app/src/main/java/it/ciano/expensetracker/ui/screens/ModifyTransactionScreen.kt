@@ -263,7 +263,7 @@ fun ModifyTransactionScreen(
                                 navController.popBackStack()
                             }
                         },
-                        enabled = (amount.toDoubleOrNull() ?: 0.0) > 0.0,
+                        enabled = (amount.toDoubleOrNull() ?: 0.0) > 0.0 && selectedMainCategoryId != 0,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp)
