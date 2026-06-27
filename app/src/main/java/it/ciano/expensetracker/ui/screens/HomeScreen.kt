@@ -36,39 +36,31 @@ import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    // --- STATI E VIEWMODEL ---
     val context = LocalContext.current
     val app = context.applicationContext as Application
     val scope = rememberCoroutineScope()
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val mainViewModel: MainViewModel = viewModel()
-	val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
-	
+    val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-	val categoryMap = remember(categories) { 
+    val categoryMap = remember(categories) { 
         categories.associate { it.id to it.name } 
     }
-	
+    
     val currency by mainViewModel.currency.collectAsState()
     val transactions by transactionViewModel.allTransactions.collectAsState()
     
-    // Stato per l'apertura/chiusura del menu laterale (Drawer)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-	    // Intercetta il tasto indietro di sistema
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
 
-    // Stato per l'eliminazione
-    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
-
-    // --- STRUTTURA CON NAVIGATION DRAWER ---
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                // Intestazione del Menu
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -89,10 +81,7 @@ fun HomeScreen(navController: NavHostController) {
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
-
-                // Voci del Menu
                 NavigationDrawerItem(
                     label = { Text("Home") },
                     selected = true,
@@ -103,18 +92,16 @@ fun HomeScreen(navController: NavHostController) {
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
-                
                 NavigationDrawerItem(
                     label = { Text("Cronologia") },
                     selected = false,
                     onClick = { 
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.HISTORY) 
-						},
+                    },
                     icon = { Icon(Icons.Default.List, contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
-                
                 NavigationDrawerItem(
                     label = { Text("Impostazioni") },
                     selected = false,
@@ -128,7 +115,6 @@ fun HomeScreen(navController: NavHostController) {
             }
         }
     ) {
-        // --- CONTENUTO PRINCIPALE ---
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -154,7 +140,6 @@ fun HomeScreen(navController: NavHostController) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // --- CARD RIEPILOGO BILANCIO ---
                     item {
                         val totalIncome by transactionViewModel.totalIncome.collectAsState()
                         val totalExpenses by transactionViewModel.totalExpenses.collectAsState()
@@ -185,11 +170,11 @@ fun HomeScreen(navController: NavHostController) {
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "+$totalIncome $currency", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                        Text(text = "+%.2f %s".format(totalIncome, currency), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                                     }
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "-$totalExpenses $currency", color = Color.Red, fontWeight = FontWeight.Bold)
+                                        Text(text = "-%.2f %s".format(totalExpenses, currency), color = Color.Red, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -201,39 +186,15 @@ fun HomeScreen(navController: NavHostController) {
                             transaction = transaction, 
                             currency = currency,
                             categories = categories,
+                            onDeleteRequest = { trans ->
+                                transactionViewModel.deleteTransaction(trans)
+                            },
                             onClick = { 
                                 navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
-                            },
-                            onSwipeToDelete = { 
-                                transactionToDelete = transaction 
                             }
                         )
                     }
                 }
-            }
-
-            // DIALOG DI CONFERMA ELIMINAZIONE
-            if (transactionToDelete != null) {
-                AlertDialog(
-                    onDismissRequest = { transactionToDelete = null },
-                    title = { Text(text = "Elimina Transazione") },
-                    text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                transactionViewModel.deleteTransaction(transactionToDelete!!)
-                                transactionToDelete = null
-                            }
-                        ) {
-                            Text("Sì, elimina", color = Color.Red)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { transactionToDelete = null }) {
-                            Text("Annulla")
-                        }
-                    }
-                )
             }
         }
     }
@@ -245,22 +206,47 @@ fun TransactionItem(
     transaction: Transaction, 
     currency: String, 
     categories: List<Category>,
-    onClick: () -> Unit, 
-    onSwipeToDelete: () -> Unit
+    onDeleteRequest: (Transaction) -> Unit,
+    onClick: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.4f },
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart || value == SwipeToDismissBoxValue.StartToEnd) {
-                onSwipeToDelete()
+                showDeleteDialog = true
             }
             false
         }
     )
 
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(text = "Elimina Transazione") },
+            text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteRequest(transaction)
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Sì, elimina", color = Color.Red)
+                }
+            },
+            dismissButton = { 
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Annulla")
+                }
+            }
+        )
+    }
+
     SwipeToDismissBox(
         state = dismissState,
-		backgroundContent = {
+        backgroundContent = {
             val isSwipingLeft = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
             val color = if (isSwipingLeft || dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) 
                         Color(0xFFD32F2F) else Color.Transparent
@@ -288,7 +274,6 @@ fun TransactionItem(
                     Column {
                         Text(text = transaction.note, fontWeight = FontWeight.Bold)
                         
-                        // LOGICA PADRE > FIGLIO
                         val category = categories.find { it.id == transaction.categoryId }
                         val categoryDisplayName = if (category != null) {
                             if (category.parentCategoryId != null) {
@@ -304,7 +289,7 @@ fun TransactionItem(
                         Text(text = "Categoria: $categoryDisplayName", fontSize = 12.sp)
                     }
                     Text(
-                        text = if (transaction.type == "INCOME") "+${transaction.amount} $currency" else "-${transaction.amount} $currency",
+                        text = if (transaction.type == "INCOME") "+%.2f %s".format(transaction.amount, currency) else "-%.2f %s".format(transaction.amount, currency),
                         color = if (transaction.type == "INCOME") Color(0xFF4CAF50) else Color.Red,
                         fontWeight = FontWeight.Bold
                     )
