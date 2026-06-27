@@ -53,12 +53,21 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     }
 
     // Carica i dati di una transazione nel ViewModel
-    fun loadTransaction(transaction: Transaction) {
+    fun loadTransaction(transaction: Transaction, allCategories: List<Category>) {
         _amount.value = transaction.amount.toString()
         _note.value = transaction.note
         _type.value = transaction.type
-        _selectedMainCategoryId.value = transaction.categoryId
-        _selectedSubCategoryId.value = 0 // Reset sub per sicurezza
+        
+        val category = allCategories.find { it.id == transaction.categoryId }
+        if (category != null && category.parentCategoryId != null) {
+            // È una sottocategoria: imposta sia il padre che il figlio
+            _selectedMainCategoryId.value = category.parentCategoryId!!
+            _selectedSubCategoryId.value = category.id
+        } else {
+            // È una categoria principale (o senza categoria)
+            _selectedMainCategoryId.value = transaction.categoryId
+            _selectedSubCategoryId.value = 0
+        }
     }
 
     fun addTransaction(transaction: Transaction) {

@@ -58,14 +58,7 @@ fun ModifyTransactionScreen(
         transactionViewModel.allTransactions.collect { transactions ->
             val transaction = transactions.find { it.id == transactionId }
             transaction?.let { trans ->
-                transactionViewModel.loadTransaction(trans)
-                
-                val category = allCategories.find { cat -> cat.id == trans.categoryId }
-                if (category?.parentCategoryId != null) {
-                    transactionViewModel.updateSubCategory(trans.categoryId)
-                } else {
-                    transactionViewModel.updateSubCategory(0)
-                }
+                transactionViewModel.loadTransaction(trans, allCategories)
             }
         }
     }
