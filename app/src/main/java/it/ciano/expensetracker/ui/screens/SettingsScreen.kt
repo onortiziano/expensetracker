@@ -109,7 +109,7 @@ fun SettingsScreen(navController: NavHostController) {
                     onClick = { backupLauncher.launch("backup_expenses.zip") },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.ArrowUpward, contentDescription = null)
+                            Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Backup")
                         }
@@ -120,7 +120,7 @@ fun SettingsScreen(navController: NavHostController) {
                     onClick = { importLauncher.launch(arrayOf("application/octet-stream")) },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.ArrowDownward, contentDescription = null)
+                            Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("Importa")
                         }
