@@ -147,7 +147,7 @@ fun HomeScreen(navController: NavHostController) {
                     Text("+", fontSize = 24.sp)
                 }
             }
-        }) { paddingValues ->
+        ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
