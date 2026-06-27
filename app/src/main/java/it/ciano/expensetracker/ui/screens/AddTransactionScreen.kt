@@ -238,8 +238,8 @@ fun AddTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    // VALIDAZIONE: Il bottone è abilitato solo se l'importo è valido e la categoria è selezionata
-                    val isFormValid = (amount.toDoubleOrNull() ?: 0.0) > 0.0 && selectedMainCategoryId != 0
+                    // VALIDAZIONE: Il bottone è abilitato solo se l'importo è valido
+                    val isFormValid = (amount.toDoubleOrNull() ?: 0.0) > 0.0
                     
                     Button(
                         onClick = {
