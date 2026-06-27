@@ -47,6 +47,11 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     }
     fun updateSubCategory(id: Int) { _selectedSubCategoryId.value = id }
 
+    fun updateCategoryPair(mainId: Int, subId: Int) {
+        _selectedMainCategoryId.value = mainId
+        _selectedSubCategoryId.value = subId
+    }
+
     // Carica i dati di una transazione nel ViewModel
     fun loadTransaction(transaction: Transaction) {
         _amount.value = transaction.amount.toString()

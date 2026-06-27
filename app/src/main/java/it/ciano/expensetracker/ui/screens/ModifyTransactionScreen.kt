@@ -112,19 +112,19 @@ fun ModifyTransactionScreen(
                         Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
                         OutlinedTextField(
+                            value = note,
+                            onValueChange = { transactionViewModel.updateNote(it) },
+                            label = { Text("Titolo") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        OutlinedTextField(
                             value = amount,
                             onValueChange = { transactionViewModel.updateAmount(it) },
                             label = { Text("Importo") },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = note,
-                            onValueChange = { transactionViewModel.updateNote(it) },
-                            label = { Text("Nota (opzionale)") },
-                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
                     }
@@ -247,25 +247,25 @@ fun ModifyTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
+                    val isFormValid = note.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0.0
+                    
                     Button(
                         onClick = {
                             val amountValue = amount.toDoubleOrNull() ?: 0.0
-                            if (amountValue > 0) {
-                                val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
-                                
-                                val updatedTransaction = Transaction(
-                                    id = transactionId,
-                                    amount = amountValue,
-                                    type = type,
-                                    categoryId = finalCategoryId,
-                                    note = note,
-                                    date = System.currentTimeMillis()
-                                )
-                                transactionViewModel.updateTransaction(updatedTransaction)
-                                navController.popBackStack()
-                            }
+                            val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
+                            
+                            val updatedTransaction = Transaction(
+                                id = transactionId,
+                                amount = amountValue,
+                                type = type,
+                                categoryId = finalCategoryId,
+                                note = note,
+                                date = System.currentTimeMillis()
+                            )
+                            transactionViewModel.updateTransaction(updatedTransaction)
+                            navController.popBackStack()
                         },
-                        enabled = (amount.toDoubleOrNull() ?: 0.0) > 0.0,
+                        enabled = isFormValid,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp)
@@ -376,7 +376,8 @@ fun ModifyTransactionScreen(
                                     if (categoryType == "MAIN") {
                                         transactionViewModel.updateMainCategory(newId)
                                     } else {
-                                        transactionViewModel.updateSubCategory(newId)
+                                        val parentId = selectedParentId ?: 0
+                                        transactionViewModel.updateCategoryPair(parentId, newId)
                                     }
                                     
                                     showAddCategoryDialog = false

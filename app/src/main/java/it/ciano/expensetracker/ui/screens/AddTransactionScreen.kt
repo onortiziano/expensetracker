@@ -35,24 +35,19 @@ fun AddTransactionScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     
-    // ViewModel per le transazioni (gestisce lo stato dell'input e il salvataggio)
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
-    // ViewModel per le categorie (gestisce la lista e la mappa ID -> Nome)
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
 
-    // Osserviamo gli stati dal TransactionViewModel (Sopravvivono alla rotazione)
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
     val type by transactionViewModel.type.collectAsState()
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
 
-    // Osserviamo i dati dal CategoryViewModel
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
     val categoryMap by categoryViewModel.categoryMap.collectAsState()
 
-    // Stati locali per il Dialog (non critici per la rotazione, ma gestiti qui)
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
@@ -89,7 +84,6 @@ fun AddTransactionScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- CARD 1: DETTAGLI ECONOMICI ---
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
@@ -101,6 +95,14 @@ fun AddTransactionScreen(
                         Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
                         OutlinedTextField(
+                            value = note,
+                            onValueChange = { transactionViewModel.updateNote(it) },
+                            label = { Text("Titolo") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        OutlinedTextField(
                             value = amount,
                             onValueChange = { transactionViewModel.updateAmount(it) },
                             label = { Text("Importo") },
@@ -108,18 +110,9 @@ fun AddTransactionScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
                         )
-
-                        OutlinedTextField(
-                            value = note,
-                            onValueChange = { transactionViewModel.updateNote(it) },
-                            label = { Text("Nota (opzionale)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
                     }
                 }
 
-                // --- CARD 2: CLASSIFICAZIONE ---
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
@@ -151,7 +144,6 @@ fun AddTransactionScreen(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        // --- SELEZIONE CATEGORIA PRINCIPALE ---
                         Text(text = "Categoria Principale", fontSize = 13.sp)
                         var mainExpanded by remember { mutableStateOf(false) }
                         val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Scegli Categoria"
@@ -192,7 +184,6 @@ fun AddTransactionScreen(
                             }
                         }
 
-                        // --- SELEZIONE SOTTOCATEGORIA (Condizionale) ---
                         val subCategories = allCategories.filter { it.parentCategoryId == selectedMainCategoryId }
                         if (selectedMainCategoryId != 0 && subCategories.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -232,7 +223,6 @@ fun AddTransactionScreen(
                     }
                 }
 
-                // --- BARRA AZIONE (SALVA) ---
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -240,8 +230,7 @@ fun AddTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    // VALIDAZIONE: Il bottone è abilitato solo se l'importo è valido
-                    val isFormValid = (amount.toDoubleOrNull() ?: 0.0) > 0.0
+                    val isFormValid = note.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0.0
                     
                     Button(
                         onClick = {
@@ -369,7 +358,8 @@ fun AddTransactionScreen(
                                     if (categoryType == "MAIN") {
                                         transactionViewModel.updateMainCategory(newId)
                                     } else {
-                                        transactionViewModel.updateSubCategory(newId)
+                                        val parentId = selectedParentId ?: 0
+                                        transactionViewModel.updateCategoryPair(parentId, newId)
                                     }
                                     
                                     showAddCategoryDialog = false
