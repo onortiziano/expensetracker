@@ -7,31 +7,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.List
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.List
-import androidx.compose.material.icons.sharp.Delete
-import androidx.compose.material.icons.sharp.Home
-import androidx.compose.material.icons.sharp.Menu
-import androidx.compose.material.icons.sharp.Settings
-import androidx.compose.material.icons.sharp.List
-import androidx.compose.material.icons.twotone.Delete
-import androidx.compose.material.icons.twotone.Home
-import androidx.compose.material.icons.twotone.Menu
-import androidx.compose.material.icons.twotone.Settings
-import androidx.compose.material.icons.twotone.List
+import androidx.compose.material.icons.automirrored.filled.Home
+import androidx.compose.material.icons.automirrored.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.Home
+import androidx.compose.material.icons.automirrored.outlined.Menu
+import androidx.compose.material.icons.automirrored.outlined.Settings
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.automirrored.rounded.Home
+import androidx.compose.material.icons.automirrored.rounded.Menu
+import androidx.compose.material.icons.automirrored.rounded.Settings
+import androidx.compose.material.icons.automirrored.rounded.List
+import androidx.compose.material.icons.automirrored.sharp.Home
+import androidx.compose.material.icons.automirrored.sharp.Menu
+import androidx.compose.material.icons.automirrored.sharp.Settings
+import androidx.compose.material.icons.automirrored.sharp.List
+import androidx.compose.material.icons.automirrored.twotone.Home
+import androidx.compose.material.icons.automirrored.twotone.Menu
+import androidx.compose.material.icons.automirrored.twotone.Settings
+import androidx.compose.material.icons.automirrored.twotone.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,11 +61,7 @@ fun HomeScreen(navController: NavHostController) {
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    val categoryMap = remember(categories) { 
-        categories.associate { it.id to it.name } 
-    }
     
-    val currency by mainViewModel.currency.collectAsState()
     val transactions by transactionViewModel.allTransactions.collectAsState()
     
     // Stato per l'apertura/chiusura del menu laterale (Drawer)
@@ -117,7 +108,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.HOME) 
                     },
-                    icon = { Icon(mainViewModel.getIcon(Icons.Default.Home, Icons.Outlined.Home, Icons.Rounded.Home, Icons.Sharp.Home, Icons.TwoTone.Home), contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.Home, Icons.AutoMirrored.Outlined.Home, Icons.AutoMirrored.Rounded.Home, Icons.AutoMirrored.Sharp.Home, Icons.AutoMirrored.TwoTone.Home), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 
@@ -128,7 +119,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.HISTORY) 
                     },
-                    icon = { Icon(mainViewModel.getIcon(Icons.Default.List, Icons.Outlined.List, Icons.Rounded.List, Icons.Sharp.List, Icons.TwoTone.List), contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.List, Icons.AutoMirrored.Outlined.List, Icons.AutoMirrored.Rounded.List, Icons.AutoMirrored.Sharp.List, Icons.AutoMirrored.TwoTone.List), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 
@@ -139,7 +130,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.SETTINGS) 
                     },
-                    icon = { Icon(mainViewModel.getIcon(Icons.Default.Settings, Icons.Outlined.Settings, Icons.Rounded.Settings, Icons.Sharp.Settings, Icons.TwoTone.Settings), contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.Settings, Icons.AutoMirrored.Outlined.Settings, Icons.AutoMirrored.Rounded.Settings, Icons.AutoMirrored.Sharp.Settings, Icons.AutoMirrored.TwoTone.Settings), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }
@@ -154,7 +145,7 @@ fun HomeScreen(navController: NavHostController) {
                         IconButton(onClick = { 
                             scope.launch { drawerState.open() } 
                         }) {
-                            Icon(mainViewModel.getIcon(Icons.Default.Menu, Icons.Outlined.Menu, Icons.Rounded.Menu, Icons.Sharp.Menu, Icons.TwoTone.Menu), contentDescription = "Apri Menu")
+                            Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.Menu, Icons.AutoMirrored.Outlined.Menu, Icons.AutoMirrored.Rounded.Menu, Icons.AutoMirrored.Sharp.Menu, Icons.AutoMirrored.TwoTone.Menu), contentDescription = "Apri Menu")
                         }
                     }
                 )
@@ -195,7 +186,7 @@ fun HomeScreen(navController: NavHostController) {
                                     fontWeight = FontWeight.Bold,
                                     color = if (balance >= 0) Color(0xFF4CAF50) else Color.Red
                                 )
-                                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -204,30 +195,4 @@ fun HomeScreen(navController: NavHostController) {
                                         Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
                                         Text(text = "+" + mainViewModel.formatCurrency(totalIncome).removePrefix("+"), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                                     }
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "-" + mainViewModel.formatCurrency(totalExpenses).removePrefix("-"), color = Color.Red, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    items(transactions) { transaction ->
-                        TransactionItem(
-                            transaction = transaction, 
-                            mainViewModel = mainViewModel,
-                            categories = categories,
-                            onDeleteRequest = { trans ->
-                                transactionViewModel.deleteTransaction(trans)
-                            },
-                            onClick = { 
-                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
+                                    Column(horizontalAlignment = Alignment.CenterHori...[truncated]

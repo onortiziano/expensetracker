@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.sharp.ArrowBack
-import androidx.compose.material.icons.twotone.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.sharp.ArrowBack
+import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,11 +50,11 @@ fun HistoryScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = mainViewModel.getIcon(
-                                Icons.Default.ArrowBack, 
-                                Icons.Outlined.ArrowBack, 
-                                Icons.Rounded.ArrowBack, 
-                                Icons.Sharp.ArrowBack, 
-                                Icons.TwoTone.ArrowBack
+                                Icons.AutoMirrored.Filled.ArrowBack, 
+                                Icons.AutoMirrored.Outlined.ArrowBack, 
+                                Icons.AutoMirrored.Rounded.ArrowBack, 
+                                Icons.AutoMirrored.Sharp.ArrowBack, 
+                                Icons.AutoMirrored.TwoTone.ArrowBack
                             ), 
                             contentDescription = "Torna indietro"
                         )
