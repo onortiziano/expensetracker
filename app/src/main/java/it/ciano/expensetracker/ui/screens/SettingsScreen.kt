@@ -118,7 +118,7 @@ fun SettingsScreen(navController: NavHostController) {
                 )
                 Button(
                     modifier = Modifier.weight(1f),
-                    onClick = { importLauncher.launch(arrayOf("application/octet-stream")) },
+                    onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Check, contentDescription = null)
