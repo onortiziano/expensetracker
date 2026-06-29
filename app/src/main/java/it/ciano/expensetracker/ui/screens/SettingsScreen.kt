@@ -32,9 +32,11 @@ fun SettingsScreen(navController: NavHostController) {
     
     val currency by settingsViewModel.currency.collectAsState()
     val decimalSeparator by settingsViewModel.decimalSeparator.collectAsState()
+    val iconStyle by settingsViewModel.iconStyle.collectAsState()
 
     val currencyOptions = listOf("€", "$", "£", "¥", "₹")
     val separatorOptions = listOf(",", ".")
+    val styleOptions = listOf("FILLED", "OUTLINED", "ROUNDED", "SHARP", "TWO_TONE")
 
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
@@ -100,6 +102,13 @@ fun SettingsScreen(navController: NavHostController) {
                 currentValue = decimalSeparator,
                 options = separatorOptions,
                 onOptionSelected = { settingsViewModel.updateDecimalSeparator(it) }
+            )
+
+            SettingDropdown(
+                label = "Stile Icone",
+                currentValue = iconStyle,
+                options = styleOptions,
+                onOptionSelected = { settingsViewModel.updateIconStyle(it) }
             )
             
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

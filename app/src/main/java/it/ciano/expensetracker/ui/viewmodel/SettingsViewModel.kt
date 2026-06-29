@@ -26,6 +26,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _decimalSeparator = MutableStateFlow(userPreferences.getDecimalSeparator())
     val decimalSeparator: StateFlow<String> = _decimalSeparator.asStateFlow()
 
+    private val _iconStyle = MutableStateFlow(userPreferences.getIconStyle())
+    val iconStyle: StateFlow<String> = _iconStyle.asStateFlow()
+
     fun updateCurrency(newSymbol: String) {
         userPreferences.saveCurrency(newSymbol)
         _currency.value = newSymbol
@@ -34,6 +37,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun updateDecimalSeparator(newSeparator: String) {
         userPreferences.saveDecimalSeparator(newSeparator)
         _decimalSeparator.value = newSeparator
+    }
+
+    fun updateIconStyle(newStyle: String) {
+        userPreferences.saveIconStyle(newStyle)
+        _iconStyle.value = newStyle
     }
 
     fun backupAll(uri: Uri, onComplete: (Boolean) -> Unit) {
