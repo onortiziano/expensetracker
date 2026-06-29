@@ -41,14 +41,27 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             try {
                 val dbFile = context.getDatabasePath("expense_tracker_db")
                 val prefsFile = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
+                var filesAdded = 0
 
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     ZipOutputStream(outputStream).use { zipOut ->
-                        if (dbFile.exists()) addFileToZip(dbFile, "expense_tracker_db", zipOut)
-                        if (prefsFile.exists()) addFileToZip(prefsFile, "user_prefs.xml", zipOut)
+                        if (dbFile.exists()) {
+                            addFileToZip(dbFile, "expense_tracker_db", zipOut)
+                            filesAdded++
+                        }
+                        if (prefsFile.exists()) {
+                            addFileToZip(prefsFile, "user_prefs.xml", zipOut)
+                            filesAdded++
+                        }
                     }
                 }
-                onComplete(true)
+                
+                // Se non è stato aggiunto alcun file, il backup è considerato fallito
+                if (filesAdded == 0) {
+                    onComplete(false)
+                } else {
+                    onComplete(true)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 onComplete(false)
