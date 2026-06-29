@@ -80,20 +80,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val dbPath = context.getDatabasePath("expense_tracker_db")
-                val prefsPath = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
+                val prefsDir = File(context.filesDir.parentFile, "shared_prefs")
+                val prefsPath = File(prefsDir, "user_prefs.xml")
                 
                 val zipTempFile = File(context.cacheDir, "import_temp.zip")
                 val tempDbFile = File(context.cacheDir, "restore_db.tmp")
                 val tempPrefsFile = File(context.cacheDir, "restore_prefs.tmp")
 
-                // 1. Copia l'archivio dall'URI a un file locale stabile
+                // 1. Copia l'archivio
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     zipTempFile.outputStream().use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
                 }
 
-                // 2. Decomprimi il file locale
+                var dbFound = false
+                var prefsFound = false
+
+                // 2. Decomprimi e verifica
                 ZipInputStream(FileInputStream(zipTempFile)).use { zipIn ->
                     var entry = zipIn.nextEntry
                     while (entry != null) {
@@ -101,9 +105,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                             when (entry.name) {
                                 "expense_tracker_db" -> {
                                     tempDbFile.outputStream().use { zipIn.copyTo(it) }
+                                    dbFound = true
                                 }
                                 "user_prefs.xml" -> {
                                     tempPrefsFile.outputStream().use { zipIn.copyTo(it) }
+                                    prefsFound = true
                                 }
                             }
                         }
@@ -111,23 +117,29 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
 
-                // 3. Sostituzione sicura dei file
-                if (tempDbFile.exists()) {
+                // 3. Sostituzione solo se abbiamo trovato qualcosa
+                if (dbFound) {
                     val dbDir = dbPath.parentFile
                     dbDir?.listFiles { _, name -> name.startsWith("expense_tracker_db") }?.forEach { it.delete() }
                     tempDbFile.copyTo(dbPath, overwrite = true)
                 }
 
-                if (tempPrefsFile.exists()) {
+                if (prefsFound) {
+                    if (!prefsDir.exists()) prefsDir.mkdirs()
                     tempPrefsFile.copyTo(prefsPath, overwrite = true)
                 }
 
-                // 4. Pulizia totale dei file temporanei
+                // 4. Pulizia
                 zipTempFile.delete()
                 tempDbFile.delete()
                 tempPrefsFile.delete()
 
-                onComplete(true)
+                // Se non abbiamo trovato nulla di utile, il ripristino è fallito
+                if (!dbFound && !prefsFound) {
+                    onComplete(false)
+                } else {
+                    onComplete(true)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 onComplete(false)
