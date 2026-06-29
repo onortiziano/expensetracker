@@ -34,8 +34,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val symbol = userPreferences.getCurrency()
         val separator = userPreferences.getDecimalSeparator()
         
-        // Formattiamo a 2 decimali (usa il punto di default)
-        val formatted = "%.2f".format(amount)
+        // Usiamo Locale.US per forzare l'uso del punto come separatore decimale intermedio
+        val formatted = java.lang.String.format(java.util.Locale.US, "%.2f", amount)
         
         // Sostituiamo il punto con il separatore scelto dall'utente
         val localized = formatted.replace(".", separator)
