@@ -84,7 +84,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         
         val category = allCategories.find { it.id == transaction.categoryId }
         if (category != null && category.parentCategoryId != null) {
-            _selectedMainCategoryId.value = category.parentCategoryId!!
+            _selectedMainCategoryId.value = category.parentCategoryId
             _selectedSubCategoryId.value = category.id
         } else {
             _selectedMainCategoryId.value = transaction.categoryId
