@@ -222,6 +222,5 @@ fun SettingDropdown(label: String, currentValue: String, options: List<String>, 
                 }
             }
         }
-        }
     }
 }
