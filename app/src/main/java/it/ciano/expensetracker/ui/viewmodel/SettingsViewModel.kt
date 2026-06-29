@@ -113,5 +113,4 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             }
         }
     }
-    }
 }
