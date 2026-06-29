@@ -24,6 +24,7 @@ import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
+import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +39,7 @@ fun ModifyTransactionScreen(
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
 
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
@@ -240,11 +242,13 @@ fun ModifyTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    val isFormValid = note.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0.0
+                    val separator = settingsViewModel.decimalSeparator.collectAsState().value
+                    val normalizedAmount = amount.replace(separator, ".")
+                    val isFormValid = note.isNotBlank() && (normalizedAmount.toDoubleOrNull() ?: 0.0) > 0.0
                     
                     Button(
                         onClick = {
-                            val amountValue = amount.toDoubleOrNull() ?: 0.0
+                            val amountValue = normalizedAmount.toDoubleOrNull() ?: 0.0
                             val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
                             
                             val updatedTransaction = Transaction(

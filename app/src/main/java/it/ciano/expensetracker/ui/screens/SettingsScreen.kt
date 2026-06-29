@@ -6,7 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -116,6 +116,17 @@ fun SettingsScreen(navController: NavHostController) {
                 )
                 Button(
                     modifier = Modifier.weight(1f),
+                    onClick = { backupLauncher.launch("backup_expenses.zip") },
+                    content = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Backup")
+                        }
+                    }
+                )
+                Button(
+                    modifier = Modifier.weight(1f),
                     onClick = { importLauncher.launch(arrayOf("application/octet-stream")) },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -125,6 +136,16 @@ fun SettingsScreen(navController: NavHostController) {
                         }
                     }
                 )
+            }
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .height(56.dp),
+                onClick = { showRestartDialog = true },
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Salva Impostazioni", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
