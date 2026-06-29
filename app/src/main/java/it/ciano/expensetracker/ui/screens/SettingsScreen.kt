@@ -35,12 +35,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
+import it.ciano.expensetracker.ui.viewmodel.MainViewModel
+import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavHostController) {
     val context = LocalContext.current
+    val app = context.applicationContext as android.app.Application
     val settingsViewModel: SettingsViewModel = viewModel()
+    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     var showRestartDialog by remember { mutableStateOf(false) }
     
     val currency by settingsViewModel.currency.collectAsState()
@@ -92,7 +96,7 @@ fun SettingsScreen(navController: NavHostController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = settingsViewModel.getIcon(
+                            imageVector = mainViewModel.getIcon(
                                 Icons.Default.ArrowBack, 
                                 Icons.Outlined.ArrowBack, 
                                 Icons.Rounded.ArrowBack, 
@@ -144,7 +148,7 @@ fun SettingsScreen(navController: NavHostController) {
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = settingsViewModel.getIcon(
+                                imageVector = mainViewModel.getIcon(
                                     Icons.Default.CloudUpload, 
                                     Icons.Outlined.CloudUpload, 
                                     Icons.Rounded.CloudUpload, 
@@ -164,7 +168,7 @@ fun SettingsScreen(navController: NavHostController) {
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = settingsViewModel.getIcon(
+                                imageVector = mainViewModel.getIcon(
                                     Icons.Default.CloudDownload, 
                                     Icons.Outlined.CloudDownload, 
                                     Icons.Rounded.CloudDownload, 
@@ -217,6 +221,7 @@ fun SettingDropdown(label: String, currentValue: String, options: List<String>, 
                     })
                 }
             }
+        }
         }
     }
 }

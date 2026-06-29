@@ -47,7 +47,7 @@ fun HistoryScreen(
             TopAppBar(
                 title = { Text("Cronologia", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackHStack() }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = mainViewModel.getIcon(
                                 Icons.Default.ArrowBack, 
