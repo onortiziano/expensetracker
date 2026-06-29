@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         android.util.Log.d("ExpenseTracker", "APP AVVIATA - VERSIONE DEBUG")
         enableEdgeToEdge()
         setContent {
-...[truncated]
+            ExpensetrackerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
