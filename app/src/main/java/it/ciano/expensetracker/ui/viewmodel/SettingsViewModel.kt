@@ -82,42 +82,50 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 val dbPath = context.getDatabasePath("expense_tracker_db")
                 val prefsPath = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
                 
-                // File temporanei per evitare di distruggere i dati se il restore fallisce
+                val zipTempFile = File(context.cacheDir, "import_temp.zip")
                 val tempDbFile = File(context.cacheDir, "restore_db.tmp")
                 val tempPrefsFile = File(context.cacheDir, "restore_prefs.tmp")
 
+                // 1. Copia l'archivio dall'URI a un file locale stabile
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    ZipInputStream(inputStream).use { zipIn ->
-                        var entry = zipIn.nextEntry
-                        while (entry != null) {
-                            if (!entry.isDirectory) {
-                                when (entry.name) {
-                                    "expense_tracker_db" -> {
-                                        tempDbFile.outputStream().use { zipIn.copyTo(it) }
-                                    }
-                                    "user_prefs.xml" -> {
-                                        tempPrefsFile.outputStream().use { zipIn.copyTo(it) }
-                                    }
-                                }
-                            }
-                            entry = zipIn.nextEntry
-                        }
+                    zipTempFile.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
                     }
                 }
 
-                // Se siamo arrivati qui, il ZIP è valido. Ora sostituiamo i file.
+                // 2. Decomprimi il file locale
+                ZipInputStream(FileInputStream(zipTempFile)).use { zipIn ->
+                    var entry = zipIn.nextEntry
+                    while (entry != null) {
+                        if (!entry.isDirectory) {
+                            when (entry.name) {
+                                "expense_tracker_db" -> {
+                                    tempDbFile.outputStream().use { zipIn.copyTo(it) }
+                                }
+                                "user_prefs.xml" -> {
+                                    tempPrefsFile.outputStream().use { zipIn.copyTo(it) }
+                                }
+                            }
+                        }
+                        entry = zipIn.nextEntry
+                    }
+                }
+
+                // 3. Sostituzione sicura dei file
                 if (tempDbFile.exists()) {
-                    // Elimina TUTTI i file del database (incluso WAL e SHM) per evitare corruzioni
                     val dbDir = dbPath.parentFile
                     dbDir?.listFiles { _, name -> name.startsWith("expense_tracker_db") }?.forEach { it.delete() }
                     tempDbFile.copyTo(dbPath, overwrite = true)
-                    tempDbFile.delete()
                 }
 
                 if (tempPrefsFile.exists()) {
                     tempPrefsFile.copyTo(prefsPath, overwrite = true)
-                    tempPrefsFile.delete()
                 }
+
+                // 4. Pulizia totale dei file temporanei
+                zipTempFile.delete()
+                tempDbFile.delete()
+                tempPrefsFile.delete()
 
                 onComplete(true)
             } catch (e: Exception) {
