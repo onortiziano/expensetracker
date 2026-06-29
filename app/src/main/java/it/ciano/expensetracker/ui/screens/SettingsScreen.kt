@@ -6,7 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
@@ -69,7 +71,7 @@ fun SettingsScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Impostazioni", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
+                title = { Text("Impostazioni", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Torna indietro")
@@ -90,30 +92,19 @@ fun SettingsScreen(navController: NavHostController) {
                 options = currencyOptions,
                 onOptionSelected = { settingsViewModel.updateCurrency(it) }
             )
-
+            
             SettingDropdown(
                 label = "Separatore Decimale",
                 currentValue = decimalSeparator,
                 options = separatorOptions,
                 onOptionSelected = { settingsViewModel.updateDecimalSeparator(it) }
             )
-
+            
             Divider(modifier = Modifier.padding(vertical = 8.dp))
-
+            
             Text(text = "Gestione Dati", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
-
+            
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(
-                    modifier = Modifier.weight(1f),
-                    onClick = { backupLauncher.launch("backup_expenses.zip") },
-                    content = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Check, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Backup")
-                        }
-                    }
-                )
                 Button(
                     modifier = Modifier.weight(1f),
                     onClick = { backupLauncher.launch("backup_expenses.zip") },
