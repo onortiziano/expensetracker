@@ -233,8 +233,15 @@ fun AddTransactionScreen(
                     shape = MaterialTheme.shapes.medium
                 ) {
                     val separator = settingsViewModel.decimalSeparator.collectAsState().value
+                    val containsInvalidChars = amount.any { it.isDigit() == false && it != separator }
+                    val hasMultipleSeparators = amount.count { it == separator } > 1
                     val normalizedAmount = amount.replace(separator, ".")
-                    val isFormValid = note.isNotBlank() && (normalizedAmount.toDoubleOrNull() ?: 0.0) > 0.0
+                    val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
+                    
+                    val isFormValid = note.isNotBlank() && 
+                                      !containsInvalidChars && 
+                                      !hasMultipleSeparators && 
+                                      numericValue > 0.0
                     
                     Button(
                         onClick = {
