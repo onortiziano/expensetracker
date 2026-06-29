@@ -79,5 +79,8 @@ dependencies {
 
     // --- Navigation (Per spostarsi tra le pagine) ---
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // --- Icone Material Extended (Per l'estetica premium) ---
+    implementation("androidx.compose.material:material-icons-extended")
 }
 
