@@ -29,8 +29,6 @@ fun SettingsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val settingsViewModel: SettingsViewModel = viewModel()
     var showRestartDialog by remember { mutableStateOf(false) }
-    var showLogDialog by remember { mutableStateOf(false) }
-    var debugLogText by remember { mutableStateOf("") }
     
     val currency by settingsViewModel.currency.collectAsState()
     val decimalSeparator by settingsViewModel.decimalSeparator.collectAsState()
@@ -68,26 +66,6 @@ fun SettingsScreen(navController: NavHostController) {
                         Process.killProcess(Process.myPid())
                     }
                 ) { Text("Riavvia Ora") }
-            }
-        )
-    }
-
-    if (showLogDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogDialog = false },
-            title = { Text("Debug Backup Log") },
-            text = {
-                Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
-                    Text(
-                        text = debugLogText,
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                        fontSize = 12.sp,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showLogDialog = false }) { Text("Chiudi") }
             }
         )
     }
@@ -144,26 +122,20 @@ fun SettingsScreen(navController: NavHostController) {
                     modifier = Modifier.weight(1f),
                     onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
                     content = {
+                        Row(vertical alignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Importa")
+                        }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
+                            Text("Importa")
                         }
-                        Text("Importa")
                     }
                 )
             }
             
-            Button(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                onClick = { 
-                    debugLogText = settingsViewModel.getDebugLog()
-                    showLogDialog = true 
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-            ) {
-                Text("Visualizza Log Debug", fontSize = 14.sp)
-            }
-
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
