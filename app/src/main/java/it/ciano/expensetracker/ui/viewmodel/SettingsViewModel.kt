@@ -79,6 +79,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun restoreAll(uri: Uri, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                android.util.Log.d("ExpenseTracker", "Restore started for URI: $uri")
                 val dbPath = context.getDatabasePath("expense_tracker_db")
                 val prefsDir = File(context.filesDir.parentFile, "shared_prefs")
                 val prefsPath = File(prefsDir, "user_prefs.xml")
@@ -87,21 +88,21 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 val tempDbFile = File(context.cacheDir, "restore_db.tmp")
                 val tempPrefsFile = File(context.cacheDir, "restore_prefs.tmp")
 
-                // 1. Copia l'archivio
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     zipTempFile.outputStream().use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
                 }
+                android.util.Log.d("ExpenseTracker", "ZIP copied to cache: ${zipTempFile.length()} bytes")
 
                 var dbFound = false
                 var prefsFound = false
 
-                // 2. Decomprimi e verifica
                 ZipInputStream(FileInputStream(zipTempFile)).use { zipIn ->
                     var entry = zipIn.nextEntry
                     while (entry != null) {
                         if (!entry.isDirectory) {
+                            android.util.Log.d("ExpenseTracker", "Found entry: ${entry.name}")
                             when (entry.name) {
                                 "expense_tracker_db" -> {
                                     tempDbFile.outputStream().use { zipIn.copyTo(it) }
@@ -117,31 +118,37 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
 
-                // 3. Sostituzione solo se abbiamo trovato qualcosa
                 if (dbFound) {
+                    android.util.Log.d("ExpenseTracker", "Restoring DB to: ${dbPath.absolutePath}")
                     val dbDir = dbPath.parentFile
-                    dbDir?.listFiles { _, name -> name.startsWith("expense_tracker_db") }?.forEach { it.delete() }
+                    dbDir?.listFiles { _, name -> name.startsWith("expense_tracker_db") }?.forEach { 
+                        android.util.Log.d("ExpenseTracker", "Deleting old DB file: ${it.name}")
+                        it.delete() 
+                    }
                     tempDbFile.copyTo(dbPath, overwrite = true)
+                    android.util.Log.d("ExpenseTracker", "DB restored. New size: ${dbPath.length()} bytes")
                 }
 
                 if (prefsFound) {
+                    android.util.Log.d("ExpenseTracker", "Restoring Prefs to: ${prefsPath.absolutePath}")
                     if (!prefsDir.exists()) prefsDir.mkdirs()
                     tempPrefsFile.copyTo(prefsPath, overwrite = true)
+                    android.util.Log.d("ExpenseTracker", "Prefs restored. Size: ${prefsPath.length()} bytes")
                 }
 
-                // 4. Pulizia
                 zipTempFile.delete()
                 tempDbFile.delete()
                 tempPrefsFile.delete()
 
-                // Se non abbiamo trovato nulla di utile, il ripristino è fallito
                 if (!dbFound && !prefsFound) {
+                    android.util.Log.d("ExpenseTracker", "Restore failed: no valid files found in ZIP")
                     onComplete(false)
                 } else {
+                    android.util.Log.d("ExpenseTracker", "Restore successful")
                     onComplete(true)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("ExpenseTracker", "Restore error: ${e.message}", e)
                 onComplete(false)
             }
         }
