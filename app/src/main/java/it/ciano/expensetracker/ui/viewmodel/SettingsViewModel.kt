@@ -66,28 +66,52 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun restoreAll(uri: Uri, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                val dbPath = context.getDatabasePath("expense_tracker_db")
+                val prefsPath = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
+                
+                // File temporanei per evitare di distruggere i dati se il restore fallisce
+                val tempDbFile = File(context.cacheDir, "restore_db.tmp")
+                val tempPrefsFile = File(context.cacheDir, "restore_prefs.tmp")
+
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     ZipInputStream(inputStream).use { zipIn ->
                         var entry = zipIn.nextEntry
                         while (entry != null) {
                             if (!entry.isDirectory) {
-                                val fileName = entry.name
-                                if (fileName == "expense_tracker_db") {
-                                    FileOutputStream(context.getDatabasePath("expense_tracker_db")).use { zipIn.copyTo(it) }
-                                } else if (fileName == "user_prefs.xml") {
-                                    FileOutputStream(File(context.filesDir.parent, "shared_prefs/user_prefs.xml")).use { zipIn.copyTo(it) }
+                                when (entry.name) {
+                                    "expense_tracker_db" -> {
+                                        tempDbFile.outputStream().use { zipIn.copyTo(it) }
+                                    }
+                                    "user_prefs.xml" -> {
+                                        tempPrefsFile.outputStream().use { zipIn.copyTo(it) }
+                                    }
                                 }
                             }
-                            zipIn.closeEntry()
                             entry = zipIn.nextEntry
                         }
                     }
                 }
+
+                // Se siamo arrivati qui, il ZIP è valido. Ora sostituiamo i file.
+                if (tempDbFile.exists()) {
+                    // Elimina TUTTI i file del database (incluso WAL e SHM) per evitare corruzioni
+                    val dbDir = dbPath.parentFile
+                    dbDir?.listFiles { _, name -> name.startsWith("expense_tracker_db") }?.forEach { it.delete() }
+                    tempDbFile.copyTo(dbPath, overwrite = true)
+                    tempDbFile.delete()
+                }
+
+                if (tempPrefsFile.exists()) {
+                    tempPrefsFile.copyTo(prefsPath, overwrite = true)
+                    tempPrefsFile.delete()
+                }
+
                 onComplete(true)
             } catch (e: Exception) {
                 e.printStackTrace()
                 onComplete(false)
             }
         }
+    }
     }
 }
