@@ -32,11 +32,10 @@ fun HistoryScreen(
     val app = context.applicationContext as android.app.Application
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
-    val mainViewModel: MainViewModel = viewModel()
+    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val transactions by transactionViewModel.allTransactions.collectAsState()
-    val currency by mainViewModel.currency.collectAsState()
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     
     Scaffold(
@@ -72,7 +71,7 @@ fun HistoryScreen(
                 items(transactions) { transaction ->
                     TransactionItem(
                         transaction = transaction, 
-                        currency = currency,
+                        mainViewModel = mainViewModel,
                         categories = categories,
                         onDeleteRequest = { trans ->
                             transactionViewModel.deleteTransaction(trans)
