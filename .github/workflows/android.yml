@@ -31,21 +31,17 @@ jobs:
         echo "${{ secrets.KEYSTORE }}" | base64 --decode > app/release.keystore
 
     - name: Build Release APK
-      run: ./gradlew assembleRelease -Pandroid.aapt2FromMavenOverride=
-
-    - name: Sign APK
-      run: |
-        # We use the built-in gradle signing if configured, 
-        # but to be safe and explicit for F-Droid/GitHub, we can use apksigner 
-        # however, the standard way is to configure build.gradle.kts.
-        # To keep it simple, we'll use the Gradle signing config.
-        echo "APK built and signed via Gradle signing config"
+      run: ./gradlew assembleRelease
+      env:
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
-        files: app/build/outputs/apk/release/app-release.apk # we will fix the signing in gradle
+        files: app/build/outputs/apk/release/app-release.apk
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
         draft: false
