@@ -11,16 +11,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CloudUpload
 import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.CloudUpload
 import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.sharp.ArrowBack
+import androidx.compose.material.icons.automirrored.sharp.ArrowBack
 import androidx.compose.material.icons.sharp.CloudUpload
 import androidx.compose.material.icons.sharp.CloudDownload
-import androidx.compose.material.icons.twotone.ArrowBack
+import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material.icons.twotone.CloudUpload
 import androidx.compose.material.icons.twotone.CloudDownload
 import androidx.compose.material3.*
@@ -58,7 +58,7 @@ fun SettingsScreen(navController: NavHostController) {
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
         onResult = { uri ->
-            uri?.let { settingsViewModel.backupAll(it) { success -> } }
+            uri?.let { settingsViewModel.backupAll(it) { _success -> } }
         }
     )
 
@@ -98,10 +98,10 @@ fun SettingsScreen(navController: NavHostController) {
                         Icon(
                             imageVector = mainViewModel.getIcon(
                                 Icons.AutoMirrored.Filled.ArrowBack, 
-                                Icons.Outlined.ArrowBack, 
-                                Icons.Rounded.ArrowBack, 
-                                Icons.Sharp.ArrowBack, 
-                                Icons.TwoTone.ArrowBack
+                                Icons.AutoMirrored.Outlined.ArrowBack, 
+                                Icons.AutoMirrored.Rounded.ArrowBack, 
+                                Icons.AutoMirrored.Sharp.ArrowBack, 
+                                Icons.AutoMirrored.TwoTone.ArrowBack
                             ), 
                             contentDescription = "Torna indietro"
                         )
