@@ -13,7 +13,7 @@ class UserPreferences(context: Context) {
     }
 
     fun saveCurrency(symbol: String) {
-        sharedPreferences.edit().putString(KEY_CURRENCY, symbol).apply()
+        sharedPreferences.edit().putString(KEY_CURRENCY, symbol).commit()
     }
 
     fun getCurrency(): String {
@@ -21,7 +21,7 @@ class UserPreferences(context: Context) {
     }
 
     fun saveDecimalSeparator(separator: String) {
-        sharedPreferences.edit().putString(KEY_DECIMAL_SEPARATOR, separator).apply()
+        sharedPreferences.edit().putString(KEY_DECIMAL_SEPARATOR, separator).commit()
     }
 
     fun getDecimalSeparator(): String {
