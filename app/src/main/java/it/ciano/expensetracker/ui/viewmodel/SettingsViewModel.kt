@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import it.ciano.expensetracker.data.AppDatabase
 import it.ciano.expensetracker.data.preferences.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,10 +16,20 @@ import java.io.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
+import java.time.LocalDateTime
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val userPreferences = UserPreferences(application)
     private val context = application.applicationContext
+
+    private fun writeDebugLog(message: String) {
+        try {
+            val logFile = File(context.filesDir, "backup_debug.txt")
+            logFile.appendText("${LocalDateTime.now()}: $message\\n")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     private val _currency = MutableStateFlow(userPreferences.getCurrency())
     val currency: StateFlow<String> = _currency.asStateFlow()
@@ -39,21 +50,32 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun backupAll(uri: Uri, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                writeDebugLog("Backup started")
+                
+                // FORZATURA CHECKPOINT: Sposta i dati dal file WAL al file DB principale
+                try {
+                    val db = AppDatabase.getDatabase(context)
+                    db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL)")
+                    writeDebugLog("WAL Checkpoint executed successfully")
+                } catch (e: Exception) {
+                    writeDebugLog("WAL Checkpoint failed: ${e.message}")
+                }
+
                 val dbFile = context.getDatabasePath("expense_tracker_db")
                 val prefsFile = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
                 var filesAdded = 0
 
-                android.util.Log.d("ExpenseTracker", "Backup started. DB path: ${dbFile.absolutePath}, Size: ${if (dbFile.exists()) dbFile.length() else 0} bytes")
+                writeDebugLog("Checking DB file: ${dbFile.absolutePath}, Size: ${if (dbFile.exists()) dbFile.length() else 0} bytes")
 
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     ZipOutputStream(outputStream).use { zipOut ->
                         if (dbFile.exists()) {
-                            android.util.Log.d("ExpenseTracker", "Adding DB to ZIP: ${dbFile.length()} bytes")
+                            writeDebugLog("Adding DB to ZIP: ${dbFile.length()} bytes")
                             addFileToZip(dbFile, "expense_tracker_db", zipOut)
                             filesAdded++
                         }
                         if (prefsFile.exists()) {
-                            android.util.Log.d("ExpenseTracker", "Adding Prefs to ZIP: ${prefsFile.length()} bytes")
+                            writeDebugLog("Adding Prefs to ZIP: ${prefsFile.length()} bytes")
                             addFileToZip(prefsFile, "user_prefs.xml", zipOut)
                             filesAdded++
                         }
@@ -61,14 +83,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 }
                 
                 if (filesAdded == 0) {
-                    android.util.Log.d("ExpenseTracker", "Backup failed: no files to add")
+                    writeDebugLog("Backup failed: no files added")
                     onComplete(false)
                 } else {
-                    android.util.Log.d("ExpenseTracker", "Backup successful. Files added: $filesAdded")
+                    writeDebugLog("Backup successful. Files added: $filesAdded")
                     onComplete(true)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ExpenseTracker", "Backup error: ${e.message}", e)
+                writeDebugLog("Backup critical error: ${e.message}")
+                e.printStackTrace()
                 onComplete(false)
             }
         }
