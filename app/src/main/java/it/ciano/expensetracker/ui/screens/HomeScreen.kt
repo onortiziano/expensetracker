@@ -195,4 +195,30 @@ fun HomeScreen(navController: NavHostController) {
                                         Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
                                         Text(text = "+" + mainViewModel.formatCurrency(totalIncome).removePrefix("+"), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                                     }
-                                    Column(horizontalAlignment = Alignment.CenterHori...[truncated]
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
+                                        Text(text = "-" + mainViewModel.formatCurrency(totalExpenses).removePrefix("-"), color = Color.Red, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    items(transactions) { transaction ->
+                        TransactionItem(
+                            transaction = transaction, 
+                            mainViewModel = mainViewModel,
+                            categories = categories,
+                            onDeleteRequest = { trans ->
+                                transactionViewModel.deleteTransaction(trans)
+                            },
+                            onClick = { 
+                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
