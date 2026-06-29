@@ -122,11 +122,6 @@ fun SettingsScreen(navController: NavHostController) {
                     modifier = Modifier.weight(1f),
                     onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
                     content = {
-                        Row(vertical alignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Check, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Importa")
-                        }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
