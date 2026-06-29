@@ -45,7 +45,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
-        files: app/build/outputs/apk/release/app-release-unsigned.apk # we will fix the signing in gradle
+        files: app/build/outputs/apk/release/app-release.apk # we will fix the signing in gradle
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
         draft: false
