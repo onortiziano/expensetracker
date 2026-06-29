@@ -196,7 +196,7 @@ fun HomeScreen(navController: NavHostController) {
                     items(transactions) { transaction ->
                         TransactionItem(
                             transaction = transaction, 
-                            currency = currency,
+                            mainViewModel = mainViewModel,
                             categories = categories,
                             onDeleteRequest = { trans ->
                                 transactionViewModel.deleteTransaction(trans)

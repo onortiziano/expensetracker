@@ -15,12 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionItem(
     transaction: Transaction, 
-    currency: String, 
+    mainViewModel: MainViewModel,
     categories: List<Category>,
     onDeleteRequest: (Transaction) -> Unit,
     onClick: () -> Unit
@@ -105,7 +106,9 @@ fun TransactionItem(
                         Text(text = "Categoria: $categoryDisplayName", fontSize = 12.sp)
                     }
                     Text(
-                        text = if (transaction.type == "INCOME") "+%.2f %s".format(transaction.amount, currency) else "-%.2f %s".format(transaction.amount, currency),
+                        text = if (transaction.type == "INCOME") 
+                            "+" + mainViewModel.formatCurrency(transaction.amount).removePrefix("+") 
+                            else "-" + mainViewModel.formatCurrency(transaction.amount).removePrefix("-"),
                         color = if (transaction.type == "INCOME") Color(0xFF4CAF50) else Color.Red,
                         fontWeight = FontWeight.Bold
                     )
