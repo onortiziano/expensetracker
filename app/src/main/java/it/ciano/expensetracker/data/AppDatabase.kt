@@ -8,7 +8,7 @@ import it.ciano.expensetracker.data.dao.*
 import it.ciano.expensetracker.data.model.*
 
 // Definiamo le tabelle che compongono il database e la versione (1)
-@Database(entities = [Category::class, Transaction::class, Budget::class], version = 1)
+@Database(entities = [Category::class, Transaction::class, Budget::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     // Metodi astratti per ottenere i nostri "telecomandi" (DAO)
