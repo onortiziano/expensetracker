@@ -43,27 +43,32 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 val prefsFile = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
                 var filesAdded = 0
 
+                android.util.Log.d("ExpenseTracker", "Backup started. DB path: ${dbFile.absolutePath}, Size: ${if (dbFile.exists()) dbFile.length() else 0} bytes")
+
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     ZipOutputStream(outputStream).use { zipOut ->
                         if (dbFile.exists()) {
+                            android.util.Log.d("ExpenseTracker", "Adding DB to ZIP: ${dbFile.length()} bytes")
                             addFileToZip(dbFile, "expense_tracker_db", zipOut)
                             filesAdded++
                         }
                         if (prefsFile.exists()) {
+                            android.util.Log.d("ExpenseTracker", "Adding Prefs to ZIP: ${prefsFile.length()} bytes")
                             addFileToZip(prefsFile, "user_prefs.xml", zipOut)
                             filesAdded++
                         }
                     }
                 }
                 
-                // Se non è stato aggiunto alcun file, il backup è considerato fallito
                 if (filesAdded == 0) {
+                    android.util.Log.d("ExpenseTracker", "Backup failed: no files to add")
                     onComplete(false)
                 } else {
+                    android.util.Log.d("ExpenseTracker", "Backup successful. Files added: $filesAdded")
                     onComplete(true)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("ExpenseTracker", "Backup error: ${e.message}", e)
                 onComplete(false)
             }
         }
