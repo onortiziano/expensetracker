@@ -7,26 +7,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Home
-import androidx.compose.material.icons.automirrored.filled.Menu
-import androidx.compose.material.icons.automirrored.filled.Settings
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.outlined.Home
-import androidx.compose.material.icons.automirrored.outlined.Menu
-import androidx.compose.material.icons.automirrored.outlined.Settings
 import androidx.compose.material.icons.automirrored.outlined.List
-import androidx.compose.material.icons.automirrored.rounded.Home
-import androidx.compose.material.icons.automirrored.rounded.Menu
-import androidx.compose.material.icons.automirrored.rounded.Settings
 import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.automirrored.sharp.Home
-import androidx.compose.material.icons.automirrored.sharp.Menu
-import androidx.compose.material.icons.automirrored.sharp.Settings
 import androidx.compose.material.icons.automirrored.sharp.List
-import androidx.compose.material.icons.automirrored.twotone.Home
-import androidx.compose.material.icons.automirrored.twotone.Menu
-import androidx.compose.material.icons.automirrored.twotone.Settings
 import androidx.compose.material.icons.automirrored.twotone.List
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.sharp.Home
+import androidx.compose.material.icons.sharp.Menu
+import androidx.compose.material.icons.sharp.Settings
+import androidx.compose.material.icons.twotone.Home
+import androidx.compose.material.icons.twotone.Menu
+import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -108,7 +108,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.HOME) 
                     },
-                    icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.Home, Icons.AutoMirrored.Outlined.Home, Icons.AutoMirrored.Rounded.Home, Icons.AutoMirrored.Sharp.Home, Icons.AutoMirrored.TwoTone.Home), contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.Home, Icons.Outlined.Home, Icons.Rounded.Home, Icons.Sharp.Home, Icons.TwoTone.Home), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 
@@ -130,7 +130,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.SETTINGS) 
                     },
-                    icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.Settings, Icons.AutoMirrored.Outlined.Settings, Icons.AutoMirrored.Rounded.Settings, Icons.AutoMirrored.Sharp.Settings, Icons.AutoMirrored.TwoTone.Settings), contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.Settings, Icons.Outlined.Settings, Icons.Rounded.Settings, Icons.Sharp.Settings, Icons.TwoTone.Settings), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }
@@ -145,7 +145,7 @@ fun HomeScreen(navController: NavHostController) {
                         IconButton(onClick = { 
                             scope.launch { drawerState.open() } 
                         }) {
-                            Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.Menu, Icons.AutoMirrored.Outlined.Menu, Icons.AutoMirrored.Rounded.Menu, Icons.AutoMirrored.Sharp.Menu, Icons.AutoMirrored.TwoTone.Menu), contentDescription = "Apri Menu")
+                            Icon(mainViewModel.getIcon(Icons.Filled.Menu, Icons.Outlined.Menu, Icons.Rounded.Menu, Icons.Sharp.Menu, Icons.TwoTone.Menu), contentDescription = "Apri Menu")
                         }
                     }
                 )
