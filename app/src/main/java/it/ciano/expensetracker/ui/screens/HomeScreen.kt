@@ -12,6 +12,26 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.sharp.Delete
+import androidx.compose.material.icons.sharp.Home
+import androidx.compose.material.icons.sharp.Menu
+import androidx.compose.material.icons.sharp.Settings
+import androidx.compose.material.icons.sharp.List
+import androidx.compose.material.icons.twotone.Delete
+import androidx.compose.material.icons.twotone.Home
+import androidx.compose.material.icons.twotone.Menu
+import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material.icons.twotone.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -97,7 +117,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.HOME) 
                     },
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Default.Home, Icons.Outlined.Home, Icons.Rounded.Home, Icons.Sharp.Home, Icons.TwoTone.Home), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 
@@ -108,7 +128,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.HISTORY) 
                     },
-                    icon = { Icon(Icons.Default.List, contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Default.List, Icons.Outlined.List, Icons.Rounded.List, Icons.Sharp.List, Icons.TwoTone.List), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 
@@ -119,7 +139,7 @@ fun HomeScreen(navController: NavHostController) {
                         scope.launch { drawerState.close() }
                         navController.navigate(Routes.SETTINGS) 
                     },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Default.Settings, Icons.Outlined.Settings, Icons.Rounded.Settings, Icons.Sharp.Settings, Icons.TwoTone.Settings), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }
@@ -134,7 +154,7 @@ fun HomeScreen(navController: NavHostController) {
                         IconButton(onClick = { 
                             scope.launch { drawerState.open() } 
                         }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Apri Menu")
+                            Icon(mainViewModel.getIcon(Icons.Default.Menu, Icons.Outlined.Menu, Icons.Rounded.Menu, Icons.Sharp.Menu, Icons.TwoTone.Menu), contentDescription = "Apri Menu")
                         }
                     }
                 )

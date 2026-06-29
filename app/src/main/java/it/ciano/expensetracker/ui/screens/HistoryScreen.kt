@@ -6,6 +6,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.sharp.ArrowBack
+import androidx.compose.material.icons.twotone.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,8 +47,17 @@ fun HistoryScreen(
             TopAppBar(
                 title = { Text("Cronologia", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Torna indietro")
+                    IconButton(onClick = { navController.popBackHStack() }) {
+                        Icon(
+                            imageVector = mainViewModel.getIcon(
+                                Icons.Default.ArrowBack, 
+                                Icons.Outlined.ArrowBack, 
+                                Icons.Rounded.ArrowBack, 
+                                Icons.Sharp.ArrowBack, 
+                                Icons.TwoTone.ArrowBack
+                            ), 
+                            contentDescription = "Torna indietro"
+                        )
                     }
                 }
             )

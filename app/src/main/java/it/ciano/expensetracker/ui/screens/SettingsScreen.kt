@@ -10,6 +10,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.sharp.ArrowBack
+import androidx.compose.material.icons.sharp.Check
+import androidx.compose.material.icons.twotone.ArrowBack
+import androidx.compose.material.icons.twotone.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,7 +86,16 @@ fun SettingsScreen(navController: NavHostController) {
                 title = { Text("Impostazioni", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(
+                            imageVector = settingsViewModel.getIcon(
+                                Icons.Default.ArrowBack, 
+                                Icons.Outlined.ArrowBack, 
+                                Icons.Rounded.ArrowBack, 
+                                Icons.Sharp.ArrowBack, 
+                                Icons.TwoTone.ArrowBack
+                            ), 
+                            contentDescription = "Torna indietro"
+                        )
                     }
                 }
             )
@@ -121,7 +138,16 @@ fun SettingsScreen(navController: NavHostController) {
                     onClick = { backupLauncher.launch("backup_expenses.zip") },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Check, contentDescription = null)
+                            Icon(
+                                imageVector = settingsViewModel.getIcon(
+                                    Icons.Default.Check, 
+                                    Icons.Outlined.Check, 
+                                    Icons.Rounded.Check, 
+                                    Icons.Sharp.Check, 
+                                    Icons.TwoTone.Check
+                                ), 
+                                contentDescription = null
+                            )
                             Spacer(Modifier.width(8.dp))
                             Text("Backup")
                         }
@@ -132,7 +158,16 @@ fun SettingsScreen(navController: NavHostController) {
                     onClick = { importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Check, contentDescription = null)
+                            Icon(
+                                imageVector = settingsViewModel.getIcon(
+                                    Icons.Default.Check, 
+                                    Icons.Outlined.Check, 
+                                    Icons.Rounded.Check, 
+                                    Icons.Sharp.Check, 
+                                    Icons.TwoTone.Check
+                                ), 
+                                contentDescription = null
+                            )
                             Spacer(Modifier.width(8.dp))
                             Text("Importa")
                         }
