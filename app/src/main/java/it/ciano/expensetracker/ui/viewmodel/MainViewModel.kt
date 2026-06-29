@@ -29,8 +29,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _themeMode.value = mode
     }
 
-    // Funzione per cambiare la valuta
-    fun setCurrency(newCurrency: String) {
-        _currency.value = newCurrency
+    // Funzione per formattare l'importo in base alla valuta e al separatore scelti
+    fun formatCurrency(amount: Double): String {
+        val symbol = userPreferences.getCurrency()
+        val separator = userPreferences.getDecimalSeparator()
+        
+        // Formattiamo a 2 decimali (usa il punto di default)
+        val formatted = "%.2f".format(amount)
+        
+        // Sostituiamo il punto con il separatore scelto dall'utente
+        val localized = formatted.replace(".", separator)
+        
+        return "$localized $symbol"
     }
-}
