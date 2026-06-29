@@ -1,23 +1,27 @@
 package it.ciano.expensetracker.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import it.ciano.expensetracker.data.preferences.UserPreferences
 
 // Definiamo i possibili stati del tema
 enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val userPreferences = UserPreferences(application)
 
     // 1. Stato del Tema: Iniziamo con SYSTEM (segue l'impostazione del telefono)
     private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
-    // 2. Stato della Valuta: Iniziamo con l'Euro
-    private val _currency = MutableStateFlow("€")
+    // 2. Stato della Valuta: Leggiamo il valore salvato nelle preferenze
+    private val _currency = MutableStateFlow(userPreferences.getCurrency())
     val currency: StateFlow<String> = _currency.asStateFlow()
 
     // Funzione per cambiare il tema
@@ -25,8 +29,19 @@ class MainViewModel : ViewModel() {
         _themeMode.value = mode
     }
 
-    // Funzione per cambiare la valuta
-    fun setCurrency(newCurrency: String) {
-        _currency.value = newCurrency
+    // Funzione per formattare l'importo in base alla valuta e al separatore scelti
+    fun formatCurrency(amount: Double): String {
+        val symbol = userPreferences.getCurrency()
+        val separator = userPreferences.getDecimalSeparator()
+        
+        // Creiamo i simboli di formattazione basandoci sul locale di sistema
+        val symbols = java.text.DecimalFormatSymbols(java.util.Locale.getDefault())
+        // Sovrascriviamo solo il separatore decimale con quello scelto dall'utente
+        symbols.decimalSeparator = separator[0]
+        
+        // Creiamo il formatore usando i nostri simboli personalizzati
+        val df = java.text.DecimalFormat("0.00", symbols)
+        
+        return "${df.format(amount)} $symbol"
     }
 }

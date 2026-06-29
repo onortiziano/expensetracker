@@ -42,7 +42,7 @@ fun HomeScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
-    val mainViewModel: MainViewModel = viewModel()
+    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
@@ -170,7 +170,7 @@ fun HomeScreen(navController: NavHostController) {
                             ) {
                                 Text(text = "Bilancio Totale", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                                 Text(
-                                    text = "%.2f %s".format(balance, currency),
+                                    text = mainViewModel.formatCurrency(balance),
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = if (balance >= 0) Color(0xFF4CAF50) else Color.Red
@@ -182,11 +182,11 @@ fun HomeScreen(navController: NavHostController) {
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "+%.2f %s".format(totalIncome, currency), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+                                        Text(text = "+" + mainViewModel.formatCurrency(totalIncome).removePrefix("+"), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                                     }
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "-%.2f %s".format(totalExpenses, currency), color = Color.Red, fontWeight = FontWeight.Bold)
+                                        Text(text = "-" + mainViewModel.formatCurrency(totalExpenses).removePrefix("-"), color = Color.Red, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -196,7 +196,7 @@ fun HomeScreen(navController: NavHostController) {
                     items(transactions) { transaction ->
                         TransactionItem(
                             transaction = transaction, 
-                            currency = currency,
+                            mainViewModel = mainViewModel,
                             categories = categories,
                             onDeleteRequest = { trans ->
                                 transactionViewModel.deleteTransaction(trans)

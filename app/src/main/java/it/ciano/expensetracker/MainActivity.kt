@@ -18,10 +18,11 @@ import it.ciano.expensetracker.ui.screens.AppNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+        super.onCreate(savedInstanceState)
+        android.util.Log.d("ExpenseTracker", "APP AVVIATA - VERSIONE DEBUG")
         enableEdgeToEdge()
         setContent {
-            ExpensetrackerTheme { // Usa il nome del tuo tema (es. ExpenseTrackerTheme)
+            ExpensetrackerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

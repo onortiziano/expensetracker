@@ -24,6 +24,7 @@ import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
+import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +39,7 @@ fun ModifyTransactionScreen(
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
 
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
@@ -240,11 +242,21 @@ fun ModifyTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    val isFormValid = note.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0.0
+                    val separator = settingsViewModel.decimalSeparator.collectAsState().value
+                    val sepChar = separator.firstOrNull() ?: ','
+                    val containsInvalidChars = amount.any { it.isDigit() == false && it != sepChar }
+                    val hasMultipleSeparators = amount.count { it == sepChar } > 1
+                    val normalizedAmount = amount.replace(separator, ".")
+                    val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
+                    
+                    val isFormValid = note.isNotBlank() && 
+                                      !containsInvalidChars && 
+                                      !hasMultipleSeparators && 
+                                      numericValue > 0.0
                     
                     Button(
                         onClick = {
-                            val amountValue = amount.toDoubleOrNull() ?: 0.0
+                            val amountValue = normalizedAmount.toDoubleOrNull() ?: 0.0
                             val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
                             
                             val updatedTransaction = Transaction(
