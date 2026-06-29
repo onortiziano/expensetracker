@@ -5,6 +5,8 @@ import android.os.Process
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -27,6 +29,8 @@ fun SettingsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val settingsViewModel: SettingsViewModel = viewModel()
     var showRestartDialog by remember { mutableStateOf(false) }
+    var showLogDialog by remember { mutableStateOf(false) }
+    var debugLogText by remember { mutableStateOf("") }
     
     val currency by settingsViewModel.currency.collectAsState()
     val decimalSeparator by settingsViewModel.decimalSeparator.collectAsState()
@@ -68,6 +72,26 @@ fun SettingsScreen(navController: NavHostController) {
         )
     }
 
+    if (showLogDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogDialog = false },
+            title = { Text("Debug Backup Log") },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                    Text(
+                        text = debugLogText,
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
+                        fontSize = 12.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLogDialog = false }) { Text("Chiudi") }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -81,7 +105,7 @@ fun SettingsScreen(navController: NavHostController) {
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).padding(16.dp).fillMaxSize(),
+            modifier = Modifier.padding(paddingValues).padding(16.dp).fillMaxSize().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(text = "Preferenze Visualizzazione", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
@@ -100,7 +124,7 @@ fun SettingsScreen(navController: NavHostController) {
                 onOptionSelected = { settingsViewModel.updateDecimalSeparator(it) }
             )
             
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             
             Text(text = "Gestione Dati", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
             
@@ -123,11 +147,23 @@ fun SettingsScreen(navController: NavHostController) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
-                            Text("Importa")
                         }
+                        Text("Importa")
                     }
                 )
             }
+            
+            Button(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                onClick = { 
+                    debugLogText = settingsViewModel.getDebugLog()
+                    showLogDialog = true 
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+            ) {
+                Text("Visualizza Log Debug", fontSize = 14.sp)
+            }
+
             Button(
                 modifier = Modifier
                     .fillMaxWidth()

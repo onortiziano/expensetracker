@@ -31,6 +31,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun getDebugLog(): String {
+        return try {
+            val logFile = File(context.filesDir, "backup_debug.txt")
+            if (logFile.exists()) logFile.readText() else "Log non ancora creato. Effettua un backup."
+        } catch (e: Exception) {
+            "Errore nella lettura del log: ${e.message}"
+        }
+    }
+
     private val _currency = MutableStateFlow(userPreferences.getCurrency())
     val currency: StateFlow<String> = _currency.asStateFlow()
 
@@ -52,7 +61,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             try {
                 writeDebugLog("Backup started")
                 
-                // FORZATURA CHECKPOINT: Sposta i dati dal file WAL al file DB principale
                 try {
                     val db = AppDatabase.getDatabase(context)
                     db.openHelper.writableDatabase.execSQL("PRAGMA wal_checkpoint(FULL)")
