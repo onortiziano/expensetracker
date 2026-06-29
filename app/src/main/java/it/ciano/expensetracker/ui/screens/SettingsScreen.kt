@@ -9,15 +9,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CloudUpload
+import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CloudUpload
+import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.sharp.ArrowBack
-import androidx.compose.material.icons.sharp.Check
+import androidx.compose.material.icons.sharp.CloudUpload
+import androidx.compose.material.icons.sharp.CloudDownload
 import androidx.compose.material.icons.twotone.ArrowBack
-import androidx.compose.material.icons.twotone.Check
+import androidx.compose.material.icons.twotone.CloudUpload
+import androidx.compose.material.icons.twotone.CloudDownload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -140,11 +145,11 @@ fun SettingsScreen(navController: NavHostController) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = settingsViewModel.getIcon(
-                                    Icons.Default.Check, 
-                                    Icons.Outlined.Check, 
-                                    Icons.Rounded.Check, 
-                                    Icons.Sharp.Check, 
-                                    Icons.TwoTone.Check
+                                    Icons.Default.CloudUpload, 
+                                    Icons.Outlined.CloudUpload, 
+                                    Icons.Rounded.CloudUpload, 
+                                    Icons.Sharp.CloudUpload, 
+                                    Icons.TwoTone.CloudUpload
                                 ), 
                                 contentDescription = null
                             )
@@ -160,11 +165,11 @@ fun SettingsScreen(navController: NavHostController) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = settingsViewModel.getIcon(
-                                    Icons.Default.Check, 
-                                    Icons.Outlined.Check, 
-                                    Icons.Rounded.Check, 
-                                    Icons.Sharp.Check, 
-                                    Icons.TwoTone.Check
+                                    Icons.Default.CloudDownload, 
+                                    Icons.Outlined.CloudDownload, 
+                                    Icons.Rounded.CloudDownload, 
+                                    Icons.Sharp.CloudDownload, 
+                                    Icons.TwoTone.CloudDownload
                                 ), 
                                 contentDescription = null
                             )
