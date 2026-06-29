@@ -24,7 +24,7 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
             modelClass.isAssignableFrom(BudgetViewModel::class.java) -> 
                 BudgetViewModel(budgetRepository) as T
             modelClass.isAssignableFrom(MainViewModel::class.java) -> 
-                MainViewModel() as T
+                MainViewModel(application) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> 
                 SettingsViewModel(application) as T
             else -> throw IllegalArgumentException("Classe ViewModel sconosciuta: ${modelClass.name}")

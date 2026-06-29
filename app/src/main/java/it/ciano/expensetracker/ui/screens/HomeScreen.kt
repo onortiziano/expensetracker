@@ -42,7 +42,7 @@ fun HomeScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
-    val mainViewModel: MainViewModel = viewModel()
+    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
