@@ -12,6 +12,7 @@ class UserPreferences(context: Context) {
     companion object {
         private const val KEY_CURRENCY = "currency_symbol"
         private const val KEY_DECIMAL_SEPARATOR = "decimal_separator"
+        private const val KEY_ICON_STYLE = "icon_style"
     }
 
     fun saveCurrency(symbol: String) {
@@ -42,5 +43,14 @@ class UserPreferences(context: Context) {
 
         // 2. Se non c'è, recupera il separatore decimale di sistema
         return java.text.DecimalFormatSymbols.getInstance(Locale.getDefault()).decimalSeparator.toString()
+    }
+
+    fun saveIconStyle(style: String) {
+        sharedPreferences.edit().putString(KEY_ICON_STYLE, style).commit()
+    }
+
+    fun getIconStyle(): String {
+        // Default: "ROUNDED" perché è il più elegante
+        return sharedPreferences.getString(KEY_ICON_STYLE, "ROUNDED") ?: "ROUNDED"
     }
 }
