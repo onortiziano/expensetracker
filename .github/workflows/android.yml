@@ -31,7 +31,7 @@ jobs:
         echo "${{ secrets.KEYSTORE }}" | base64 --decode > app/release.keystore
 
     - name: Build Release APK
-      run: ./gradlew assembleRelease
+      run: ./gradlew assembleRelease -Pandroid.aapt2FromMavenOverride=
 
     - name: Sign APK
       run: |

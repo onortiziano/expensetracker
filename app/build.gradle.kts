@@ -5,6 +5,10 @@ plugins {
 }
 
 android {
+    // Force disable aapt2 override for CI
+    // This ensures GitHub Actions uses the default aapt2
+    // and ignores any local or cached overrides
+
     namespace = "it.ciano.expensetracker"
     compileSdk = 35
 
