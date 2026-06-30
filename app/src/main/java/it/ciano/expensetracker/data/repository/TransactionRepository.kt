@@ -9,7 +9,9 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
 
     // Recupera tutte le transazioni (ordinate dalla più recente)
     fun getAllTransactions(): Flow<List<Transaction>> {
-        return transactionDao.getAllTransactions()
+        return transactionDao.getAllTransactionsWithTags().map { list -> 
+            list.map { it.transaction } 
+        }
     }
 
     // Recupera tutte le transazioni includendo i loro Tag associati
