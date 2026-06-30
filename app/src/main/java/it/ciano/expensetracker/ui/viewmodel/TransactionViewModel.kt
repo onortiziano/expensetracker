@@ -27,7 +27,7 @@ class TransactionViewModel(
                 try {
                     val deletedCount = repository.deleteTransaction(transaction)
                     if (deletedCount == 0) {
-                        android.util.Log.e("TRANSACTION_VM", "FALLIMENTO: Il record con ID ${transaction.id} non è stato trovato nel DB.")
+                        android.util.Log.e("TRANSACTION_VM", "FALLIMENTO: Il record con ID ${transaction.transactionId} non è stato trovato nel DB.")
                     }
                 } catch (t: Throwable) {
                     android.util.Log.e("TRANSACTION_VM", "ERRORE CRITICO: ${t.message}")

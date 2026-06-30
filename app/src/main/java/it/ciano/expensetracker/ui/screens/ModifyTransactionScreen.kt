@@ -61,7 +61,7 @@ fun ModifyTransactionScreen(
 
     LaunchedEffect(transactionId) {
         transactionViewModel.allTransactions.collect { transactions ->
-            val transaction = transactions.find { it.id == transactionId }
+            val transaction = transactions.find { it.transactionId == transactionId }
             transaction?.let { trans ->
                 transactionViewModel.loadTransaction(trans, allCategories, allTags)
             }
@@ -193,7 +193,7 @@ fun ModifyTransactionScreen(
                                     DropdownMenuItem(
                                         text = { Text(category.name) },
                                         onClick = {
-                                            transactionViewModel.updateMainCategory(category.id)
+                                            transactionViewModel.updateMainCategory(category.categoryId)
                                             mainExpanded = false
                                         }
                                     )
@@ -236,7 +236,7 @@ fun ModifyTransactionScreen(
                                         DropdownMenuItem(
                                             text = { Text(sub.name) },
                                             onClick = {
-                                                transactionViewModel.updateSubCategory(sub.id)
+                                                transactionViewModel.updateSubCategory(sub.categoryId)
                                                 subExpanded = false
                                             }
                                         )
@@ -301,7 +301,7 @@ fun ModifyTransactionScreen(
                             val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else if (selectedMainCategoryId != 0) selectedMainCategoryId else 0
                             
                             val updatedTransaction = Transaction(
-                                id = transactionId,
+                                transactionId = transactionId,
                                 title = title,
                                 amount = amountValue,
                                 type = type,

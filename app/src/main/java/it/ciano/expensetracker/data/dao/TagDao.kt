@@ -34,15 +34,16 @@ interface TagDao {
     // Questa è la query magica: recupera tutti i Tag associati a una specifica Transazione
     @Query("""
         SELECT tags.* FROM tags 
-        INNER JOIN transaction_tags ON tags.id = transaction_tags.tagId 
+        INNER JOIN transaction_tags ON tags.tagId = transaction_tags.tagId 
         WHERE transaction_tags.transactionId = :transactionId
     """)
     fun getTagsForTransaction(transactionId: Int): Flow<List<Tag>>
 
+
     // Recupera tutte le transazioni che hanno un determinato Tag
     @Query("""
         SELECT transactions.* FROM transactions 
-        INNER JOIN transaction_tags ON transactions.id = transaction_tags.transactionId 
+        INNER JOIN transaction_tags ON transactions.transactionId = transaction_tags.transactionId 
         WHERE transaction_tags.tagId = :tagId
     """)
     fun getTransactionsForTag(tagId: Int): Flow<List<Transaction>>

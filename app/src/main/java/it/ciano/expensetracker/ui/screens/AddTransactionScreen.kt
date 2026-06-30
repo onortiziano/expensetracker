@@ -186,7 +186,7 @@ fun AddTransactionScreen(
                                     DropdownMenuItem(
                                         text = { Text(category.name) },
                                         onClick = {
-                                            transactionViewModel.updateMainCategory(category.id)
+                                            transactionViewModel.updateMainCategory(category.categoryId)
                                             mainExpanded = false
                                         }
                                     )

@@ -27,7 +27,7 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
 
     // 3. MAPPA ID -> NOME (Spostata qui per coerenza e performance)
     val categoryMap: StateFlow<Map<Int, String>> = allCategories.map { list ->
-        list.associate { it.id to it.name }
+        list.associate { it.categoryId to it.name }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

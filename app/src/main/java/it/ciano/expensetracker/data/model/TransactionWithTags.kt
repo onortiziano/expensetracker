@@ -8,8 +8,8 @@ data class TransactionWithTags(
     @Embedded val transaction: Transaction
 ) {
     @Relation(
-        parentColumn = "id",
-        entityColumn = "id",
+        parentColumn = "transactionId",
+        entityColumn = "tagId",
         associateBy = Junction(TransactionTag::class)
     )
     var tags: List<Tag> = emptyList()
