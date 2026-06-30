@@ -36,11 +36,14 @@ class TransactionViewModel(
         }
     }
 
-    val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
-        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
-
+    // Ora usiamo la versione con i Tag per avere tutto in un unico flusso
     val allTransactionsWithTags: StateFlow<List<TransactionWithTags>> = repository.getAllTransactionsWithTags()
         .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
+
+    // Manteniamo questo per compatibilità con le vecchie schermate, ma lo deriviamo da quello con i Tag
+    val allTransactions: StateFlow<List<Transaction>> = allTransactionsWithTags.map { list ->
+        list.map { it.transaction }
+    }.stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
 
     val totalIncome: StateFlow<Double> = repository.getTotalIncome()
         .map { it ?: 0.0 }
@@ -102,10 +105,10 @@ class TransactionViewModel(
         _note.value = transaction.note
         _type.value = transaction.type
         
-        val category = allCategories.find { it.id == transaction.categoryId }
+        val category = allCategories.find { it.categoryId == transaction.categoryId }
         if (category != null && category.parentCategoryId != null) {
             _selectedMainCategoryId.value = category.parentCategoryId
-            _selectedSubCategoryId.value = category.id
+            _selectedSubCategoryId.value = category.categoryId
         } else {
             _selectedMainCategoryId.value = transaction.categoryId
             _selectedSubCategoryId.value = 0
@@ -116,7 +119,6 @@ class TransactionViewModel(
     fun addTransaction(transaction: Transaction, tags: Set<Tag>) {
         viewModelScope.launch {
             repository.insertTransaction(transaction)
-            // Implementazione collegamento tag via TagRepository (da fare in repository)
             resetForm()
         }
     }
@@ -124,7 +126,6 @@ class TransactionViewModel(
     fun updateTransaction(transaction: Transaction, tags: Set<Tag>) {
         viewModelScope.launch {
             repository.updateTransaction(transaction)
-            // Implementazione aggiornamento tag
         }
     }
 

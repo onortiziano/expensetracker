@@ -4,29 +4,10 @@ import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.outlined.List
-import androidx.compose.material.icons.automirrored.rounded.List
-import androidx.compose.material.icons.automirrored.sharp.List
-import androidx.compose.material.icons.automirrored.twotone.List
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.sharp.Home
-import androidx.compose.material.icons.sharp.Menu
-import androidx.compose.material.icons.sharp.Settings
-import androidx.compose.material.icons.twotone.Home
-import androidx.compose.material.icons.twotone.Menu
-import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,200 +18,159 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import it.ciano.expensetracker.ui.screens.Routes
-import it.ciano.expensetracker.ui.viewmodel.MainViewModel
-import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
-import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
-import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Tag
+import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.TransactionWithTags
-import kotlinx.coroutines.launch
-import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
+import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
+import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(
+    navController: NavHostController
+) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val app = context.applicationContext as Application
-    val scope = rememberCoroutineScope()
+    val app = context.applicationContext as android.app.Application
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
-    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
-    
-    val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    val transactionsWithTags by transactionViewModel.allTransactionsWithTags.collectAsState(initial = emptyList())
-    
-    var selectedTransactionWithTags by remember { mutableStateOf<TransactionWithTags?>(null) }
-    
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    BackHandler(enabled = drawerState.isOpen) {
-        scope.launch { drawerState.close() }
-    }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(24.dp)
-                ) {
-                    Column {
-                        Text(
-                            text = "Expense Tracker",
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Gestione Spese",
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 14.sp
-                        )
+    val transactionsWithTags by transactionViewModel.allTransactionsWithTags.collectAsState()
+    val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+    val categoryMap by categoryViewModel.categoryMap.collectAsState()
+    val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
+    
+    var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Expense Tracker", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = { navController.navigate("settings") }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Impostazioni")
                     }
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                NavigationDrawerItem(
-                    label = { Text("Home") },
-                    selected = true,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Routes.HOME) 
-                    },
-                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.Home, Icons.Outlined.Home, Icons.Rounded.Home, Icons.Sharp.Home, Icons.TwoTone.Home), contentDescription = null) },
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
-                
-                NavigationDrawerItem(
-                    label = { Text("Cronologia") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Routes.HISTORY) 
-                    },
-                    icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.List, Icons.AutoMirrored.Outlined.List, Icons.AutoMirrored.Rounded.List, Icons.AutoMirrored.Sharp.List, Icons.AutoMirrored.TwoTone.List), contentDescription = null) },
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
-                
-                NavigationDrawerItem(
-                    label = { Text("Impostazioni") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        navController.navigate(Routes.SETTINGS) 
-                    },
-                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.Settings, Icons.Outlined.Settings, Icons.Rounded.Settings, Icons.Sharp.Settings, Icons.TwoTone.Settings), contentDescription = null) },
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("add_transaction") },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Aggiungi", tint = Color.White)
             }
         }
-    ) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("Expense Tracker") },
-                    navigationIcon = {
-                        IconButton(onClick = { 
-                            scope.launch { drawerState.open() } 
-                        }) {
-                            Icon(mainViewModel.getIcon(Icons.Filled.Menu, Icons.Outlined.Menu, Icons.Rounded.Menu, Icons.Sharp.Menu, Icons.TwoTone.Menu), contentDescription = "Apri Menu")
-                        }
-                    }
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
-                    Text("+", fontSize = 24.sp)
-                }
-            }
-        ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    item {
-                        val totalIncome by transactionViewModel.totalIncome.collectAsState()
-                        val totalExpenses by transactionViewModel.totalExpenses.collectAsState()
-                        val balance = totalIncome - totalExpenses
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            // --- SEZIONE TOTALI ---
+            val income by transactionViewModel.totalIncome.collectAsState()
+            val expenses by transactionViewModel.totalExpenses.collectAsState()
+            val balance = income - expenses
 
-                        ElevatedCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.elevatedCardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(text = "Bilancio Totale", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
-                                Text(
-                                    text = mainViewModel.formatCurrency(balance),
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (balance >= 0) Color(0xFF4CAF50) else Color.Red
-                                )
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "+" + mainViewModel.formatCurrency(totalIncome).removePrefix("+"), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
-                                    }
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
-                                        Text(text = "-" + mainViewModel.formatCurrency(totalExpenses).removePrefix("-"), color = Color.Red, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
-                        }
-                    }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                TotalCard("Entrate", income, Color(0xFF4CAF50), Modifier.weight(1f))
+                TotalCard("Uscite", expenses, Color(0xFFF44336), Modifier.weight(1f))
+            }
+
+            TotalBalanceCard(balance)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- LISTA TRANSAZIONI ---
+            Text(
+                text = "Ultime Operazioni",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
+                items(transactionsWithTags) { item ->
+                    val transaction = item.transaction
+                    val tags = item.tags
                     
-                    items(transactionsWithTags) { itemWithTags ->
-                        TransactionItem(
-                            transaction = itemWithTags.transaction, 
-                            mainViewModel = mainViewModel,
-                            categories = categories,
-                            tags = itemWithTags.tags,
-                            onDeleteRequest = { trans ->
-                                transactionViewModel.deleteTransaction(trans)
-                            },
-                            onDetailsRequest = { trans ->
-                                selectedTransactionWithTags = TransactionWithTags(trans, itemWithTags.tags)
-                            },
-                            onModifyRequest = { trans ->
-                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${trans.id}") 
-                            }
-                        )
-                    }
+                    TransactionItem(
+                        transaction = transaction,
+                        tags = tags,
+                        onDetailsRequest = { 
+                            selectedTransaction = transaction 
+                        },
+                        onModifyRequest = { 
+                            navController.navigate("modify_transaction/${transaction.transactionId}") 
+                        }
+                    )
                 }
             }
         }
-    }
 
-    if (selectedTransactionWithTags != null) {
-        TransactionDetailsDialog(
-            transaction = selectedTransactionWithTags!!.transaction,
-            tags = selectedTransactionWithTags!!.tags,
-            mainViewModel = mainViewModel,
-            onDismiss = { selectedTransactionWithTags = null },
-            onEdit = { 
-                navController.navigate("${Routes.MODIFY_TRANSACTION}/${selectedTransactionWithTags?.transaction?.id}") 
-            }
-        )
+        // Dialog di Dettaglio
+        if (selectedTransaction != null) {
+            TransactionDetailsDialog(
+                transaction = selectedTransaction!!,
+                tags = transactionsWithTags.find { it.transaction.transactionId == selectedTransaction!!.transactionId }?.tags ?: emptyList(),
+                onDismiss = { selectedTransaction = null }
+            )
+        }
+    }
+}
+
+@Composable
+fun TotalCard(label: String, amount: Double, color: Color, modifier: Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(text = label, style = MaterialTheme.typography.labelMedium, color = color)
+            Text(
+                text = "€${String.format("%.2f", amount)}",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+        }
+    }
+}
+
+@Composable
+fun TotalBalanceCard(balance: Double) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Saldo Attuale", style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = "€${String.format("%.2f", balance)}",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (balance >= 0) Color(0xFF2E7D32) else Color(0xFFC62828)
+            )
+        }
     }
 }

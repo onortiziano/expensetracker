@@ -15,7 +15,7 @@ interface TransactionDao {
     suspend fun deleteTransaction(transaction: Transaction): Int
 
     // Prende tutte le transazioni ordinate dalla più recente alla più vecchia
-    @Transaction
+    @androidx.room.Transaction
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactionsWithTags(): Flow<List<TransactionWithTags>>
 
