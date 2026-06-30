@@ -10,5 +10,5 @@ data class TransactionWithTags(
         entityColumn = "tagId",
         associateBy = androidx.room.Junction(TransactionTag::class)
     )
-    val tags: List<Tag>
+    var tags: List<Tag> = emptyList()
 )
