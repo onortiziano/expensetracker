@@ -1,11 +1,8 @@
 package it.ciano.expensetracker.ui.screens
 
-import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -78,7 +75,7 @@ fun HomeScreen(
             // --- SEZIONE TOTALI ---
             val income by transactionViewModel.totalIncome.collectAsState()
             val expenses by transactionViewModel.totalExpenses.collectAsState()
-            val balance = income - expenses
+            val balance = (income ?: 0.0) - (expenses ?: 0.0)
 
             Row(
                 modifier = Modifier
@@ -86,8 +83,8 @@ fun HomeScreen(
                     .padding(vertical = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                TotalCard("Entrate", income, Color(0xFF4CAF50), Modifier.weight(1f))
-                TotalCard("Uscite", expenses, Color(0xFFF44336), Modifier.weight(1f))
+                TotalCard("Entrate", income ?: 0.0, Color(0xFF4CAF50), Modifier.weight(1f))
+                TotalCard("Uscite", expenses ?: 0.0, Color(0xFFF44336), Modifier.weight(1f))
             }
 
             TotalBalanceCard(balance)
@@ -108,17 +105,14 @@ fun HomeScreen(
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 items(transactionsWithTags) { item ->
-                    val transaction = item.transaction
-                    val tags = item.tags
-                    
                     TransactionItem(
-                        transaction = transaction,
-                        tags = tags,
+                        transaction = item.transaction,
+                        tags = item.tags,
                         onDetailsRequest = { 
-                            selectedTransaction = transaction 
+                            selectedTransaction = item.transaction 
                         },
                         onModifyRequest = { 
-                            navController.navigate("modify_transaction/${transaction.transactionId}") 
+                            navController.navigate("modify_transaction/${item.transaction.transactionId}") 
                         }
                     )
                 }
@@ -127,9 +121,11 @@ fun HomeScreen(
 
         // Dialog di Dettaglio
         if (selectedTransaction != null) {
+            val transaction = selectedTransaction!!
+            val tags = transactionsWithTags.find { it.transaction.transactionId == transaction.transactionId }?.tags ?: emptyList()
             TransactionDetailsDialog(
-                transaction = selectedTransaction!!,
-                tags = transactionsWithTags.find { it.transaction.transactionId == selectedTransaction!!.transactionId }?.tags ?: emptyList(),
+                transaction = transaction,
+                tags = tags,
                 onDismiss = { selectedTransaction = null }
             )
         }

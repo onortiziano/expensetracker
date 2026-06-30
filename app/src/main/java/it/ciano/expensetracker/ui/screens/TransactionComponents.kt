@@ -1,13 +1,9 @@
 package it.ciano.expensetracker.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Note
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.Transaction
 
@@ -66,7 +61,6 @@ fun TransactionItem(
                     }
                 }
                 
-                // Tag Chips
                 if (tags.isNotEmpty()) {
                     Row(
                         modifier = Modifier.padding(top = 4.dp),
@@ -74,9 +68,9 @@ fun TransactionItem(
                     ) {
                         tags.take(2).forEach { tag ->
                             Surface(
-                                color = tag.color.copy(alpha = 0.2f),
+                                color = Color(tag.color).copy(alpha = 0.2f),
                                 shape = MaterialTheme.shapes.extraSmall
-                            ) {
+                            ) {                                
                                 Text(
                                     text = tag.name,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),

@@ -37,7 +37,7 @@ fun RemoveTransactionScreen(
     // Carichiamo l'oggetto transazione completo usando l'ID della rotta
     LaunchedEffect(transactionId) {
         viewModel.allTransactions.collect { transactions ->
-            transactionToDelete = transactions.find { it.id == transactionId }
+            transactionToDelete = transactions.find { it.transactionId == transactionId }
         }
     }
 

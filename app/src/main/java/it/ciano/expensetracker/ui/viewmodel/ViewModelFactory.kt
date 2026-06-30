@@ -8,11 +8,11 @@ import it.ciano.expensetracker.data.repository.*
 
 class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     
-    // Creiamo le istanze dei repository una sola volta per l'intera app
     private val database = AppDatabase.getDatabase(application)
     private val transactionRepository = TransactionRepository(database.transactionDao())
     private val categoryRepository = CategoryRepository(database.categoryDao())
     private val budgetRepository = BudgetRepository(database.budgetDao())
+    private val tagRepository = TagRepository(database.tagDao())
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -23,6 +23,8 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
                 CategoryViewModel(categoryRepository) as T
             modelClass.isAssignableFrom(BudgetViewModel::class.java) -> 
                 BudgetViewModel(budgetRepository) as T
+            modelClass.isAssignableFrom(TagViewModel::class.java) -> 
+                TagViewModel(application) as T
             modelClass.isAssignableFrom(MainViewModel::class.java) -> 
                 MainViewModel(application) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> 
