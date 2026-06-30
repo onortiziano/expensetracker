@@ -9,7 +9,7 @@ data class TransactionWithTags(
 ) {
     @Relation(
         parentColumn = "id",
-        entityColumn = "tagId",
+        entityColumn = "id",
         associateBy = Junction(TransactionTag::class)
     )
     var tags: List<Tag> = emptyList()
