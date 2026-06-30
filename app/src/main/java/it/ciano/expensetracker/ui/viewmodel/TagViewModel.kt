@@ -1,16 +1,14 @@
 package it.ciano.expensetracker.ui.viewmodel
 
-import android.app.Application
 import android.graphics.Color
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.data.repository.TagRepository
 import it.ciano.expensetracker.data.model.Tag
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class TagViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = TagRepository(application)
+class TagViewModel(private val repository: TagRepository) : ViewModel() {
 
     val allTags: StateFlow<List<Tag>> = repository.getAllTags()
         .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())

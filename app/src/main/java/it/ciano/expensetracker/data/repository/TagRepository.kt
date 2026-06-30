@@ -1,19 +1,20 @@
 package it.ciano.expensetracker.data.repository
 
-import android.app.Application
-import it.ciano.expensetracker.data.AppDatabase
+import kotlinx.coroutines.flow.Flow
 import it.ciano.expensetracker.data.dao.TagDao
 import it.ciano.expensetracker.data.model.Tag
-import kotlinx.coroutines.flow.Flow
 
-class TagRepository(application: Application) {
-    private val tagDao = AppDatabase.getDatabase(application).tagDao()
+class TagRepository(private val tagDao: TagDao) {
 
-    fun getAllTags(): Flow<List<Tag>> = tagDao.getAllTags()
+    fun getAllTags(): Flow<List<Tag>> {
+        return tagDao.getAllTags()
+    }
 
-    suspend fun getTagByName(name: String): Tag? = tagDao.getTagByName(name)
+    suspend fun insertTag(tag: Tag): Long {
+        return tagDao.insertTag(tag)
+    }
 
-    suspend fun insertTag(tag: Tag): Long = tagDao.insertTag(tag)
-
-    suspend fun deleteTag(tag: Tag) = tagDao.deleteTag(tag)
+    suspend fun deleteTag(tag: Tag) {
+        tagDao.deleteTag(tag)
+    }
 }

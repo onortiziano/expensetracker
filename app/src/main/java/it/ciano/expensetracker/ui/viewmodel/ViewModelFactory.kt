@@ -24,7 +24,7 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
             modelClass.isAssignableFrom(BudgetViewModel::class.java) -> 
                 BudgetViewModel(budgetRepository) as T
             modelClass.isAssignableFrom(TagViewModel::class.java) -> 
-                TagViewModel(application) as T
+                TagViewModel(tagRepository) as T
             modelClass.isAssignableFrom(MainViewModel::class.java) -> 
                 MainViewModel(application) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> 
