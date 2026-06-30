@@ -229,7 +229,7 @@ fun AddTransactionScreen(
                                         DropdownMenuItem(
                                             text = { Text(sub.name) },
                                             onClick = {
-                                                transactionViewModel.updateSubCategory(sub.id)
+                                                transactionViewModel.updateSubCategory(sub.categoryId)
                                                 subExpanded = false
                                             }
                                         )
@@ -385,9 +385,9 @@ fun AddTransactionScreen(
                                         mainCategories.forEach { parent ->
                                             DropdownMenuItem(
                                                 text = { Text(parent.name) },
-                                                onClick = {
-                                                    selectedParentId = parent.id
-                                                    parentExpanded = false
+                                                onClick = { 
+                                                    selectedParentId = parent.categoryId
+                                                    parentExpanded = false 
                                                 }
                                             )
                                         }

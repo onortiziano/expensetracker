@@ -423,7 +423,7 @@ fun AddCategoryDialog(
                                     DropdownMenuItem(
                                         text = { Text(parent.name) },
                                         onClick = { 
-                                            selectedParentId = parent.id
+                                            selectedParentId = parent.categoryId
                                             parentExpanded = false 
                                         }
                                     )
