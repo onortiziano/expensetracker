@@ -3,38 +3,43 @@ package it.ciano.expensetracker.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.Transaction
+import it.ciano.expensetracker.data.model.TransactionWithTags
+import it.ciano.expensetracker.data.model.TransactionTag
 import it.ciano.expensetracker.data.repository.TransactionRepository
+import it.ciano.expensetracker.data.repository.TagRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.Dispatchers
 
-class TransactionViewModel(private val repository: TransactionRepository) : ViewModel() {
+class TransactionViewModel(
+    private val repository: TransactionRepository,
+    private val tagRepository: TagRepository
+) : ViewModel() {
     
-    // Coda per le eliminazioni (garantisce l'esecuzione sequenziale)
     private val deleteChannel = Channel<Transaction>(Channel.UNLIMITED)
 
     init {
-        // Avvia l'unico worker che processa la coda delle eliminazioni
         viewModelScope.launch(Dispatchers.IO) {
             for (transaction in deleteChannel) {
                 try {
                     val deletedCount = repository.deleteTransaction(transaction)
                     if (deletedCount == 0) {
-                        android.util.Log.e("TRANSACTION_VM", "FALLIMENTO: Il record con ID ${transaction.id} non è stato trovato nel DB. Possibile desincronizzazione della UI.")
-                    } else {
-                        android.util.Log.d("TRANSACTION_VM", "SUCCESSO: Record ${transaction.id} cancellato correttamente.")
+                        android.util.Log.e("TRANSACTION_VM", "FALLIMENTO: Il record con ID ${transaction.id} non è stato trovato nel DB.")
                     }
                 } catch (t: Throwable) {
-                    android.util.Log.e("TRANSACTION_VM", "ERRORE CRITICO durante la cancellazione di ${transaction.id}: ${t.message}")
+                    android.util.Log.e("TRANSACTION_VM", "ERRORE CRITICO: ${t.message}")
                 }
             }
         }
     }
 
-    // --- DATI PERSISTENTI ---
     val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
+        .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
+
+    val allTransactionsWithTags: StateFlow<List<TransactionWithTags>> = repository.getAllTransactionsWithTags()
         .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
 
     val totalIncome: StateFlow<Double> = repository.getTotalIncome()
@@ -45,7 +50,9 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         .map { it ?: 0.0 }
         .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0.0)
 
-    // --- STATO UI PER MODIFICA/AGGIUNTA (Sopravvive alla rotazione) ---
+    private val _title = MutableStateFlow("")
+    val title: StateFlow<String> = _title
+
     private val _amount = MutableStateFlow("")
     val amount: StateFlow<String> = _amount
 
@@ -61,7 +68,10 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     private val _selectedSubCategoryId = MutableStateFlow(0)
     val selectedSubCategoryId: StateFlow<Int> = _selectedSubCategoryId
 
-    // --- FUNZIONI DI AGGIORNAMENTO ---
+    private val _selectedTags = MutableStateFlow<Set<Tag>>(emptySet())
+    val selectedTags: StateFlow<Set<Tag>> = _selectedTags.asStateFlow()
+
+    fun updateTitle(value: String) { _title.value = value }
     fun updateAmount(value: String) { _amount.value = value }
     fun updateNote(value: String) { _note.value = value }
     fun updateType(value: String) { _type.value = value }
@@ -76,8 +86,18 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _selectedSubCategoryId.value = subId
     }
 
-    // Carica i dati di una transazione nel ViewModel
-    fun loadTransaction(transaction: Transaction, allCategories: List<Category>) {
+    fun toggleTagSelection(tag: Tag) {
+        val current = _selectedTags.value.toMutableSet()
+        if (current.contains(tag)) {
+            current.remove(tag)
+        } else {
+            current.add(tag)
+        }
+        _selectedTags.value = current
+    }
+
+    fun loadTransaction(transaction: Transaction, allCategories: List<Category>, tags: List<Tag>) {
+        _title.value = transaction.title
         _amount.value = transaction.amount.toString()
         _note.value = transaction.note
         _type.value = transaction.type
@@ -90,18 +110,21 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
             _selectedMainCategoryId.value = transaction.categoryId
             _selectedSubCategoryId.value = 0
         }
+        _selectedTags.value = tags.toSet()
     }
 
-    fun addTransaction(transaction: Transaction) {
+    fun addTransaction(transaction: Transaction, tags: Set<Tag>) {
         viewModelScope.launch {
             repository.insertTransaction(transaction)
+            // Implementazione collegamento tag via TagRepository (da fare in repository)
             resetForm()
         }
     }
 
-    fun updateTransaction(transaction: Transaction) {
+    fun updateTransaction(transaction: Transaction, tags: Set<Tag>) {
         viewModelScope.launch {
             repository.updateTransaction(transaction)
+            // Implementazione aggiornamento tag
         }
     }
 
@@ -112,10 +135,12 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     }
 
     fun resetForm() {
+        _title.value = ""
         _amount.value = ""
         _note.value = ""
         _type.value = "EXPENSE"
         _selectedMainCategoryId.value = 0
         _selectedSubCategoryId.value = 0
+        _selectedTags.value = emptySet()
     }
 }

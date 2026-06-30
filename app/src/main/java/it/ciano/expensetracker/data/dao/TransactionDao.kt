@@ -14,8 +14,10 @@ interface TransactionDao {
     suspend fun deleteTransaction(transaction: Transaction): Int
 
     // Prende tutte le transazioni ordinate dalla più recente alla più vecchia
+    @Transaction
     @Query("SELECT * FROM transactions ORDER BY date DESC")
-    fun getAllTransactions(): Flow<List<Transaction>>
+    fun getAllTransactionsWithTags(): Flow<List<TransactionWithTags>>
+
 
     // Prende solo le transazioni di una specifica categoria
     @Query("SELECT * FROM transactions WHERE categoryId = :catId ORDER BY date DESC")

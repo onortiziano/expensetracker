@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
+import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,16 +42,20 @@ fun ModifyTransactionScreen(
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
+    val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
 
+    val title by transactionViewModel.title.collectAsState()
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
     val type by transactionViewModel.type.collectAsState()
+    val selectedTags by transactionViewModel.selectedTags.collectAsState()
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
     val categoryMap by categoryViewModel.categoryMap.collectAsState()
+    val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
@@ -60,7 +66,7 @@ fun ModifyTransactionScreen(
         transactionViewModel.allTransactions.collect { transactions ->
             val transaction = transactions.find { it.id == transactionId }
             transaction?.let { trans ->
-                transactionViewModel.loadTransaction(trans, allCategories)
+                transactionViewModel.loadTransaction(trans, allCategories, allTags)
             }
         }
     }
@@ -107,8 +113,8 @@ fun ModifyTransactionScreen(
                         Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
                         OutlinedTextField(
-                            value = note,
-                            onValueChange = { transactionViewModel.updateNote(it) },
+                            value = title,
+                            onValueChange = { transactionViewModel.updateTitle(it) },
                             label = { Text("Titolo") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
@@ -121,6 +127,15 @@ fun ModifyTransactionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
+                        )
+
+                        OutlinedTextField(
+                            value = note,
+                            onValueChange = { transactionViewModel.updateNote(it) },
+                            label = { Text("Note Dettagliate") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = false,
+                            maxLines = 4
                         )
                     }
                 }
@@ -235,6 +250,35 @@ fun ModifyTransactionScreen(
                     }
                 }
 
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        
+                        if (allTags.isEmpty()) {
+                            Text(text = "Nessun tag disponibile", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                allTags.forEach { tag ->
+                                    FilterChip(
+                                        selected = selectedTags.contains(tag),
+                                        onClick = { transactionViewModel.toggleTagSelection(tag) },
+                                        label = { Text(tag.name) },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -249,7 +293,7 @@ fun ModifyTransactionScreen(
                     val normalizedAmount = amount.replace(separator, ".")
                     val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
                     
-                    val isFormValid = note.isNotBlank() && 
+                    val isFormValid = title.isNotBlank() && 
                                       !containsInvalidChars && 
                                       !hasMultipleSeparators && 
                                       numericValue > 0.0
@@ -261,13 +305,14 @@ fun ModifyTransactionScreen(
                             
                             val updatedTransaction = Transaction(
                                 id = transactionId,
+                                title = title,
                                 amount = amountValue,
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
                                 date = System.currentTimeMillis()
                             )
-                            transactionViewModel.updateTransaction(updatedTransaction)
+                            transactionViewModel.updateTransaction(updatedTransaction, selectedTags)
                             navController.popBackStack()
                         },
                         enabled = isFormValid,
@@ -345,16 +390,12 @@ fun ModifyTransactionScreen(
                                     ExposedDropdownMenu(
                                         expanded = parentExpanded,
                                         onDismissRequest = { parentExpanded = false }
-                                    ) {
-                                        mainCategories.forEach { parent ->
-                                            DropdownMenuItem(
-                                                text = { Text(parent.name) },
-                                                onClick = {
-                                                    selectedParentId = parent.id
-                                                    parentExpanded = false
-                                                }
-                                            )
-                                        }
+                                ) {
+                                    mainCategories.forEach { parent ->
+                                        DropdownMenuItem(
+                                            text = { Text(parent.name) },
+                                            onClick = { parentExpanded = false }
+                                        )
                                     }
                                 }
                             }
@@ -400,7 +441,7 @@ fun ModifyTransactionScreen(
                         Text("Annulla")
                     }
                 }
-            )
+            }
         }
     }
 }

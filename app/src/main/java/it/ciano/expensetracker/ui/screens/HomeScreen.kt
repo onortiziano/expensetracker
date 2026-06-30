@@ -32,7 +32,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,39 +43,39 @@ import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.Tag
+import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
+import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    // --- STATI E VIEWMODEL ---
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as Application
     val scope = rememberCoroutineScope()
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+    val transactionsWithTags by transactionViewModel.allTransactionsWithTags.collectAsState(initial = emptyList())
     
-    val transactions by transactionViewModel.allTransactions.collectAsState()
+    var selectedTransactionWithTags by remember { mutableStateOf<TransactionWithTags?>(null) }
     
-    // Stato per l'apertura/chiusura del menu laterale (Drawer)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    // Intercetta il tasto indietro di sistema
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
 
-    // --- STRUTTURA CON NAVIGATION DRAWER ---
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                // Intestazione del Menu
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,7 +99,6 @@ fun HomeScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Voci del Menu
                 NavigationDrawerItem(
                     label = { Text("Home") },
                     selected = true,
@@ -136,7 +134,6 @@ fun HomeScreen(navController: NavHostController) {
             }
         }
     ) {
-        // --- CONTENUTO PRINCIPALE ---
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -162,7 +159,6 @@ fun HomeScreen(navController: NavHostController) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // --- CARD RIEPILOGO BILANCIO ---
                     item {
                         val totalIncome by transactionViewModel.totalIncome.collectAsState()
                         val totalExpenses by transactionViewModel.totalExpenses.collectAsState()
@@ -204,21 +200,37 @@ fun HomeScreen(navController: NavHostController) {
                         }
                     }
                     
-                    items(transactions) { transaction ->
+                    items(transactionsWithTags) { itemWithTags ->
                         TransactionItem(
-                            transaction = transaction, 
+                            transaction = itemWithTags.transaction, 
                             mainViewModel = mainViewModel,
                             categories = categories,
+                            tags = itemWithTags.tags,
                             onDeleteRequest = { trans ->
                                 transactionViewModel.deleteTransaction(trans)
                             },
-                            onClick = { 
-                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                            onDetailsRequest = { trans ->
+                                selectedTransactionWithTags = TransactionWithTags(trans, itemWithTags.tags)
+                            },
+                            onModifyRequest = { trans ->
+                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${trans.id}") 
                             }
                         )
                     }
                 }
             }
         }
+    }
+
+    if (selectedTransactionWithTags != null) {
+        TransactionDetailsDialog(
+            transaction = selectedTransactionWithTags!!.transaction,
+            tags = selectedTransactionWithTags!!.tags,
+            mainViewModel = mainViewModel,
+            onDismiss = { selectedTransactionWithTags = null },
+            onEdit = { 
+                navController.navigate("${Routes.MODIFY_TRANSACTION}/${selectedTransactionWithTags?.transaction?.id}") 
+            }
+        )
     }
 }

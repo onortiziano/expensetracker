@@ -2,6 +2,7 @@ package it.ciano.expensetracker.data.repository
 
 import it.ciano.expensetracker.data.dao.TransactionDao
 import it.ciano.expensetracker.data.model.Transaction
+import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.flow.Flow
 
 class TransactionRepository(private val transactionDao: TransactionDao) {
@@ -9,6 +10,11 @@ class TransactionRepository(private val transactionDao: TransactionDao) {
     // Recupera tutte le transazioni (ordinate dalla più recente)
     fun getAllTransactions(): Flow<List<Transaction>> {
         return transactionDao.getAllTransactions()
+    }
+
+    // Recupera tutte le transazioni includendo i loro Tag associati
+    fun getAllTransactionsWithTags(): Flow<List<TransactionWithTags>> {
+        return transactionDao.getAllTransactionsWithTags()
     }
 
     // Recupera le transazioni filtrate per una specifica categoria

@@ -1,10 +1,13 @@
 package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,16 +18,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun TransactionItem(
     transaction: Transaction, 
     mainViewModel: MainViewModel,
     categories: List<Category>,
+    tags: List<Tag>,
     onDeleteRequest: (Transaction) -> Unit,
-    onClick: () -> Unit
+    onDetailsRequest: (Transaction) -> Unit,
+    onModifyRequest: (Transaction) -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     
@@ -80,7 +86,12 @@ fun TransactionItem(
         },
         content = {
             Card(
-                modifier = Modifier.fillMaxWidth().clickable { onClick() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .combinedClickable(
+                        onClick = { onDetailsRequest(transaction) },
+                        onLongClick = { onModifyRequest(transaction) }
+                    ),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Row(
@@ -88,9 +99,39 @@ fun TransactionItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(text = transaction.note, fontWeight = FontWeight.Bold)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = transaction.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            if (transaction.note.isNotBlank()) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = "📝", fontSize = 14.sp)
+                            }
+                        }
                         
+                        // Gestione Tag (max 2 + n)
+                        if (tags.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                tags.take(2).forEach { tag ->
+                                    SuggestionChip(
+                                        onClick = { },
+                                        label = { Text(tag.name, fontSize = 10.sp) },
+                                        modifier = Modifier.height(20.dp)
+                                    )
+                                }
+                                if (tags.size > 2) {
+                                    Text(
+                                        text = "+${tags.size - 2}",
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.align(Alignment.CenterVertically),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+
                         val category = categories.find { it.id == transaction.categoryId }
                         val categoryDisplayName = if (category != null) {
                             if (category.parentCategoryId != null) {
@@ -103,14 +144,15 @@ fun TransactionItem(
                             "Senza Categoria"
                         }
                         
-                        Text(text = "Categoria: $categoryDisplayName", fontSize = 12.sp)
+                        Text(text = "Categoria: $categoryDisplayName", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Text(
                         text = if (transaction.type == "INCOME") 
                             "+" + mainViewModel.formatCurrency(transaction.amount).removePrefix("+") 
                             else "-" + mainViewModel.formatCurrency(transaction.amount).removePrefix("-"),
                         color = if (transaction.type == "INCOME") Color(0xFF4CAF50) else Color.Red,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
                     )
                 }
             }
