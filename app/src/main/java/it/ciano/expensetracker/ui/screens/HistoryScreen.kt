@@ -1,15 +1,10 @@
 package it.ciano.expensetracker.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.sharp.ArrowBack
-import androidx.compose.material.icons.automirrored.twotone.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +20,7 @@ import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
-import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.TransactionWithTags
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,8 +34,7 @@ fun HistoryScreen(
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
-    val transactions by transactionViewModel.allTransactions.collectAsState()
-    val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
+    val transactionsWithTags by transactionViewModel.allTransactionsWithTags.collectAsState()
     
     Scaffold(
         topBar = {
@@ -49,13 +43,7 @@ fun HistoryScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = mainViewModel.getIcon(
-                                Icons.AutoMirrored.Filled.ArrowBack, 
-                                Icons.AutoMirrored.Outlined.ArrowBack, 
-                                Icons.AutoMirrored.Rounded.ArrowBack, 
-                                Icons.AutoMirrored.Sharp.ArrowBack, 
-                                Icons.AutoMirrored.TwoTone.ArrowBack
-                            ), 
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
                             contentDescription = "Torna indietro"
                         )
                     }
@@ -63,7 +51,7 @@ fun HistoryScreen(
             )
         }
     ) { paddingValues ->
-        if (transactions.isEmpty()) {
+        if (transactionsWithTags.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -81,16 +69,16 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(transactions) { transaction ->
+                items(transactionsWithTags) { item ->
                     TransactionItem(
-                        transaction = transaction, 
-                        mainViewModel = mainViewModel,
-                        categories = categories,
-                        onDeleteRequest = { trans ->
-                            transactionViewModel.deleteTransaction(trans)
+                        transaction = item.transaction,
+                        tags = item.tags,
+                        onDetailsRequest = { 
+                            // In HistoryScreen, il click singolo può portare alla modifica o a un dettaglio
+                            navController.navigate("details/${item.transaction.transactionId}") 
                         },
-                        onClick = { 
-                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                        onModifyRequest = { 
+                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${item.transaction.transactionId}") 
                         }
                     )
                 }

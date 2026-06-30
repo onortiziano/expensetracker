@@ -1,5 +1,6 @@
 package it.ciano.expensetracker.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -72,7 +73,6 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            // --- SEZIONE TOTALI ---
             val income by transactionViewModel.totalIncome.collectAsState()
             val expenses by transactionViewModel.totalExpenses.collectAsState()
             val balance = (income ?: 0.0) - (expenses ?: 0.0)
@@ -91,7 +91,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- LISTA TRANSAZIONI ---
             Text(
                 text = "Ultime Operazioni",
                 style = MaterialTheme.typography.titleMedium,
@@ -119,7 +118,6 @@ fun HomeScreen(
             }
         }
 
-        // Dialog di Dettaglio
         if (selectedTransaction != null) {
             val transaction = selectedTransaction!!
             val tags = transactionsWithTags.find { it.transaction.transactionId == transaction.transactionId }?.tags ?: emptyList()
