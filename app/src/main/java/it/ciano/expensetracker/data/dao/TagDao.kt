@@ -2,7 +2,9 @@ package it.ciano.expensetracker.data.dao
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
-import it.ciano.expensetracker.data.model.*
+import it.ciano.expensetracker.data.model.Tag
+import it.ciano.expensetracker.data.model.Transaction
+import it.ciano.expensetracker.data.model.TransactionTag
 
 @Dao
 interface TagDao {
