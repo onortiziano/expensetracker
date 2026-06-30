@@ -58,9 +58,6 @@ fun ModifyTransactionScreen(
     val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
-    var newCategoryName by remember { mutableStateOf("") }
-    var selectedParentId by remember { mutableStateOf<Int?>(null) }
-    var categoryType by remember { mutableStateOf("MAIN") }
 
     LaunchedEffect(transactionId) {
         transactionViewModel.allTransactions.collect { transactions ->
@@ -331,117 +328,135 @@ fun ModifyTransactionScreen(
         }
 
         if (showAddCategoryDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showAddCategoryDialog = false
-                    newCategoryName = ""
-                    selectedParentId = null
-                    categoryType = "MAIN"
-                },
-                title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
-                            value = newCategoryName,
-                            onValueChange = { newCategoryName = it },
-                            label = { Text("Nome Categoria") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(
-                                    selected = categoryType == "MAIN",
-                                    onClick = { 
-                                        categoryType = "MAIN"
-                                        selectedParentId = null 
-                                    },
-                                    label = { Text("Principale") }
-                                )
-                                FilterChip(
-                                    selected = categoryType == "SUB",
-                                    onClick = { categoryType = "SUB" },
-                                    label = { Text("Sottocategoria") }
-                                )
-                            }
-                        }
-
-                        if (categoryType == "SUB") {
-                            var parentExpanded by remember { mutableStateOf(false) }
-                            val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
-                            
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                ExposedDropdownMenuBox(
-                                    expanded = parentExpanded,
-                                    onExpandedChange = { parentExpanded = it },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    OutlinedTextField(
-                                        readOnly = true,
-                                        value = parentName,
-                                        onValueChange = {},
-                                        label = { Text("Scegli il Padre") },
-                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
-                                        modifier = Modifier.menuAnchor().fillMaxWidth()
-                                    )
-                                    ExposedDropdownMenu(
-                                        expanded = parentExpanded,
-                                        onDismissRequest = { parentExpanded = false }
-                                ) {
-                                    mainCategories.forEach { parent ->
-                                        DropdownMenuItem(
-                                            text = { Text(parent.name) },
-                                            onClick = { parentExpanded = false }
-                                        )
-                                    }
-                                }
-                            }
-                        }
+            AddCategoryDialog(
+                allCategories = allCategories,
+                mainCategories = mainCategories,
+                categoryMap = categoryMap,
+                onDismiss = { showAddCategoryDialog = false },
+                onCategoryAdded = { newId, isMain ->
+                    if (isMain) {
+                        transactionViewModel.updateMainCategory(newId)
+                    } else {
+                        // In questo caso l'id del padre è gestito internamente o passato
+                        // Per semplicità usiamo il current selected main
+                        transactionViewModel.updateCategoryPair(selectedMainCategoryId, newId)
                     }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                val isDuplicate = allCategories.any { 
-                                    it.name == newCategoryName && it.parentCategoryId == selectedParentId 
-                                }
-                                
-                                if (isDuplicate) {
-                                    return@launch 
-                                }
+                    showAddCategoryDialog = false
+                }
+            )
+        }
+    }
+}
 
-                                if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
-                                    val newId = categoryViewModel.addCategory(
-                                        Category(name = newCategoryName, parentCategoryId = selectedParentId)
-                                    ).toInt()
-                                    
-                                    if (categoryType == "MAIN") {
-                                        transactionViewModel.updateMainCategory(newId)
-                                    } else {
-                                        val parentId = selectedParentId ?: 0
-                                        transactionViewModel.updateCategoryPair(parentId, newId)
-                                    }
-                                    
-                                    showAddCategoryDialog = false
-                                    newCategoryName = ""
-                                    selectedParentId = null
-                                    categoryType = "MAIN"
+@Composable
+fun AddCategoryDialog(
+    allCategories: List<Category>,
+    mainCategories: List<Category>,
+    categoryMap: Map<Int, String>,
+    onDismiss: () -> Unit,
+    onCategoryAdded: (Int, Boolean) -> Unit
+) {
+    var newCategoryName by remember { mutableStateOf("") }
+    var selectedParentId by remember { mutableStateOf<Int?>(null) }
+    var categoryType by remember { mutableStateOf("MAIN") }
+    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = context.applicationContext as android.app.Application
+    val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                OutlinedTextField(
+                    value = newCategoryName,
+                    onValueChange = { newCategoryName = it },
+                    label = { Text("Nome Categoria") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = categoryType == "MAIN",
+                            onClick = { 
+                                categoryType = "MAIN"
+                                selectedParentId = null 
+                            },
+                            label = { Text("Principale") }
+                        )
+                        FilterChip(
+                            selected = categoryType == "SUB",
+                            onClick = { categoryType = "SUB" },
+                            label = { Text("Sottocategoria") }
+                        )
+                    }
+                }
+
+                if (categoryType == "SUB") {
+                    var parentExpanded by remember { mutableStateOf(false) }
+                    val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
+                    
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        ExposedDropdownMenuBox(
+                            expanded = parentExpanded,
+                            onExpandedChange = { parentExpanded = it },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                readOnly = true,
+                                value = parentName,
+                                onValueChange = {},
+                                label = { Text("Scegli il Padre") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
+                                modifier = Modifier.menuAnchor().fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = parentExpanded,
+                                onDismissRequest = { parentExpanded = false }
+                            ) {
+                                mainCategories.forEach { parent ->
+                                    DropdownMenuItem(
+                                        text = { Text(parent.name) },
+                                        onClick = { 
+                                            selectedParentId = parent.id
+                                            parentExpanded = false 
+                                        }
+                                    )
                                 }
                             }
-                        },
-                        enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
-                    ) { Text("Salva") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAddCategoryDialog = false }) {
-                        Text("Annulla")
+                        }
                     }
                 }
             }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    scope.launch {
+                        val isDuplicate = allCategories.any { 
+                            it.name == newCategoryName && it.parentCategoryId == selectedParentId 
+                        }
+                        
+                        if (!isDuplicate && newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
+                            val newId = categoryViewModel.addCategory(
+                                Category(name = newCategoryName, parentCategoryId = selectedParentId)
+                            ).toInt()
+                            onCategoryAdded(newId, categoryType == "MAIN")
+                        }
+                    }
+                },
+                enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
+            ) { Text("Salva") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annulla")
+            }
         }
-    }
+    )
 }
