@@ -1,19 +1,19 @@
 package it.ciano.expensetracker.ui.screens
 
 import android.app.Application
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -61,6 +61,9 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
         }
     }
 
+    // Validazione per il pulsante Salva
+    val isSaveEnabled = title.isNotBlank() && amount.isNotBlank() && amount.toDoubleOrNull() != null
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,11 +77,21 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()), // Fix scrolling
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Titolo") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Importo") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(
+                value = amount, 
+                onValueChange = { amount = it }, 
+                label = { Text("Importo") }, 
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal) // Fix tastiera
+            )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(selected = type == "EXPENSE", onClick = { type = "EXPENSE" }, label = { Text("Uscita") }, modifier = Modifier.weight(1f))
                 FilterChip(selected = type == "INCOME", onClick = { type = "INCOME" }, label = { Text("Entrata") }, modifier = Modifier.weight(1f))
@@ -97,6 +110,7 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
                     transactionViewModel.updateTransaction(updatedTransaction)
                     navController.popBackStack()
                 },
+                enabled = isSaveEnabled, // Fix validazione
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.medium
             ) {
