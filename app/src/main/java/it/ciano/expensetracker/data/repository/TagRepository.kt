@@ -6,15 +6,13 @@ import it.ciano.expensetracker.data.model.Tag
 
 class TagRepository(private val tagDao: TagDao) {
 
-    fun getAllTags(): Flow<List<Tag>> {
-        return tagDao.getAllTags()
-    }
+    val allTags: Flow<List<Tag>> = tagDao.getAllTags()
 
-    suspend fun insertTag(tag: Tag): Long {
+    suspend fun insert(tag: Tag): Long {
         return tagDao.insertTag(tag)
     }
 
-    suspend fun deleteTag(tag: Tag) {
+    suspend fun delete(tag: Tag) {
         tagDao.deleteTag(tag)
     }
 }
