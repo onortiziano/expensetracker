@@ -7,6 +7,7 @@ import it.ciano.expensetracker.data.AppDatabase
 import it.ciano.expensetracker.data.repository.*
 
 class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    
     private val database = AppDatabase.getDatabase(application)
     private val transactionRepository = TransactionRepository(database.transactionDao())
     private val categoryRepository = CategoryRepository(database.categoryDao())
@@ -16,12 +17,18 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
-            modelClass.isAssignableFrom(TransactionViewModel::class.java) -> TransactionViewModel(transactionRepository) as T
-            modelClass.isAssignableFrom(CategoryViewModel::class.java) -> CategoryViewModel(categoryRepository) as T
-            modelClass.isAssignableFrom(BudgetViewModel::class.java) -> BudgetViewModel(budgetRepository) as T
-            modelClass.isAssignableFrom(TagViewModel::class.java) -> TagViewModel(tagRepository) as T
-            modelClass.isAssignableFrom(MainViewModel::class.java) -> MainViewModel(application) as T
-            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> SettingsViewModel(application) as T
+            modelClass.isAssignableFrom(TransactionViewModel::class.java) -> 
+                TransactionViewModel(transactionRepository) as T
+            modelClass.isAssignableFrom(CategoryViewModel::class.java) -> 
+                CategoryViewModel(categoryRepository) as T
+            modelClass.isAssignableFrom(BudgetViewModel::class.java) -> 
+                BudgetViewModel(budgetRepository) as T
+            modelClass.isAssignableFrom(TagViewModel::class.java) -> 
+                TagViewModel(tagRepository) as T
+            modelClass.isAssignableFrom(MainViewModel::class.java) -> 
+                MainViewModel(application) as T
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> 
+                SettingsViewModel(application) as T
             else -> throw IllegalArgumentException("Classe ViewModel sconosciuta: ${modelClass.name}")
         }
     }

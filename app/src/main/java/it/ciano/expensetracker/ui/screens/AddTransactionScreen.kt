@@ -1,65 +1,46 @@
 package it.ciano.expensetracker.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import it.ciano.expensetracker.data.model.Category
-import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
-import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun AddTransactionScreen(
-    navController: NavHostController
-) {
-    val scope = rememberCoroutineScope()
+fun AddTransactionScreen(navController: NavHostController) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
-    val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
     val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
 
-    val title by transactionViewModel.title.collectAsState()
-    val amount by transactionViewModel.amount.collectAsState()
-    val note by transactionViewModel.note.collectAsState()
-    val type by transactionViewModel.type.collectAsState()
-    val selectedTags by transactionViewModel.selectedTags.collectAsState()
-    val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
-    val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
+    var title by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("EXPENSE") }
+    var note by remember { mutableStateOf("") }
+    var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
+    var selectedTags by remember { mutableStateOf(setOf<Int>()) }
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
-    val categoryMap by categoryViewModel.categoryMap.collectAsState()
     val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
-
-    var showAddCategoryDialog by remember { mutableStateOf(false) }
-    var newCategoryName by remember { mutableStateOf("") }
-    var selectedParentId by remember { mutableStateOf<Int?>(null) }
-    var categoryType by remember { mutableStateOf("MAIN") }
 
     Scaffold(
         topBar = {
@@ -67,376 +48,43 @@ fun AddTransactionScreen(
                 title = { Text("Nuova Transazione", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Torna")
                     }
                 }
             )
         }
     ) { paddingValues ->
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+        Column(
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val screenHeight = maxHeight
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .heightIn(min = screenHeight)
-                    .imePadding()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                        
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { transactionViewModel.updateTitle(it) },
-                            label = { Text("Titolo") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = amount,
-                            onValueChange = { transactionViewModel.updateAmount(it) },
-                            label = { Text("Importo") },
-                            modifier = Modifier.fillMaxWidth(),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = note,
-                            onValueChange = { transactionViewModel.updateNote(it) },
-                            label = { Text("Note Dettagliate") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = false,
-                            maxLines = 4
-                        )
-                    }
-                }
-
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(text = "Classificazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-
-                        Text(text = "Tipo di operazione", fontSize = 13.sp)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            FilterChip(
-                                selected = type == "EXPENSE",
-                                onClick = { transactionViewModel.updateType("EXPENSE") },
-                                label = { Text("Uscita") },
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterChip(
-                                selected = type == "INCOME",
-                                onClick = { transactionViewModel.updateType("INCOME") },
-                                label = { Text("Entrata") },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(text = "Categoria Principale", fontSize = 13.sp)
-                        var mainExpanded by remember { mutableStateOf(false) }
-                        val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Scegli Categoria"
-
-                        ExposedDropdownMenuBox(
-                            expanded = mainExpanded,
-                            onExpandedChange = { mainExpanded = it },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            OutlinedTextField(
-                                readOnly = true,
-                                value = mainCategoryName,
-                                onValueChange = {},
-                                label = { Text("Categoria Principale") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mainExpanded) },
-                                modifier = Modifier.menuAnchor().fillMaxWidth()
-                            )
-                            ExposedDropdownMenu(
-                                expanded = mainExpanded,
-                                onDismissRequest = { mainExpanded = false }
-                            ) {
-                                mainCategories.forEach { category ->
-                                    DropdownMenuItem(
-                                        text = { Text(category.name) },
-                                        onClick = {
-                                            transactionViewModel.updateMainCategory(category.categoryId)
-                                            mainExpanded = false
-                                        }
-                                    )
-                                }
-                                DropdownMenuItem(
-                                    text = { Text("+ Aggiungi Nuova", color = MaterialTheme.colorScheme.primary) },
-                                    onClick = {
-                                        mainExpanded = false
-                                        showAddCategoryDialog = true
-                                    }
-                                )
-                            }
-                        }
-
-                        val subCategories = allCategories.filter { it.parentCategoryId == selectedMainCategoryId }
-                        if (selectedMainCategoryId != 0 && subCategories.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "Sottocategoria", fontSize = 13.sp)
-                            var subExpanded by remember { mutableStateOf(false) }
-                            val subCategoryName = categoryMap[selectedSubCategoryId] ?: "Scegli Sottocategoria"
-
-                            ExposedDropdownMenuBox(
-                                expanded = subExpanded,
-                                onExpandedChange = { subExpanded = it },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedTextField(
-                                    readOnly = true,
-                                    value = subCategoryName,
-                                    onValueChange = {},
-                                    label = { Text("Sottocategoria") },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subExpanded) },
-                                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = subExpanded,
-                                    onDismissRequest = { subExpanded = false }
-                                ) {
-                                    subCategories.forEach { sub ->
-                                        DropdownMenuItem(
-                                            text = { Text(sub.name) },
-                                            onClick = {
-                                                transactionViewModel.updateSubCategory(sub.categoryId)
-                                                subExpanded = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                        
-                        if (allTags.isEmpty()) {
-                            Text(text = "Nessun tag disponibile", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        } else {
-                            // Usiamo un FlowRow per i tag (se disponibile) o una semplice Row con scroll orizzontale
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                allTags.forEach { tag ->
-                                    FilterChip(
-                                        selected = selectedTags.contains(tag),
-                                        onClick = { transactionViewModel.toggleTagSelection(tag) },
-                                        label = { Text(tag.name) },
-                                        // Qui potremmo usare il colore del tag per il background se volessimo
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    val separator = settingsViewModel.decimalSeparator.collectAsState().value
-                    val sepChar = separator.firstOrNull() ?: ','
-                    val containsInvalidChars = amount.any { it.isDigit() == false && it != sepChar }
-                    val hasMultipleSeparators = amount.count { it == sepChar } > 1
-                    val normalizedAmount = amount.replace(separator, ".")
-                    val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
-                    
-                    val isFormValid = title.isNotBlank() && 
-                                      !containsInvalidChars && 
-                                      !hasMultipleSeparators && 
-                                      numericValue > 0.0
-                    
-                    Button(
-                        onClick = {
-                            val amountValue = normalizedAmount.toDoubleOrNull() ?: 0.0
-                            val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else selectedMainCategoryId
-                            
-                            val transaction = Transaction(
-                                title = title,
-                                amount = amountValue,
-                                type = type,
-                                categoryId = finalCategoryId,
-                                note = note,
-                                date = System.currentTimeMillis()
-                            )
-                            transactionViewModel.addTransaction(transaction, selectedTags)
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp)
-                            .height(56.dp),
-                        enabled = isFormValid,
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Text("Salva Transazione", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(32.dp))
+            OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Titolo") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Importo") }, modifier = Modifier.fillMaxWidth())
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = type == "EXPENSE", onClick = { type = "EXPENSE" }, label = { Text("Uscita") }, modifier = Modifier.weight(1f))
+                FilterChip(selected = type == "INCOME", onClick = { type = "INCOME" }, label = { Text("Entrata") }, modifier = Modifier.weight(1f))
             }
-        }
-
-        if (showAddCategoryDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showAddCategoryDialog = false
-                    newCategoryName = ""
-                    selectedParentId = null
-                    categoryType = "MAIN"
+            OutlinedTextField(value = note, onValueChange = { note = it }, label = { Text("Note") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+            Text("Categoria", style = MaterialTheme.typography.labelLarge)
+            CategorySelector(categories = allCategories, selectedCategoryId = selectedCategoryId, onCategorySelected = { selectedCategoryId = it }, onParentSelected = {})
+            Text("Tag", style = MaterialTheme.typography.labelLarge)
+            TagSelector(tags = allTags, selectedTags = selectedTags, onTagToggled = { tagId ->
+                selectedTags = if (selectedTags.contains(tagId)) selectedTags - tagId else selectedTags + tagId
+            })
+            Button(
+                onClick = {
+                    val finalAmount = amount.toDoubleOrNull() ?: 0.0
+                    val newTransaction = Transaction(title = title, amount = finalAmount, type = type, categoryId = selectedCategoryId ?: 0, note = note)
+                    transactionViewModel.insert(newTransaction)
+                    navController.popBackStack()
                 },
-                title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
-                            value = newCategoryName,
-                            onValueChange = { newCategoryName = it },
-                            label = { Text("Nome Categoria") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(
-                                    selected = categoryType == "MAIN",
-                                    onClick = { 
-                                        categoryType = "MAIN"
-                                        selectedParentId = null 
-                                    },
-                                    label = { Text("Principale") }
-                                )
-                                FilterChip(
-                                    selected = categoryType == "SUB",
-                                    onClick = { categoryType = "SUB" },
-                                    label = { Text("Sottocategoria") }
-                                )
-                            }
-                        }
-
-                        if (categoryType == "SUB") {
-                            var parentExpanded by remember { mutableStateOf(false) }
-                            val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
-                            
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                ExposedDropdownMenuBox(
-                                    expanded = parentExpanded,
-                                    onExpandedChange = { parentExpanded = it },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    OutlinedTextField(
-                                        readOnly = true,
-                                        value = parentName,
-                                        onValueChange = {},
-                                        label = { Text("Scegli il Padre") },
-                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
-                                        modifier = Modifier.menuAnchor().fillMaxWidth()
-                                    )
-                                    ExposedDropdownMenu(
-                                        expanded = parentExpanded,
-                                        onDismissRequest = { parentExpanded = false }
-                                    ) {
-                                        mainCategories.forEach { parent ->
-                                            DropdownMenuItem(
-                                                text = { Text(parent.name) },
-                                                onClick = { 
-                                                    selectedParentId = parent.categoryId
-                                                    parentExpanded = false 
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                val isDuplicate = allCategories.any { 
-                                    it.name == newCategoryName && it.parentCategoryId == selectedParentId 
-                                }
-                                
-                                if (isDuplicate) {
-                                    return@launch 
-                                }
-
-                                if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
-                                    val newId = categoryViewModel.addCategory(
-                                        Category(name = newCategoryName, parentCategoryId = selectedParentId)
-                                    ).toInt()
-                                    
-                                    if (categoryType == "MAIN") {
-                                        transactionViewModel.updateMainCategory(newId)
-                                    } else {
-                                        val parentId = selectedParentId ?: 0
-                                        transactionViewModel.updateCategoryPair(parentId, newId)
-                                    }
-                                    
-                                    showAddCategoryDialog = false
-                                    newCategoryName = ""
-                                    selectedParentId = null
-                                    categoryType = "MAIN"
-                                }
-                            }
-                        },
-                        enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
-                    ) { Text("Salva") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAddCategoryDialog = false }) {
-                        Text("Annulla")
-                    }
-                }
-            )
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Salva Transazione", fontSize = 18.sp)
+            }
         }
     }
 }
