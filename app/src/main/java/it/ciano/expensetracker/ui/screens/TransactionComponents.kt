@@ -72,6 +72,7 @@ fun CategorySelector(categories: List<Category>, selectedCategoryId: Int?, onCat
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagSelector(tags: List<Tag>, selectedTags: Set<Int>, onTagToggled: (Int) -> Unit) {
     FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

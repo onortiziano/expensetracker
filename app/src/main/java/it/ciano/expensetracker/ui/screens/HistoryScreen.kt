@@ -20,13 +20,13 @@ import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(navController: NavHostController) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
 
-    // Fix: aggiunto initial = emptyList()
     val transactions by transactionViewModel.allTransactions.collectAsState(initial = emptyList())
 
     Scaffold(
@@ -42,7 +42,7 @@ fun HistoryScreen(navController: NavHostController) {
                 items(transactions) { transaction ->
                     TransactionItem(
                         transaction = transaction,
-                        tags = emptyList(), // Semplificato per la cronologia
+                        tags = emptyList(),
                         onDetailsRequest = { /* Naviga al dettaglio */ },
                         onModifyRequest = { navController.navigate("modify_transaction/${transaction.transactionId}") }
                     )

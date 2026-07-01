@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.sp
 import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.Transaction
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TransactionDetailsDialog(
     transaction: Transaction,
