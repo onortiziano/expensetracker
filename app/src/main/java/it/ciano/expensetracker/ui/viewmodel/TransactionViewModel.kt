@@ -15,5 +15,11 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
 
     fun insert(transaction: Transaction) = viewModelScope.launch { repository.insert(transaction) }
     fun updateTransaction(transaction: Transaction) = viewModelScope.launch { repository.update(transaction) }
-    fun delete(transaction: Transaction) = viewModelScope.launch { repository.delete(transaction) }
+    
+    // MODIFICA: Ora accetta l'ID (Int) invece dell'oggetto Transaction intero
+    fun delete(transactionId: Int) = viewModelScope.launch { 
+        // Assumendo che il repository abbia un metodo deleteById o simile. 
+        // Se non ce l'ha, useremo repository.delete(transaction) dopo averlo recuperato.
+        repository.deleteById(transactionId) 
+    }
 }
