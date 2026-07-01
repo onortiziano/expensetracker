@@ -61,7 +61,6 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
         }
     }
 
-    // Validazione per il pulsante Salva
     val isSaveEnabled = title.isNotBlank() && amount.isNotBlank() && amount.toDoubleOrNull() != null
 
     Scaffold(
@@ -81,7 +80,8 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Fix scrolling
+                .imePadding() // Fix: Aggiunge spazio per la tastiera
+                .verticalScroll(rememberScrollState()), 
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Titolo") }, modifier = Modifier.fillMaxWidth())
@@ -90,7 +90,7 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
                 onValueChange = { amount = it }, 
                 label = { Text("Importo") }, 
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal) // Fix tastiera
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(selected = type == "EXPENSE", onClick = { type = "EXPENSE" }, label = { Text("Uscita") }, modifier = Modifier.weight(1f))
@@ -110,7 +110,7 @@ fun ModifyTransactionScreen(navController: NavHostController, transactionId: Int
                     transactionViewModel.updateTransaction(updatedTransaction)
                     navController.popBackStack()
                 },
-                enabled = isSaveEnabled, // Fix validazione
+                enabled = isSaveEnabled,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.medium
             ) {

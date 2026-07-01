@@ -44,7 +44,6 @@ fun AddTransactionScreen(navController: NavHostController) {
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
 
-    // Validazione: il pulsante è attivo solo se titolo e importo sono presenti
     val isSaveEnabled = title.isNotBlank() && amount.isNotBlank() && amount.toDoubleOrNull() != null
 
     Scaffold(
@@ -64,7 +63,8 @@ fun AddTransactionScreen(navController: NavHostController) {
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Fix scrolling
+                .imePadding() // Fix: Aggiunge spazio per la tastiera
+                .verticalScroll(rememberScrollState()), 
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Titolo") }, modifier = Modifier.fillMaxWidth())
@@ -73,7 +73,7 @@ fun AddTransactionScreen(navController: NavHostController) {
                 onValueChange = { amount = it }, 
                 label = { Text("Importo") }, 
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal) // Fix tastiera
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(selected = type == "EXPENSE", onClick = { type = "EXPENSE" }, label = { Text("Uscita") }, modifier = Modifier.weight(1f))
@@ -93,7 +93,7 @@ fun AddTransactionScreen(navController: NavHostController) {
                     transactionViewModel.insert(newTransaction)
                     navController.popBackStack()
                 },
-                enabled = isSaveEnabled, // Fix validazione
+                enabled = isSaveEnabled,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = MaterialTheme.shapes.medium
             ) {
