@@ -1,117 +1,40 @@
 package it.ciano.expensetracker.ui.screens
 
+import android.app.Application
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
-import androidx.navigation.compose.currentBackStackEntryAsState
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RemoveTransactionScreen(
-    navController: NavHostController,
-	transactionId: Int
-) {
-    // 2. SETUP VIEWMODEL
+fun RemoveTransactionScreen(navController: NavHostController, transactionId: Int) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
-    val viewModel: TransactionViewModel = viewModel(
-        factory = ViewModelFactory(app)
-    )
+    val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
 
-    // Stato per tenere traccia della transazione da eliminare
-    var transactionToDelete by remember { mutableStateOf<it.ciano.expensetracker.data.model.Transaction?>(null) }
-
-    // Carichiamo l'oggetto transazione completo usando l'ID della rotta
-    LaunchedEffect(transactionId) {
-        viewModel.allTransactions.collect { transactions ->
-            transactionToDelete = transactions.find { it.transactionId == transactionId }
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Elimina Transazione", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Torna indietro")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Icona di avviso
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Elimina",
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.error
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                Text(
-                    text = "Sei sicuro di voler eliminare questa transazione?",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-                
-                Spacer(modifier = Modifier.height(32.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // BOTTONE ANNULLA
-                    OutlinedButton(
-                        onClick = { navController.popBackStack() },
-							modifier = Modifier.weight(1f).height(56.dp)
-                    ) {
-                        Text("Annulla")
-                    }
-                    
-                    // BOTTONE CONFERMA ELIMINAZIONE
-                    Button(
-                        onClick = {
-                            transactionToDelete?.let {
-                                viewModel.deleteTransaction(it)
-                                navController.popBackStack()
-                            }
-                        },
-                        modifier = Modifier.weight(1f).height(56.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("Elimina", color = androidx.compose.ui.graphics.Color.White)
-                    }
-                }
+    AlertDialog(
+        onDismissRequest = { navController.popBackStack() },
+        title = { Text("Elimina Transazione") },
+        text = { Text("Sei sicuro di voler eliminare questa transazione? L'operazione è irreversibile.") },
+        confirmButton = {
+            TextButton(onClick = {
+                // Corretto da deleteTransaction a delete per allineamento col ViewModel
+                transactionViewModel.delete(transactionId)
+                navController.popBackStack()
+            }) {
+                Text("Elimina", color = Color.Red)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { navController.popBackStack() }) {
+                Text("Annulla")
             }
         }
-    }
+    )
 }

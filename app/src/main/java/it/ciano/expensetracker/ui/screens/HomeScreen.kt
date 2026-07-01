@@ -34,7 +34,8 @@ fun HomeScreen(navController: NavHostController) {
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
 
-    val transactionsWithTags by transactionViewModel.allTransactionsWithTags.collectAsState()
+    // Aggiunto initial = emptyList() per risolvere l'errore di compilazione
+    val transactionsWithTags by transactionViewModel.allTransactionsWithTags.collectAsState(initial = emptyList())
     
     var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
 
@@ -61,8 +62,8 @@ fun HomeScreen(navController: NavHostController) {
         Column(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp)
         ) {
-            val income by transactionViewModel.totalIncome.collectAsState()
-            val expenses by transactionViewModel.totalExpenses.collectAsState()
+            val income by transactionViewModel.totalIncome.collectAsState(initial = 0.0)
+            val expenses by transactionViewModel.totalExpenses.collectAsState(initial = 0.0)
             val balance = (income ?: 0.0) - (expenses ?: 0.0)
 
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
