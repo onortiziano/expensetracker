@@ -8,7 +8,7 @@ data class TransactionWithTags(
     @Relation(
         parentColumn = "id",
         entityColumn = "tagId",
-        associateBy = androidx.room.junit.Junction(TransactionTag::class)
+        junction = TransactionTag::class
     )
     val tags: List<Tag>
 )
