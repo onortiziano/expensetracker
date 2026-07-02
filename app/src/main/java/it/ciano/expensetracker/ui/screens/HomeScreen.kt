@@ -32,7 +32,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +43,7 @@ import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
@@ -51,8 +51,7 @@ import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    // --- STATI E VIEWMODEL ---
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as Application
     val scope = rememberCoroutineScope()
     
@@ -62,21 +61,22 @@ fun HomeScreen(navController: NavHostController) {
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     
-    val transactions by transactionViewModel.allTransactions.collectAsState()
+    // USiamo le transazioni con i tag
+    val transactionsWithTags by transactionViewModel.transactionsWithTags.collectAsState()
     
-    // Stato per l'apertura/chiusura del menu laterale (Drawer)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    // Intercetta il tasto indietro di sistema
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
 
-    // --- STRUTTURA CON NAVIGATION DRAWER ---
+    // Stato per il Dialog di Dettaglio
+    var selectedTransactionForDetails by remember { mutableStateOf<TransactionWithTags?>(null) }
+    var showModifyConfirmDialog by remember { mutableStateOf<Transaction?>(null) }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                // Intestazione del Menu
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,7 +100,6 @@ fun HomeScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Voci del Menu
                 NavigationDrawerItem(
                     label = { Text("Home") },
                     selected = true,
@@ -136,7 +135,6 @@ fun HomeScreen(navController: NavHostController) {
             }
         }
     ) {
-        // --- CONTENUTO PRINCIPALE ---
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -162,7 +160,6 @@ fun HomeScreen(navController: NavHostController) {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // --- CARD RIEPILOGO BILANCIO ---
                     item {
                         val totalIncome by transactionViewModel.totalIncome.collectAsState()
                         val totalExpenses by transactionViewModel.totalExpenses.collectAsState()
@@ -204,21 +201,94 @@ fun HomeScreen(navController: NavHostController) {
                         }
                     }
                     
-                    items(transactions) { transaction ->
+                    items(transactionsWithTags) { transactionWithTags ->
                         TransactionItem(
-                            transaction = transaction, 
+                            transactionWithTags = transactionWithTags, 
                             mainViewModel = mainViewModel,
                             categories = categories,
                             onDeleteRequest = { trans ->
                                 transactionViewModel.deleteTransaction(trans)
                             },
-                            onClick = { 
-                                navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                            onSingleClick = { 
+                                selectedTransactionForDetails = transactionWithTags
+                            },
+                            onLongClick = {
+                                showModifyConfirmDialog = transactionWithTags.transaction
                             }
                         )
                     }
                 }
             }
         }
+    }
+
+    // --- DIALOG DETTAGLIO ---
+    if (selectedTransactionForDetails != null) {
+        val details = selectedTransactionForDetails!!
+        AlertDialog(
+            onDismissRequest = { selectedTransactionForDetails = null },
+            title = { Text(details.transaction.title, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(text = "Importo: ${mainViewModel.formatCurrency(details.transaction.amount)}", fontWeight = FontWeight.Medium)
+                    Text(text = "Categoria: ${categories.find { it.id == details.transaction.categoryId }?.name ?: "Nessuna"}")
+                    
+                    if (details.transaction.note.isNotBlank()) {
+                        Divider()
+                        Text(text = "Note:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(text = details.transaction.note)
+                    }
+                    
+                    if (details.tags.isNotEmpty()) {
+                        Divider()
+                        Text(text = "Tag:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            details.tags.forEach { tag ->
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(tag.color), androidx.compose.ui.graphics.Shape.Circle)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(text = tag.name, fontSize = 10.sp, color = Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { selectedTransactionForDetails = null }) {
+                    Text("Chiudi")
+                }
+            }
+        )
+    }
+
+    // --- DIALOG CONFERMA MODIFICA ---
+    if (showModifyConfirmDialog != null) {
+        AlertDialog(
+            onDismissRequest = { showModifyConfirmDialog = null },
+            title = { Text("Modifica Transazione", fontWeight = FontWeight.Bold) },
+            text = { Text("Vuoi modificare i dettagli di questa transazione?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val trans = showModifyConfirmDialog!!
+                        showModifyConfirmDialog = null
+                        navController.navigate("${Routes.MODIFY_TRANSACTION}/${trans.id}")
+                    }
+                ) {
+                    Text("Sì, modifica")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showModifyConfirmDialog = null }) {
+                    Text("Annulla")
+                }
+            }
+        )
     }
 }
