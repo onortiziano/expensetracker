@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -56,9 +57,14 @@ fun AddTransactionScreen(
     val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
+    var showAddTagDialog by remember { mutableStateOf(false) }
+    
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
     var categoryType by remember { mutableStateOf("MAIN") }
+    
+    var newTagName by remember { mutableStateOf("") }
+    var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) } // Viola di default
 
     Scaffold(
         topBar = {
@@ -246,9 +252,19 @@ fun AddTransactionScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            TextButton(onClick = { showAddTagDialog = true }) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Aggiungi Tag", fontSize = 12.sp)
+                            }
+                        }
                         
-                        // Grid di Tag
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -428,6 +444,65 @@ fun AddTransactionScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddCategoryDialog = false }) {
+                        Text("Annulla")
+                    }
+                }
+            )
+        }
+
+        if (showAddTagDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddTagDialog = false },
+                title = { Text("Nuovo Tag", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = newTagName,
+                            onValueChange = { newTagName = it },
+                            label = { Text("Nome Tag") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                        
+                        Text("Colore Tag", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        // Semplice selettore di colori predefiniti
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            val colors = listOf(0xFFF44336, 0xFF4CAF50, 0xFF2196F3, 0xFFFFEB3B, 0xFF9C27B0, 0xFFFF9800)
+                            colors.forEach { color ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(androidx.compose.ui.graphics.Color(color), androidx.compose.ui.graphics.Shape.Circle)
+                                        .clickable { newTagColor = color }
+                                        .border(
+                                            width = if (newTagColor == color) 3.dp else 0.dp,
+                                            color = androidx.compose.ui.graphics.Color.Black,
+                                            shape = androidx.compose.ui.graphics.Shape.Circle
+                                        )
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                if (newTagName.isNotBlank()) {
+                                    tagViewModel.addTag(newTagName, newTagColor)
+                                    showAddTagDialog = false
+                                    newTagName = ""
+                                }
+                            }
+                        },
+                        enabled = newTagName.isNotBlank()
+                    ) { Text("Crea") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddTagDialog = false }) {
                         Text("Annulla")
                     }
                 }
