@@ -24,6 +24,7 @@ import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
+import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
@@ -38,17 +39,21 @@ fun AddTransactionScreen(
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
     val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
 
+    val title by transactionViewModel.title.collectAsState()
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
     val type by transactionViewModel.type.collectAsState()
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
+    val selectedTags by transactionViewModel.selectedTags.collectAsState()
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
     val categoryMap by categoryViewModel.categoryMap.collectAsState()
+    val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
@@ -97,8 +102,8 @@ fun AddTransactionScreen(
                         Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
                         OutlinedTextField(
-                            value = note,
-                            onValueChange = { transactionViewModel.updateNote(it) },
+                            value = title,
+                            onValueChange = { transactionViewModel.updateTitle(it) },
                             label = { Text("Titolo") },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
@@ -111,6 +116,14 @@ fun AddTransactionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
+                        )
+
+                        OutlinedTextField(
+                            value = note,
+                            onValueChange = { transactionViewModel.updateNote(it) },
+                            label = { Text("Note") },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 3
                         )
                     }
                 }
@@ -225,6 +238,34 @@ fun AddTransactionScreen(
                     }
                 }
 
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        
+                        // Grid di Tag
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            allTags.forEach { tag ->
+                                FilterChip(
+                                    selected = selectedTags.contains(tag.tagId),
+                                    onClick = { transactionViewModel.toggleTag(tag.tagId) },
+                                    label = { Text(tag.name) },
+                                    modifier = Modifier.background( androidx.compose.ui.graphics.Color(tag.color))
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -239,7 +280,8 @@ fun AddTransactionScreen(
                     val normalizedAmount = amount.replace(separator, ".")
                     val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
                     
-                    val isFormValid = note.isNotBlank() && 
+                    val isFormValid = title.isNotBlank() && 
+                                      note.isNotBlank() && 
                                       !containsInvalidChars && 
                                       !hasMultipleSeparators && 
                                       numericValue > 0.0
@@ -250,20 +292,20 @@ fun AddTransactionScreen(
                             val finalCategoryId = if (selectedSubCategoryId != 0) selectedSubCategoryId else selectedMainCategoryId
                             
                             val transaction = Transaction(
+                                title = title,
                                 amount = amountValue,
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
                                 date = System.currentTimeMillis()
                             )
-                            transactionViewModel.addTransaction(transaction)
+                            transactionViewModel.addTransaction(transaction, selectedTags)
                             navController.popBackStack()
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp)
                             .height(56.dp),
-                        enabled = isFormValid,
                         shape = MaterialTheme.shapes.medium
                     ) {
                         Text("Salva Transazione", fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -296,20 +338,20 @@ fun AddTransactionScreen(
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(
-                                    selected = categoryType == "MAIN",
-                                    onClick = { 
-                                        categoryType = "MAIN"
-                                        selectedParentId = null 
-                                    },
-                                    label = { Text("Principale") }
-                                )
-                                FilterChip(
-                                    selected = categoryType == "SUB",
-                                    onClick = { categoryType = "SUB" },
-                                    label = { Text("Sottocategoria") }
-                                )
-                            }
+                            FilterChip(
+                                selected = categoryType == "MAIN",
+                                onClick = { 
+                                    categoryType = "MAIN"
+                                    selectedParentId = null 
+                                },
+                                label = { Text("Principale") }
+                            )
+                            FilterChip(
+                                selected = categoryType == "SUB",
+                                onClick = { categoryType = "SUB" },
+                                label = { Text("Sottocategoria") }
+                            )
+                        }
                         }
 
                         if (categoryType == "SUB") {
