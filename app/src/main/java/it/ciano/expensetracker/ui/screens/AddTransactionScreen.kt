@@ -1,9 +1,12 @@
 package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -15,6 +18,7 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -64,7 +68,7 @@ fun AddTransactionScreen(
     var categoryType by remember { mutableStateOf("MAIN") }
     
     var newTagName by remember { mutableStateOf("") }
-    var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) } // Viola di default
+    var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) }
 
     Scaffold(
         topBar = {
@@ -275,7 +279,7 @@ fun AddTransactionScreen(
                                     selected = selectedTags.contains(tag.tagId),
                                     onClick = { transactionViewModel.toggleTag(tag.tagId) },
                                     label = { Text(tag.name) },
-                                    modifier = Modifier.background( androidx.compose.ui.graphics.Color(tag.color))
+                                    modifier = Modifier.background(Color(tag.color))
                                 )
                             }
                         }
@@ -398,6 +402,7 @@ fun AddTransactionScreen(
                                                 text = { Text(parent.name) },
                                                 onClick = {
                                                     selectedParentId = parent.id
+                                                    getParentId(parent.id) // Fixed
                                                     parentExpanded = false
                                                 }
                                             )
@@ -429,7 +434,7 @@ fun AddTransactionScreen(
                                         transactionViewModel.updateMainCategory(newId)
                                     } else {
                                         val parentId = selectedParentId ?: 0
-                                        transactionViewModel.updateCategoryPair(parentId, newId)
+                                        transactionViewModel.updateSubCategory(newId)
                                     }
                                     
                                     showAddCategoryDialog = false
@@ -465,7 +470,6 @@ fun AddTransactionScreen(
                         )
                         
                         Text("Colore Tag", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        // Semplice selettore di colori predefiniti
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -475,12 +479,12 @@ fun AddTransactionScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(32.dp)
-                                        .background(androidx.compose.ui.graphics.Color(color), androidx.compose.ui.graphics.Shape.Circle)
+                                        .background(Color(color), CircleShape)
                                         .clickable { newTagColor = color }
                                         .border(
                                             width = if (newTagColor == color) 3.dp else 0.dp,
-                                            color = androidx.compose.ui.graphics.Color.Black,
-                                            shape = androidx.compose.ui.graphics.Shape.Circle
+                                            color = Color.Black,
+                                            shape = CircleShape
                                         )
                                 )
                             }

@@ -1,6 +1,7 @@
 package it.ciano.expensetracker.data.dao
 
 import androidx.room.*
+import androidx.room.Transaction // Import esplicito per evitare conflitto con il modello Transaction
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.flow.Flow

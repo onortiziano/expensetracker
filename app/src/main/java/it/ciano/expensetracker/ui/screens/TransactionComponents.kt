@@ -2,6 +2,7 @@ package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -14,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.border
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Tag
@@ -129,14 +132,13 @@ fun TransactionItem(
                             Text(text = "Categoria: $categoryDisplayName", fontSize = 12.sp, color = Color.Gray)
                             Spacer(modifier = Modifier.width(8.dp))
                             
-                            // Visualizzazione Tag (max 2 + n)
                             if (tags.isNotEmpty()) {
                                 val visibleTags = tags.take(2)
                                 visibleTags.forEach { tag ->
                                     Box(
                                         modifier = Modifier
                                             .padding(horizontal = 2.dp)
-                                            .background(Color(tag.color), androidx.compose.ui.graphics.Shape.Circle)
+                                            .background(Color(tag.color), CircleShape)
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium)
