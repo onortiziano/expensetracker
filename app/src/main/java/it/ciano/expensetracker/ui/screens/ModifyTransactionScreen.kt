@@ -37,6 +37,10 @@ fun ModifyTransactionScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as android.app.Application
     
+    BackHandler {
+        navController.popBackStack()
+    }
+    
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
