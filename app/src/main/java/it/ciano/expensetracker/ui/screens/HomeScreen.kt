@@ -247,13 +247,13 @@ fun HomeScreen(navController: NavHostController) {
                     Text(text = "Categoria: $categoryDisplayName")
                     
                     if (details.transaction.note.isNotBlank()) {
-                        Divider()
+                        HorizontalDivider()
                         Text(text = "Note:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(text = details.transaction.note)
                     }
                     
                     if (details.tags.isNotEmpty()) {
-                        Divider()
+                        HorizontalDivider()
                         Text(text = "Tag:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
