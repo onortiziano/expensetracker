@@ -10,12 +10,24 @@ import kotlinx.coroutines.flow.Flow
 
 class TransactionRepository(
     private val transactionDao: TransactionDao,
-    private val transactionTagDao: TransactionTagDao
+    private val transactionTagDao: TransactionTagDao,
+    private val tagDao: it.ciano.expensetracker.data.dao.TagDao
 ) {
     fun getAllTransactions(): Flow<List<Transaction>> = transactionDao.getAllTransactions()
 
     fun getAllTransactionsWithTags(): Flow<List<TransactionWithTags>> {
-        return transactionDao.getAllTransactionsWithTags()
+        return kotlinx.coroutines.flow.combine(
+            transactionDao.getAllTransactions(),
+            transactionTagDao.getAllTransactionTags(),
+            tagDao.getAllTags()
+        ) { transactions, transactionTags, tags ->
+            transactions.map { transaction ->
+                val tagsForThisTransaction = transactionTags
+                    .filter { it.transactionId == transaction.id }
+                    .mapNotNull { tt -> tags.find { it.tagId == tt.tagId } }
+                TransactionWithTags(transaction, tagsForThisTransaction)
+            }
+        }
     }
 
     fun getTransactionsByCategory(categoryId: Int): Flow<List<Transaction>> {
