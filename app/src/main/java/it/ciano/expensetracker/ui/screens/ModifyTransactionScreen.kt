@@ -48,6 +48,7 @@ fun ModifyTransactionScreen(
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
     val selectedTags by transactionViewModel.selectedTags.collectAsState()
+    val separator by settingsViewModel.decimalSeparator.collectAsState()
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
@@ -65,7 +66,6 @@ fun ModifyTransactionScreen(
                 transactionViewModel.loadTransaction(transWithTags, allCategories)
                 
                 // FIX: Formattazione separatore decimale all'apertura
-                val separator = settingsViewModel.decimalSeparator.collectAsState().value
                 val sepChar = separator.firstOrNull() ?: ','
                 val formattedAmount = transWithTags.transaction.amount.toString().replace('.', sepChar)
                 transactionViewModel.updateAmount(formattedAmount)
