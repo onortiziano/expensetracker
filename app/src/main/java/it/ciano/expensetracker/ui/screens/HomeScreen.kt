@@ -232,7 +232,18 @@ fun HomeScreen(navController: NavHostController) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(text = "Importo: ${mainViewModel.formatCurrency(details.transaction.amount)}", fontWeight = FontWeight.Medium)
-                    Text(text = "Categoria: ${categories.find { it.id == details.transaction.categoryId }?.name ?: "Nessuna"}")
+                    val category = categories.find { it.id == details.transaction.categoryId }
+                    val categoryDisplayName = if (category != null) {
+                        if (category.parentCategoryId != null && category.parentCategoryId != 0) {
+                            val parent = categories.find { it.id == category.parentCategoryId }
+                            "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                        } else {
+                            category.name
+                        }
+                    } else {
+                        "Nessuna"
+                    }
+                    Text(text = "Categoria: $categoryDisplayName")
                     
                     if (details.transaction.note.isNotBlank()) {
                         Divider()
