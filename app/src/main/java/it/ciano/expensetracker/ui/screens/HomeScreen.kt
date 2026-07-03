@@ -52,7 +52,6 @@ import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
-...[truncated]
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as Application
     val scope = rememberCoroutineScope()
