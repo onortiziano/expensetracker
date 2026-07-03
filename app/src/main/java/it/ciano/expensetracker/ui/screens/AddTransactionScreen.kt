@@ -398,14 +398,7 @@ fun AddTransactionScreen(
                                         onDismissRequest = { parentExpanded = false }
                                     ) {
                                         mainCategories.forEach { parent ->
-                                            DropdownMenuItem(
-                                                text = { Text(parent.name) },
-                                                onClick = {
-                                                    selectedParentId = parent.id
-                                                    getParentId(parent.id) // Fixed
-                                                    parentExpanded = false
-                                                }
-                                            )
+                                            DropdownMenuItem(\n                                                text = { Text(parent.name) },\n                                                onClick = {\n                                                    selectedParentId = parent.id\n                                                    parentExpanded = false\n                                                }\n                                            )
                                         }
                                     }
                                 }
@@ -474,7 +467,7 @@ fun AddTransactionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            val colors = listOf(0xFFF44336, 0xFF4CAF50, 0xFF2196F3, 0xFFFFEB3B, 0xFF9C27B0, 0xFFFF9800)
+                            val colors = listOf(0xFFF44336.toInt(), 0xFF4CAF50.toInt(), 0xFF2196F3.toInt(), 0xFFFFEB3B.toInt(), 0xFF9C27B0.toInt(), 0xFFFF9800.toInt())
                             colors.forEach { color ->
                                 Box(
                                     modifier = Modifier

@@ -249,7 +249,7 @@ fun HomeScreen(navController: NavHostController) {
                             details.tags.forEach { tag ->
                                 Box(
                                     modifier = Modifier
-                                        .background(Color(tag.color), androidx.compose.ui.graphics.Shape.Circle)
+                                        .background(Color(tag.color), CircleShape)
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(text = tag.name, fontSize = 10.sp, color = Color.White)
