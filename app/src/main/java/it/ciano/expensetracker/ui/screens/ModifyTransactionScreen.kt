@@ -46,6 +46,7 @@ fun ModifyTransactionScreen(
     val type by transactionViewModel.type.collectAsState()
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
+    val selectedTags by transactionViewModel.selectedTags.collectAsState()
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
@@ -267,7 +268,7 @@ fun ModifyTransactionScreen(
                                 note = note,
                                 date = System.currentTimeMillis()
                             )
-                            transactionViewModel.updateTransaction(updatedTransaction)
+                            transactionViewModel.updateTransaction(updatedTransaction, selectedTags)
                             navController.popBackStack()
                         },
                         enabled = isFormValid,

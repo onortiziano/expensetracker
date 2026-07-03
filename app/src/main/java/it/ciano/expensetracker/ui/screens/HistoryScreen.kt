@@ -63,7 +63,7 @@ fun HistoryScreen(
             )
         }
     ) { paddingValues ->
-        if (transactions.isEmpty()) {
+        if (transactionsWithTags.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
