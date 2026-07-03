@@ -74,7 +74,9 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     fun updateSubCategory(id: Int) { _selectedSubCategoryId.value = id }
     fun toggleTag(tagId: Int) {
         val current = _selectedTags.value
-        _selectedTags.value = if (current.contains(tagId)) current - tagId else current + tagId
+        val next = if (current.contains(tagId)) current - tagId else current + tagId
+        _selectedTags.value = next
+        android.util.Log.d("TAG_VM", "Toggled tag $tagId. New set: $next")
     }
 
     fun loadTransaction(item: TransactionWithTags, allCategories: List<Category>) {
