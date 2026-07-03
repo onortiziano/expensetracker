@@ -251,9 +251,6 @@ fun HomeScreen(navController: NavHostController) {
                         Text(text = details.transaction.note)
                     }
                     
-                    // DEBUG: Mostriamo il numero di tag per capire se l'oggetto è vuoto
-                    Text(text = "Tag presenti: ${details.tags.size}", fontSize = 10.sp, color = Color.Gray)
-                    
                     if (details.tags.isNotEmpty()) {
                         Divider()
                         Text(text = "Tag:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
@@ -265,14 +262,14 @@ fun HomeScreen(navController: NavHostController) {
                                 Box(
                                     modifier = Modifier
                                         .background(Color(tag.color), CircleShape)
+                                        .border(width = 1.dp, color = Color.Black.copy(alpha = 0.2f), shape = CircleShape)
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text(text = tag.name, fontSize = 10.sp, color = Color.White)
+                                    Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium)
                                 }
                             }
                         }
                     }
-
                 }
             },
             confirmButton = {
