@@ -398,7 +398,13 @@ fun AddTransactionScreen(
                                         onDismissRequest = { parentExpanded = false }
                                     ) {
                                         mainCategories.forEach { parent ->
-                                            DropdownMenuItem(\n                                                text = { Text(parent.name) },\n                                                onClick = {\n                                                    selectedParentId = parent.id\n                                                    parentExpanded = false\n                                                }\n                                            )
+                                    DropdownMenuItem(
+                                        text = { Text(parent.name) },
+                                        onClick = {
+                                            selectedParentId = parent.id
+                                            parentExpanded = false
+                                        }
+                                    )
                                         }
                                     }
                                 }

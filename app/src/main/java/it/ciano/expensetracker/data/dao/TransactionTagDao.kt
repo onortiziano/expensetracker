@@ -13,6 +13,5 @@ interface TransactionTagDao {
     suspend fun deleteTagsForTransaction(transactionId: Int)
 
     @Query("SELECT * FROM transaction_tags WHERE transactionId = :transactionId")
-    suspend fun getTagsForTransaction(transactionId: Int): List<it.ciano.expensetracker.data.model.Tag> 
-    // Attenzione: questa query di base non funziona, useremo la relazione in TransactionDao
+    suspend fun getTransactionTags(transactionId: Int): List<TransactionTag>
 }
