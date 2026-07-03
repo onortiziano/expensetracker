@@ -39,6 +39,7 @@ fun ModifyTransactionScreen(
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
     val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
 
     val title by transactionViewModel.title.collectAsState()
@@ -58,6 +59,10 @@ fun ModifyTransactionScreen(
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
     var categoryType by remember { mutableStateOf("MAIN") }
+    
+    var showAddTagDialog by remember { mutableStateOf(false) }
+    var newTagName by remember { mutableStateOf("") }
+    var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) }
 
     LaunchedEffect(transactionId) {
         transactionViewModel.transactionsWithTags.collect { transactions ->
@@ -242,7 +247,46 @@ fun ModifyTransactionScreen(
                         }
                     }
                 }
-
+                
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            TextButton(onClick = { showAddTagDialog = true }) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Aggiungi Tag", fontSize = 12.sp)
+                            }
+                        }
+                        
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
+                            allTags.forEach { tag ->
+                                FilterChip(
+                                    selected = selectedTags.contains(tag.tagId),
+                                    onClick = { transactionViewModel.toggleTag(tag.tagId) },
+                                    label = { Text(tag.name) },
+                                    modifier = Modifier.background(Color(tag.color))
+                                )
+                            }
+                        }
+                    }
+                }
+                
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -312,7 +356,7 @@ fun ModifyTransactionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
-
+                        
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -331,7 +375,7 @@ fun ModifyTransactionScreen(
                                 )
                             }
                         }
-
+                        
                         if (categoryType == "SUB") {
                             var parentExpanded by remember { mutableStateOf(false) }
                             val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
@@ -381,7 +425,7 @@ fun ModifyTransactionScreen(
                                 if (isDuplicate) {
                                     return@launch 
                                 }
-
+                                
                                 if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
                                     val newId = categoryViewModel.addCategory(
                                         Category(name = newCategoryName, parentCategoryId = selectedParentId)
@@ -405,6 +449,64 @@ fun ModifyTransactionScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddCategoryDialog = false }) {
+                        Text("Annulla")
+                    }
+                }
+            )
+        }
+
+        if (showAddTagDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddTagDialog = false },
+                title = { Text("Nuovo Tag", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = newTagName,
+                            onValueChange = { newTagName = it },
+                            label = { Text("Nome Tag") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                        
+                        Text("Colore Tag", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            val colors = listOf(0xFFF44336.toInt(), 0xFF4CAF50.toInt(), 0xFF2196F3.toInt(), 0xFFFFEB3B.toInt(), 0xFF9C27B0.toInt(), 0xFFFF9800.toInt())
+                            colors.forEach { color ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(Color(color), CircleShape)
+                                        .clickable { newTagColor = color }
+                                        .border(
+                                            width = if (newTagColor == color) 3.dp else 0.dp,
+                                            color = Color.Black,
+                                            shape = CircleShape
+                                        )
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                if (newTagName.isNotBlank()) {
+                                    tagViewModel.addTag(newTagName, newTagColor)
+                                    showAddTagDialog = false
+                                    newTagName = ""
+                                }
+                            }
+                        },
+                        enabled = newTagName.isNotBlank()
+                    ) { Text("Salva") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddTagDialog = false }) {
                         Text("Annulla")
                     }
                 }
