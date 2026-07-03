@@ -140,6 +140,7 @@ fun TransactionItem(
                                         modifier = Modifier
                                             .padding(horizontal = 2.dp)
                                             .background(Color(tag.color), CircleShape)
+                                            .border(width = 1.dp, color = Color.Black.copy(alpha = 0.2f), shape = CircleShape)
                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                     ) {
                                         Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium)

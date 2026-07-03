@@ -63,6 +63,12 @@ fun ModifyTransactionScreen(
             val item = transactions.find { it.transaction.id == transactionId }
             item?.let { transWithTags ->
                 transactionViewModel.loadTransaction(transWithTags, allCategories)
+                
+                // FIX: Formattazione separatore decimale all'apertura
+                val separator = settingsViewModel.decimalSeparator.collectAsState().value
+                val sepChar = separator.firstOrNull() ?: ','
+                val formattedAmount = transWithTags.transaction.amount.toString().replace('.', sepChar)
+                transactionViewModel.updateAmount(formattedAmount)
             }
         }
     }
