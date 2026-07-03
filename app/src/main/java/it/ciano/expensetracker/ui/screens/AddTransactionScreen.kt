@@ -301,7 +301,6 @@ fun AddTransactionScreen(
                     val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
                     
                     val isFormValid = title.isNotBlank() && 
-                                      note.isNotBlank() && 
                                       !containsInvalidChars && 
                                       !hasMultipleSeparators && 
                                       numericValue > 0.0
