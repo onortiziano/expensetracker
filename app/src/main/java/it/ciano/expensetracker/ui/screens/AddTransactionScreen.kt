@@ -322,6 +322,7 @@ fun AddTransactionScreen(
                             transactionViewModel.addTransaction(transaction, selectedTags)
                             navController.popBackStack()
                         },
+                        enabled = isFormValid,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp)
