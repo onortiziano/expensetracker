@@ -49,9 +49,26 @@ import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 
+// Funzione helper per formattare la categoria
+@Composable
+fun formatCategoryName(categoryId: Int, categories: List<Category>): String {
+    val category = categories.find { it.id == categoryId }
+    return if (category != null) {
+        if (category.parentCategoryId != null && category.parentCategoryId != 0) {
+            val parent = categories.find { it.id == category.parentCategoryId }
+            "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+        } else {
+            category.name
+        }
+    } else {
+        "Nessuna"
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
+...[truncated]
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as Application
     val scope = rememberCoroutineScope()
@@ -232,24 +249,16 @@ fun HomeScreen(navController: NavHostController) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(text = "Importo: ${mainViewModel.formatCurrency(details.transaction.amount)}", fontWeight = FontWeight.Medium)
-                    val category = categories.find { it.id == details.transaction.categoryId }
-                    val categoryDisplayName = if (category != null) {
-                        if (category.parentCategoryId != null && category.parentCategoryId != 0) {
-                            val parent = categories.find { it.id == category.parentCategoryId }
-                            "${parent?.name ?: "Sconosciuto"} > ${category.name}"
-                        } else {
-                            category.name
-                        }
-                    } else {
-                        "Nessuna"
-                    }
-                    Text(text = "Categoria: $categoryDisplayName")
+                    Text(text = "Categoria: ${formatCategoryName(details.transaction.categoryId, categories)}")
                     
                     if (details.transaction.note.isNotBlank()) {
                         Divider()
                         Text(text = "Note:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(text = details.transaction.note)
                     }
+                    
+                    // DEBUG: Mostriamo il numero di tag per capire se l'oggetto è vuoto
+                    Text(text = "Tag presenti: ${details.tags.size}", fontSize = 10.sp, color = Color.Gray)
                     
                     if (details.tags.isNotEmpty()) {
                         Divider()
@@ -269,6 +278,7 @@ fun HomeScreen(navController: NavHostController) {
                             }
                         }
                     }
+
                 }
             },
             confirmButton = {
