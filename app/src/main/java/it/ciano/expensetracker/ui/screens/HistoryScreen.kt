@@ -39,7 +39,7 @@ fun HistoryScreen(
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
-    val transactions by transactionViewModel.allTransactions.collectAsState()
+    val transactionsWithTags by transactionViewModel.transactionsWithTags.collectAsState()
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     
     Scaffold(
@@ -81,16 +81,19 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(transactions) { transaction ->
+                items(transactionsWithTags) { item ->
                     TransactionItem(
-                        transaction = transaction, 
+                        transactionWithTags = item, 
                         mainViewModel = mainViewModel,
                         categories = categories,
                         onDeleteRequest = { trans ->
                             transactionViewModel.deleteTransaction(trans)
                         },
-                        onClick = { 
-                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${transaction.id}") 
+                        onSingleClick = { 
+                            navController.navigate("${Routes.MODIFY_TRANSACTION}/${item.transaction.id}") 
+                        },
+                        onLongClick = {
+                            // In History non gestiamo il long click specificamente
                         }
                     )
                 }

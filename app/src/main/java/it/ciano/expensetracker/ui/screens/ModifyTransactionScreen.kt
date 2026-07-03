@@ -57,10 +57,10 @@ fun ModifyTransactionScreen(
     var categoryType by remember { mutableStateOf("MAIN") }
 
     LaunchedEffect(transactionId) {
-        transactionViewModel.allTransactions.collect { transactions ->
-            val transaction = transactions.find { it.id == transactionId }
-            transaction?.let { trans ->
-                transactionViewModel.loadTransaction(trans, allCategories)
+        transactionViewModel.transactionsWithTags.collect { transactions ->
+            val item = transactions.find { it.transaction.id == transactionId }
+            item?.let { transWithTags ->
+                transactionViewModel.loadTransaction(transWithTags.transaction, allCategories)
             }
         }
     }
@@ -381,8 +381,7 @@ fun ModifyTransactionScreen(
                                     if (categoryType == "MAIN") {
                                         transactionViewModel.updateMainCategory(newId)
                                     } else {
-                                        val parentId = selectedParentId ?: 0
-                                        transactionViewModel.updateCategoryPair(parentId, newId)
+                                        transactionViewModel.updateSubCategory(newId)
                                     }
                                     
                                     showAddCategoryDialog = false
