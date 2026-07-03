@@ -21,6 +21,7 @@ class TransactionRepository(
             transactionTagDao.getAllTransactionTags(),
             tagDao.getAllTags()
         ) { transactions, transactionTags, tags ->
+            android.util.Log.d("REPO_DEBUG", "Combine: trans=${transactions.size}, tagLinks=${transactionTags.size}, tags=${tags.size}")
             transactions.map { transaction ->
                 val tagsForThisTransaction = transactionTags
                     .filter { it.transactionId == transaction.id }
