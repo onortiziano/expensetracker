@@ -41,6 +41,7 @@ fun ModifyTransactionScreen(
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
 
+    val title by transactionViewModel.title.collectAsState()
     val amount by transactionViewModel.amount.collectAsState()
     val note by transactionViewModel.note.collectAsState()
     val type by transactionViewModel.type.collectAsState()
@@ -108,7 +109,7 @@ fun ModifyTransactionScreen(
                         Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
                         OutlinedTextField(
-                            value = transactionViewModel.title.collectAsState().value,
+                            value = title,
                             onValueChange = { transactionViewModel.updateTitle(it) },
                             label = { Text("Titolo") },
                             modifier = Modifier.fillMaxWidth(),
@@ -262,7 +263,7 @@ fun ModifyTransactionScreen(
                             
                             val updatedTransaction = Transaction(
                                 id = transactionId,
-                                title = transactionViewModel.title.collectAsState().value,
+                                title = title,
                                 amount = amountValue,
                                 type = type,
                                 categoryId = finalCategoryId,
