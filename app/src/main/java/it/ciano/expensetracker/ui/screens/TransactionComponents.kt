@@ -129,38 +129,39 @@ fun TransactionItem(
                             "Senza Categoria"
                         }
                         
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
                                 text = "Categoria: $categoryDisplayName", 
                                 fontSize = 12.sp, 
                                 color = Color.Gray,
-                                modifier = Modifier.weight(1f, fill = false),
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
                             
                             if (tags.isNotEmpty()) {
-                                val visibleTags = tags.take(2)
-                                visibleTags.forEach { tag ->
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(horizontal = 2.dp)
-                                            .wrapContentWidth()
-                                            .background(Color(tag.color), CircleShape)
-                                            .border(width = 1.dp, color = Color.Black.copy(alpha = 0.2f), shape = CircleShape)
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium, maxLines = 1)
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val visibleTags = tags.take(2)
+                                    for (tag in visibleTags) {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(Color(tag.color), CircleShape)
+                                                .border(width = 1.dp, color = Color.Black.copy(alpha = 0.2f), shape = CircleShape)
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium, maxLines = 1)
+                                        }
                                     }
-                                }
-                                if (tags.size > 2) {
-                                    Text(
-                                        text = "+${tags.size - 2}", 
-                                        fontSize = 10.sp, 
-                                        color = Color.Gray, 
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    if (tags.size > 2) {
+                                        Text(
+                                            text = "+${tags.size - 2}", 
+                                            fontSize = 10.sp, 
+                                            color = Color.Gray, 
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
