@@ -42,17 +42,8 @@ class TransactionRepository(
     fun getTotalIncome(): Flow<Double?> = transactionDao.getTotalIncome()
 
     suspend fun insertTransaction(transaction: Transaction, tagIds: Set<Int>) {
-        // 1. Inserisco la transazione e ottengo l'ID (usando l'id della transazione se è un update o l'autogenerato)
-        // Poiché insertTransaction nel DAO usa REPLACE, se l'id è 0 ne crea uno nuovo.
-        // Per ottenere l'id generato, dovremmo cambiare il DAO in 'insert' che restituisce Long.
-        // Per ora, dato che Transaction ha id: Int = 0, usiamo l'id della transazione salvata.
-        transactionDao.insertTransaction(transaction)
-        
-        // Per i tag, dobbiamo conoscere l'ID della transazione appena salvata.
-        // In un'app reale, TransactionDao.insert dovrebbe restituire Long. 
-        // Ma per mantenere la coerenza col tuo codice attuale, assumiamo che la transazione sia salvata.
-        // NOTA: Qui c'è un rischio se l'id non è aggiornato nell'oggetto.
-        // Per sicurezza, in TransactionViewModel gestiremo l'id.
+        val transactionId = transactionDao.insertTransaction(transaction).toInt()
+        saveTagsForTransaction(transactionId, tagIds)
     }
 
     suspend fun updateTransaction(transaction: Transaction, tagIds: Set<Int>) {

@@ -77,7 +77,8 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _selectedTags.value = if (current.contains(tagId)) current - tagId else current + tagId
     }
 
-    fun loadTransaction(transaction: Transaction, allCategories: List<Category>) {
+    fun loadTransaction(item: TransactionWithTags, allCategories: List<Category>) {
+        val transaction = item.transaction
         _title.value = transaction.title
         _amount.value = transaction.amount.toString()
         _note.value = transaction.note
@@ -91,6 +92,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
             _selectedMainCategoryId.value = transaction.categoryId
             _selectedSubCategoryId.value = 0
         }
+        _selectedTags.value = item.tags.map { it.tagId }.toSet()
     }
 
     fun addTransaction(transaction: Transaction, tagIds: Set<Int>) {

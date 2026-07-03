@@ -119,7 +119,7 @@ fun TransactionItem(
                         
                         val category = categories.find { it.id == transaction.categoryId }
                         val categoryDisplayName = if (category != null) {
-                            if (category.parentCategoryId != null) {
+                            if (category.parentCategoryId != null && category.parentCategoryId != 0) {
                                 val parent = categories.find { it.id == category.parentCategoryId }
                                 "${parent?.name ?: "Sconosciuto"} > ${category.name}"
                             } else {

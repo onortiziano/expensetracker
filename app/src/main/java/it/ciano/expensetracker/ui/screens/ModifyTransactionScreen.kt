@@ -62,7 +62,7 @@ fun ModifyTransactionScreen(
         transactionViewModel.transactionsWithTags.collect { transactions ->
             val item = transactions.find { it.transaction.id == transactionId }
             item?.let { transWithTags ->
-                transactionViewModel.loadTransaction(transWithTags.transaction, allCategories)
+                transactionViewModel.loadTransaction(transWithTags, allCategories)
             }
         }
     }
