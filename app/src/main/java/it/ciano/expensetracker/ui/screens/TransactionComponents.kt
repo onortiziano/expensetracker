@@ -109,7 +109,7 @@ fun TransactionItem(
                             if (transaction.note.isNotBlank()) {
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Icon(
-                                    imageVector = Icons.Default.Notes, 
+                                    imageVector = Icons.AutoMirrored.Filled.Notes, 
                                     contentDescription = "Nota presente", 
                                     tint = Color.Gray, 
                                     modifier = Modifier.size(14.dp)
