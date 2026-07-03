@@ -318,7 +318,7 @@ fun AddTransactionScreen(
                                 note = note,
                                 date = System.currentTimeMillis()
                             )
-                            transactionViewModel.addTransaction(transaction, selectedTags)
+                            transactionViewModel.addTransaction(transaction, transactionViewModel.selectedTags.value)
                             navController.popBackStack()
                         },
                         enabled = isFormValid,
