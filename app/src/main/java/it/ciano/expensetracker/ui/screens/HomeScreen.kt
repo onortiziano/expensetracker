@@ -49,22 +49,6 @@ import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 
-// Funzione helper per formattare la categoria
-@Composable
-fun formatCategoryName(categoryId: Int, categories: List<Category>): String {
-    val category = categories.find { it.id == categoryId }
-    return if (category != null) {
-        if (category.parentCategoryId != null && category.parentCategoryId != 0) {
-            val parent = categories.find { it.id == category.parentCategoryId }
-            "${parent?.name ?: "Sconosciuto"} > ${category.name}"
-        } else {
-            category.name
-        }
-    } else {
-        "Nessuna"
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
@@ -249,7 +233,18 @@ fun HomeScreen(navController: NavHostController) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(text = "Importo: ${mainViewModel.formatCurrency(details.transaction.amount)}", fontWeight = FontWeight.Medium)
-                    Text(text = "Categoria: ${formatCategoryName(details.transaction.categoryId, categories)}")
+                    val category = categories.find { it.id == details.transaction.categoryId }
+                    val categoryDisplayName = if (category != null) {
+                        if (category.parentCategoryId != null && category.parentCategoryId != 0) {
+                            val parent = categories.find { it.id == category.parentCategoryId }
+                            "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                        } else {
+                            category.name
+                        }
+                    } else {
+                        "Senza Categoria"
+                    }
+                    Text(text = "Categoria: $categoryDisplayName")
                     
                     if (details.transaction.note.isNotBlank()) {
                         Divider()
