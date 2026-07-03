@@ -1,25 +1,29 @@
 package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
@@ -53,6 +57,7 @@ fun ModifyTransactionScreen(
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
     val selectedTags by transactionViewModel.selectedTags.collectAsState()
+    val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
     val separator by settingsViewModel.decimalSeparator.collectAsState()
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
@@ -278,7 +283,6 @@ fun ModifyTransactionScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
                             allTags.forEach { tag ->
                                 FilterChip(
                                     selected = selectedTags.contains(tag.tagId),
