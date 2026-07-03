@@ -6,9 +6,9 @@ import androidx.room.Relation
 data class TransactionWithTags(
     @Embedded val transaction: Transaction,
     @Relation(
+        junction = TransactionTag::class,
         parentColumn = "id",
-        entityColumn = "tagId",
-        junction = TransactionTag::class
+        entityColumn = "tagId"
     )
     val tags: List<Tag>
 )
