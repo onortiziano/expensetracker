@@ -12,5 +12,7 @@ data class Category(
     
     // Se è null, la categoria è principale (es. "Cibo"). 
     // Se ha un valore, è una sottocategoria (es. "Supermercato" che punta a "Cibo").
-    val parentCategoryId: Int? = null 
+    val parentCategoryId: Int? = null,
+    
+    val budget: Double? = null
 )
