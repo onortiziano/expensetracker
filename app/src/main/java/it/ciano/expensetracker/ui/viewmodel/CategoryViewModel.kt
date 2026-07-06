@@ -38,6 +38,12 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
         return repository.insertCategory(category)
     }
 
+    fun updateCategory(category: Category) {
+        viewModelScope.launch {
+            repository.updateCategory(category)
+        }
+    }
+
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
             repository.deleteCategory(category)

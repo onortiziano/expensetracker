@@ -26,6 +26,11 @@ class CategoryRepository(private val categoryDao: CategoryDao) {
         return categoryDao.insertCategory(category)
     }
 
+    // Aggiorna una categoria esistente
+    suspend fun updateCategory(category: Category) {
+        categoryDao.updateCategory(category)
+    }
+
     // Elimina una categoria
     suspend fun deleteCategory(category: Category) {
         categoryDao.deleteCategory(category)

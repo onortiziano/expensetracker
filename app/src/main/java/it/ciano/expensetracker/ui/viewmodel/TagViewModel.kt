@@ -18,6 +18,12 @@ class TagViewModel(private val repository: TagRepository) : ViewModel() {
         }
     }
 
+    fun updateTag(tag: Tag) {
+        viewModelScope.launch {
+            repository.updateTag(tag)
+        }
+    }
+
     fun deleteTag(tag: Tag) {
         viewModelScope.launch {
             repository.deleteTag(tag)
