@@ -8,6 +8,12 @@ A professional, lightweight, and privacy-focused expense tracking application de
 
 ## ✨ Key Features
 
+### 📊 Smart Classification & Budgeting
+- **Hierarchical Categories**: Organize expenses with a Main Category $\rightarrow$ Sub-Category structure for granular and intuitive tracking.
+- **Category Budgets**: Set financial limits for each category with professional, locale-aware formatting (fixed 2 decimal places).
+- **Advanced Tagging**: Assign multiple custom tags to transactions for cross-category analysis, featuring a compact and intuitive "2 + n" visualization.
+- **Surgical Transaction Editing**: Complete control over transaction details, including optional notes and a refined editing workflow.
+
 ### 🌍 Internationalization & Flexibility
 - **Dynamic Currency Support**: Choose your preferred currency symbol ($, €, £, ¥, etc.) to match your local or travel needs.
 - **Custom Decimal Separators**: Full control over decimal separators (`,` or `.`), ensuring the app adapts to your regional formatting preferences.
@@ -55,4 +61,3 @@ This project is licensed under the **Apache License 2.0**. See the [LICENSE](LIC
 
 ---
 *Developed with passion for a cleaner and more organized financial life.*
- 
