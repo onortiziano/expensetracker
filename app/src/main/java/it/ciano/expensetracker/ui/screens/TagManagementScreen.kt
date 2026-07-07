@@ -2,6 +2,8 @@ package it.ciano.expensetracker.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,11 +21,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -34,8 +38,11 @@ fun TagManagementScreen(
     val app = context.applicationContext as android.app.Application
     val tagViewModel: TagViewModel = viewModel(factory = ViewModelFactory(app))
     val tags by tagViewModel.allTags.collectAsState()
+    val scope = rememberCoroutineScope()
+    
     var showDialog by remember { mutableStateOf(false) }
     var tagToEdit by remember { mutableStateOf<Tag?>(null) }
+    var showModifyConfirmDialog by remember { mutableStateOf<Tag?>(null) }
     var tagToDelete by remember { mutableStateOf<Tag?>(null) }
 
     Scaffold(
@@ -78,9 +85,8 @@ fun TagManagementScreen(
                 items(tags) { tag ->
                     TagSwipeItem(
                         tag = tag,
-                        onEdit = {
-                            tagToEdit = tag
-                            showDialog = true
+                        onEditRequest = {
+                            showModifyConfirmDialog = tag
                         },
                         onDeleteRequest = {
                             tagToDelete = tag
@@ -98,14 +104,36 @@ fun TagManagementScreen(
                     tagToEdit = null
                 },
                 onConfirm = { name, color ->
-                    if (tagToEdit == null) {
-                        tagViewModel.addTag(name, color)
-                    } else {
-                        val updated = tagToEdit!!.copy(name = name, color = color)
-                        tagViewModel.updateTag(updated)
+                    scope.launch {
+                        if (tagToEdit == null) {
+                            tagViewModel.addTag(name, color)
+                        } else {
+                            val updated = tagToEdit!!.copy(name = name, color = color)
+                            tagViewModel.updateTag(updated)
+                        }
                     }
                     showDialog = false
                     tagToEdit = null
+                }
+            )
+        }
+
+        if (showModifyConfirmDialog != null) {
+            AlertDialog(
+                onDismissRequest = { showModifyConfirmDialog = null },
+                title = { Text("Modifica Tag", fontWeight = FontWeight.Bold) },
+                text = { Text("Vuoi modificare i dettagli di questo tag?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            tagToEdit = showModifyConfirmDialog
+                            showModifyConfirmDialog = null
+                            showDialog = true
+                        }
+                    ) { Text("Sì, modifica") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text("Annulla") }
                 }
             )
         }
@@ -136,17 +164,13 @@ fun TagManagementScreen(
 @Composable
 fun TagSwipeItem(
     tag: Tag,
-    onEdit: () -> Unit,
+    onEditRequest: () -> Unit,
     onDeleteRequest: () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
             when (it) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onEdit()
-                    false
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
+                SwipeToDismissBoxValue.StartToEnd, SwipeToDismissBoxValue.EndToStart -> {
                     onDeleteRequest()
                     false
                 }
@@ -158,24 +182,18 @@ fun TagSwipeItem(
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {
-            val color = when (dismissState.currentValue) {
-                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
-                SwipeToDismissBoxValue.EndToStart -> Color.Red
-                else -> Color.Transparent
-            }
+            val isSwipingLeft = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
+            val color = if (isSwipingLeft || dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) 
+                        Color(0xFFD32F2F) else Color.Transparent
             
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .background(color, MaterialTheme.shapes.medium),
-                contentAlignment = Alignment.Center
+                    .background(color)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = if (isSwipingLeft) Alignment.CenterEnd else Alignment.CenterStart
             ) {
-                if (dismissState.currentValue == SwipeToDismissBoxValue.StartToEnd) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifica", tint = MaterialTheme.colorScheme.primary)
-                } else if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-                    Icon(Icons.Default.Delete, contentDescription = "Elimina", tint = Color.White)
-                }
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.White)
             }
         }
     ) {
@@ -184,7 +202,7 @@ fun TagSwipeItem(
                 .fillMaxWidth()
                 .combinedClickable(
                     onClick = { /* No action */ },
-                    onLongClick = onEdit
+                    onLongClick = onEditRequest
                 ),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
@@ -213,6 +231,7 @@ fun TagSwipeItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagDialog(
     tag: Tag?,
@@ -220,29 +239,76 @@ fun TagDialog(
     onConfirm: (String, Int) -> Unit
 ) {
     var name by remember { mutableStateOf(tag?.name ?: "") }
-    // Per semplicità nel dialog, usiamo un colore predefinito o quello esistente.
-    // L'implementazione di un color picker completo richiederebbe un componente dedicato.
-    var color by remember { mutableStateOf(tag?.color ?: android.graphics.Color.BLUE) }
+    var selectedColor by remember { mutableStateOf(tag?.color ?: android.graphics.Color.BLUE) }
+    
+    val availableColors = listOf(
+        android.graphics.Color.RED,
+        android.graphics.Color.BLUE,
+        android.graphics.Color.GREEN,
+        android.graphics.Color.YELLOW,
+        android.graphics.Color.MAGENTA,
+        android.graphics.Color.CYAN,
+        android.graphics.Color.DKGRAY,
+        android.graphics.Color.BLACK
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (tag == null) "Nuovo Tag" else "Modifica Tag") },
+        title = { Text(if (tag == null) "Nuovo Tag" else "Modifica Tag", fontWeight = FontWeight.Bold) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Nome Tag") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
-                Text(text = "Colore: ${if (tag == null) "Predefinito (Blu)" else "Mantiene colore attuale"}", 
-                     style = MaterialTheme.typography.bodySmall)
+                
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = "Scegli Colore", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        availableColors.forEach { color ->
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(
+                                        color = Color(color),
+                                        shape = androidx.compose.foundation.shape.CircleShape
+                                    )
+                                    .border(
+                                        width = if (selectedColor == color) 3.dp else 1.dp,
+                                        color = if (selectedColor == color) Color.Black else Color.Gray,
+                                        shape = androidx.compose.foundation.shape.CircleShape
+                                    )
+                                    .clickable { selectedColor = color },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (selectedColor == color) {
+                                    Icon(
+                                        Icons.Default.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = if (color == android.graphics.Color.BLACK || color == android.graphics.Color.DKGRAY) Color.White else Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                onConfirm(name, color)
-            }) { Text("Salva") }
+            Button(
+                onClick = {
+                    onConfirm(name, selectedColor)
+                },
+                enabled = name.isNotBlank()
+            ) { Text("Salva") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Annulla") }
