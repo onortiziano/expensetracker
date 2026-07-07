@@ -16,6 +16,8 @@ object Routes {
     const val SETTINGS = "settings"
     const val MODIFY_TRANSACTION = "modify_transaction"
     const val REMOVE_TRANSACTION = "remove_transaction"
+    const val CATEGORY_MANAGEMENT = "category_management"
+    const val TAG_MANAGEMENT = "tag_management"
 }
 
 @Composable
@@ -41,6 +43,14 @@ fun AppNavigation() {
         
         composable(Routes.SETTINGS) {
             SettingsScreen(navController)
+        }
+
+        composable(Routes.CATEGORY_MANAGEMENT) {
+            CategoryManagementScreen(navController)
+        }
+
+        composable(Routes.TAG_MANAGEMENT) {
+            TagManagementScreen(navController)
         }
 
         // Per la Modifica

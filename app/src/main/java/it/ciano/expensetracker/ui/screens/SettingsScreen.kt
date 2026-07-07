@@ -8,21 +8,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.CloudUpload
-import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.CloudUpload
-import androidx.compose.material.icons.rounded.CloudDownload
-import androidx.compose.material.icons.automirrored.sharp.ArrowBack
-import androidx.compose.material.icons.sharp.CloudUpload
-import androidx.compose.material.icons.sharp.CloudDownload
-import androidx.compose.material.icons.automirrored.twotone.ArrowBack
-import androidx.compose.material.icons.twotone.CloudUpload
-import androidx.compose.material.icons.twotone.CloudDownload
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.sharp.*
+import androidx.compose.material.icons.twotone.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -97,11 +87,11 @@ fun SettingsScreen(navController: NavHostController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = mainViewModel.getIcon(
-                                Icons.AutoMirrored.Filled.ArrowBack, 
-                                Icons.AutoMirrored.Outlined.ArrowBack, 
-                                Icons.AutoMirrored.Rounded.ArrowBack, 
-                                Icons.AutoMirrored.Sharp.ArrowBack, 
-                                Icons.AutoMirrored.TwoTone.ArrowBack
+                                Icons.Filled.ArrowBack, 
+                                Icons.Outlined.ArrowBack, 
+                                Icons.Rounded.ArrowBack, 
+                                Icons.Sharp.ArrowBack, 
+                                Icons.TwoTone.ArrowBack
                             ), 
                             contentDescription = "Torna indietro"
                         )
@@ -137,6 +127,18 @@ fun SettingsScreen(navController: NavHostController) {
                 onOptionSelected = { settingsViewModel.updateIconStyle(it) }
             )
             
+            Text(text = "Gestione Organizzazione", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+            
+            SettingButton(
+                label = "Gestione Categorie",
+                onClick = { navController.navigate("category_management") }
+            )
+            
+            SettingButton(
+                label = "Gestione Tag",
+                onClick = { navController.navigate("tag_management") }
+            )
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             
             Text(text = "Gestione Dati", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
@@ -223,4 +225,21 @@ fun SettingDropdown(label: String, currentValue: String, options: List<String>, 
             }
         }
     }
+}
+
+@Composable
+fun SettingButton(label: String, onClick: () -> Unit) {
+    TextButton(
+        onClick = onClick,
+        content = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = label, style = MaterialTheme.typography.bodyLarge)
+                Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray)
+            }
+        }
+    )
 }
