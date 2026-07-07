@@ -146,6 +146,14 @@ fun ModifyTransactionScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
                         )
+
+                        OutlinedTextField(
+                            value = note,
+                            onValueChange = { transactionViewModel.updateNote(it) },
+                            label = { Text("Note") },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 3
+                        )
                     }
                 }
 
@@ -311,8 +319,7 @@ fun ModifyTransactionScreen(
                     val normalizedAmount = amount.replace(separator, ".")
                     val numericValue = normalizedAmount.toDoubleOrNull() ?: 0.0
                     
-                    val isFormValid = note.isNotBlank() && 
-                                      !containsInvalidChars && 
+                    val isFormValid = !containsInvalidChars && 
                                       !hasMultipleSeparators && 
                                       numericValue > 0.0
                     

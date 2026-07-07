@@ -59,11 +59,14 @@ fun AddTransactionScreen(
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
     val categoryMap by categoryViewModel.categoryMap.collectAsState()
     val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
+    val separator = settingsViewModel.decimalSeparator.collectAsState().value
+
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
     
     var newCategoryName by remember { mutableStateOf("") }
+    var newCategoryBudget by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
     var categoryType by remember { mutableStateOf("MAIN") }
     
@@ -341,6 +344,7 @@ fun AddTransactionScreen(
                 onDismissRequest = {
                     showAddCategoryDialog = false
                     newCategoryName = ""
+                    newCategoryBudget = ""
                     selectedParentId = null
                     categoryType = "MAIN"
                 },
@@ -355,23 +359,45 @@ fun AddTransactionScreen(
                             singleLine = true
                         )
 
+                        val normalizedBudget = newCategoryBudget.replace(separator, ".")
+                        val containsWrongSeparator = (separator == "," && newCategoryBudget.contains(".")) || (separator == "." && newCategoryBudget.contains(","))
+                        val isBudgetValid = newCategoryBudget.isEmpty() || (!containsWrongSeparator && normalizedBudget.toDoubleOrNull() != null)
+
+                        OutlinedTextField(
+                            value = newCategoryBudget,
+                            onValueChange = { newCategoryBudget = it },
+                            label = { Text("Budget (€) - Opzionale") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            isError = !isBudgetValid,
+                            singleLine = true
+                        )
+                        if (!isBudgetValid) {
+                            Text(
+                                text = "Inserire un numero valido",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        }
+
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            FilterChip(
-                                selected = categoryType == "MAIN",
-                                onClick = { 
-                                    categoryType = "MAIN"
-                                    selectedParentId = null 
-                                },
-                                label = { Text("Principale") }
-                            )
-                            FilterChip(
-                                selected = categoryType == "SUB",
-                                onClick = { categoryType = "SUB" },
-                                label = { Text("Sottocategoria") }
-                            )
-                        }
+                                FilterChip(
+                                    selected = categoryType == "MAIN",
+                                    onClick = { 
+                                        categoryType = "MAIN"
+                                        selectedParentId = null 
+                                    },
+                                    label = { Text("Principale") }
+                                )
+                                FilterChip(
+                                    selected = categoryType == "SUB",
+                                    onClick = { categoryType = "SUB" },
+                                    label = { Text("Sottocategoria") }
+                                )
+                            }
                         }
 
                         if (categoryType == "SUB") {
@@ -425,8 +451,9 @@ fun AddTransactionScreen(
                                 }
 
                                 if (newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)) {
+                                    val budgetValue = newCategoryBudget.replace(separator, ".").toDoubleOrNull()
                                     val newId = categoryViewModel.addCategory(
-                                        Category(name = newCategoryName, parentCategoryId = selectedParentId)
+                                        Category(name = newCategoryName, budget = budgetValue, parentCategoryId = selectedParentId)
                                     ).toInt()
                                     
                                     if (categoryType == "MAIN") {
@@ -438,6 +465,7 @@ fun AddTransactionScreen(
                                     
                                     showAddCategoryDialog = false
                                     newCategoryName = ""
+                                    newCategoryBudget = ""
                                     selectedParentId = null
                                     categoryType = "MAIN"
                                 }

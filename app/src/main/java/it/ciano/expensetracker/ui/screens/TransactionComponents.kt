@@ -25,7 +25,7 @@ import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun TransactionItem(
     transactionWithTags: TransactionWithTags, 

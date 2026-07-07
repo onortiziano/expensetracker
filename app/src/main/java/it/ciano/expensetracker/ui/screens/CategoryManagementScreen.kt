@@ -84,8 +84,16 @@ fun CategoryManagementScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(categories) { category ->
+                    val displayName = if (category.parentCategoryId != null) {
+                        val parent = categories.find { it.id == category.parentCategoryId }
+                        "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                    } else {
+                        category.name
+                    }
                     CategorySwipeItem(
                         category = category,
+                        displayName = displayName,
+                        separator = separator,
                         onEditRequest = {
                             showModifyConfirmDialog = category
                         },
@@ -147,6 +155,8 @@ fun CategoryManagementScreen(
 @Composable
 fun CategorySwipeItem(
     category: Category,
+    displayName: String,
+    separator: String,
     onEditRequest: () -> Unit,
     onDeleteRequest: (Category) -> Unit
 ) {
@@ -221,12 +231,16 @@ fun CategorySwipeItem(
             ) {
                 Column {
                     Text(
-                        text = category.name,
+                        text = displayName,
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = if (category.budget != null) "Budget: ${category.budget}€" else "Senza budget",
+                        text = if (category.budget != null) {
+                            "Budget: ${String.format("%.2f", category.budget).replace(".", separator)}€"
+                        } else {
+                            "Senza budget"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
