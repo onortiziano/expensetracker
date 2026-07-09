@@ -33,6 +33,12 @@ class CategoryViewModel(private val repository: CategoryRepository) : ViewModel(
             initialValue = emptyList()
         )
 
+    fun getTotalCategoryBudget(): Flow<Double> {
+        return allCategories.map { list ->
+            list.sumOf { it.budget ?: 0.0 }
+        }
+    }
+
     // 2. Solo le categorie principali (Padri)
     val mainCategories: StateFlow<List<Category>> = repository.getMainCategories()
         .stateIn(

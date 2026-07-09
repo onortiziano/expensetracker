@@ -6,10 +6,10 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.data.preferences.UserPreferences
+import it.ciano.expensetracker.data.repository.GlobalBudgetRepository
+import it.ciano.expensetracker.data.model.GlobalBudget
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.*
 import java.util.zip.ZipEntry
@@ -18,14 +18,15 @@ import java.util.zip.ZipOutputStream
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val userPreferences = UserPreferences(application)
+    private val globalBudgetRepository = GlobalBudgetRepository(application)
     private val context = application.applicationContext
-
+    
     private val _currency = MutableStateFlow(userPreferences.getCurrency())
     val currency: StateFlow<String> = _currency.asStateFlow()
-
+    
     private val _decimalSeparator = MutableStateFlow(userPreferences.getDecimalSeparator())
     val decimalSeparator: StateFlow<String> = _decimalSeparator.asStateFlow()
-
+    
     private val _iconStyle = MutableStateFlow(userPreferences.getIconStyle())
     val iconStyle: StateFlow<String> = _iconStyle.asStateFlow()
 
@@ -42,6 +43,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun updateIconStyle(newStyle: String) {
         userPreferences.saveIconStyle(newStyle)
         _iconStyle.value = newStyle
+    }
+
+    fun getBudgetForMonth(month: Int, year: Int): Flow<GlobalBudget?> {
+        return globalBudgetRepository.getBudgetForMonth(month, year)
+    }
+
+    fun saveGlobalBudget(amount: Double, month: Int, year: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            globalBudgetRepository.saveBudget(GlobalBudget(amount = amount, month = month, year = year))
+        }
     }
 
     fun backupAll(uri: Uri, onComplete: (Boolean) -> Unit) {

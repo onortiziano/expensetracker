@@ -29,6 +29,8 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
                 SettingsViewModel(application) as T
             modelClass.isAssignableFrom(TagViewModel::class.java) -> 
                 TagViewModel(tagRepository) as T
+            modelClass.isAssignableFrom(AnalyticsViewModel::class.java) -> 
+                AnalyticsViewModel(application) as T
             else -> throw IllegalArgumentException("Classe ViewModel sconosciuta: ${modelClass.name}")
         }
     }
