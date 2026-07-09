@@ -1,24 +1,33 @@
 package it.ciano.expensetracker.ui.screens
 
+import android.app.DatePickerDialog
+import android.content.Intent
+import android.os.Process
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.sharp.*
+import androidx.compose.material.icons.twotone.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.foundation.shape.CircleShape
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -32,6 +41,8 @@ import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -39,7 +50,7 @@ fun AddTransactionScreen(
     navController: NavHostController
 ) {
     val scope = rememberCoroutineScope()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val app = context.applicationContext as android.app.Application
     
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
@@ -61,6 +72,24 @@ fun AddTransactionScreen(
     val allTags by tagViewModel.allTags.collectAsState(initial = emptyList())
     val separator = settingsViewModel.decimalSeparator.collectAsState().value
 
+    // --- GESTIONE DATA ---
+    var selectedDate by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
+    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val calendar = Calendar.getInstance()
+                calendar.set(year, month, dayOfMonth, 0, 0, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                selectedDate = calendar.timeInMillis
+            },
+            Calendar.getInstance().get(Calendar.YEAR),
+            Calendar.getInstance().get(Calendar.MONTH),
+            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        )
+    }
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
@@ -114,6 +143,27 @@ fun AddTransactionScreen(
                     ) {
                         Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
+                        // DATA SELECTOR
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = dateFormat.format(Date(selectedDate)),
+                                onValueChange = {},
+                                label = { Text("Data") },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) }
+                            )
+                            // Overlay trasparente che intercetta il click
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { datePickerDialog.show() }
+                            )
+                        }
+
                         OutlinedTextField(
                             value = title,
                             onValueChange = { transactionViewModel.updateTitle(it) },
@@ -296,7 +346,6 @@ fun AddTransactionScreen(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium
                 ) {
-                    val separator = settingsViewModel.decimalSeparator.collectAsState().value
                     val sepChar = separator.firstOrNull() ?: ','
                     val containsInvalidChars = amount.any { it.isDigit() == false && it != sepChar }
                     val hasMultipleSeparators = amount.count { it == sepChar } > 1
@@ -319,7 +368,7 @@ fun AddTransactionScreen(
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
-                                date = System.currentTimeMillis()
+                                date = selectedDate
                             )
                             transactionViewModel.addTransaction(transaction, transactionViewModel.selectedTags.value)
                             navController.popBackStack()
@@ -424,13 +473,13 @@ fun AddTransactionScreen(
                                         onDismissRequest = { parentExpanded = false }
                                     ) {
                                         mainCategories.forEach { parent ->
-                                    DropdownMenuItem(
-                                        text = { Text(parent.name) },
-                                        onClick = {
-                                            selectedParentId = parent.id
-                                            parentExpanded = false
-                                        }
-                                    )
+                                            DropdownMenuItem(
+                                                text = { Text(parent.name) },
+                                                onClick = {
+                                                    selectedParentId = parent.id
+                                                    parentExpanded = false
+                                                }
+                                            )
                                         }
                                     }
                                 }
