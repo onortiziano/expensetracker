@@ -10,7 +10,9 @@ A professional, lightweight, and privacy-focused expense tracking application de
 
 ### 📊 Smart Classification & Budgeting
 - **Hierarchical Categories**: Organize expenses with a Main Category $\rightarrow$ Sub-Category structure for granular and intuitive tracking.
-- **Category Budgets**: Set financial limits for each category with professional, locale-aware formatting (fixed 2 decimal places).
+- **Global & Category Budgets**: Set financial limits both globally and per category, with support for historical planning for specific months and years.
+- **Visual Analytics**: Dedicated analytics screen with a custom bar chart to track 'Budget vs Actual' spending, providing a clear overview of financial health.
+- **Precise Temporal Tracking**: Integrated DatePicker for transactions, ensuring spending is mapped to the correct budget period.
 - **Advanced Tagging**: Assign multiple custom tags to transactions for cross-category analysis, featuring a compact and intuitive "2 + n" visualization.
 - **Surgical Transaction Editing**: Complete control over transaction details, including optional notes and a refined editing workflow.
 
