@@ -51,7 +51,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun saveGlobalBudget(amount: Double, month: Int, year: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            globalBudgetRepository.saveBudget(GlobalBudget(amount = amount, month = month, year = year))
+            val existing = globalBudgetRepository.getBudgetForMonth(month, year).first()
+            val id = existing?.id ?: 0
+            globalBudgetRepository.saveBudget(GlobalBudget(id = id, amount = amount, month = month, year = year))
         }
     }
 

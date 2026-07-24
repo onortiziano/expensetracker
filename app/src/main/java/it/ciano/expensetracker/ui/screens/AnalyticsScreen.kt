@@ -1,6 +1,5 @@
 package it.ciano.expensetracker.ui.screens
 
-import android.app.DatePickerDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import java.text.SimpleDateFormat
@@ -29,47 +27,70 @@ import it.ciano.expensetracker.ui.components.BudgetBarChart
 fun AnalyticsScreen(
     navController: NavHostController
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val app = context.applicationContext as android.app.Application
+    val app = (androidx.compose.ui.platform.LocalContext.current.applicationContext as android.app.Application)
     val viewModel: AnalyticsViewModel = viewModel(factory = ViewModelFactory(app))
 
     val startDate by viewModel.startDate.collectAsState()
     val endDate by viewModel.endDate.collectAsState()
     val comparisonData by viewModel.monthlyComparison.collectAsState(initial = emptyList())
-    
+
     var selectedMonthDetail by remember { mutableStateOf<BudgetComparison?>(null) }
+    var dateError by remember { mutableStateOf<String?>(null) }
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
-    val startDatePicker = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val cal = Calendar.getInstance().apply {
-                    set(year, month, dayOfMonth, 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                viewModel.updateStartDate(cal.timeInMillis)
-            },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+
+    if (showStartPicker) {
+        val startState = rememberDatePickerState(
+            initialSelectedDateMillis = startDate
         )
+        DatePickerDialog(
+            onDismissRequest = { showStartPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showStartPicker = false
+                    val picked = startState.selectedDateMillis
+                    if (picked != null && picked > endDate) {
+                        dateError = "La data 'Da' non può essere successiva alla data 'A'"
+                    } else if (picked != null) {
+                        dateError = null
+                        viewModel.updateStartDate(picked)
+                    }
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartPicker = false }) { Text("Annulla") }
+            }
+        ) {
+            DatePicker(state = startState)
+        }
     }
 
-    val endDatePicker = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val cal = Calendar.getInstance().apply {
-                    set(year, month, dayOfMonth, 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                viewModel.updateEndDate(cal.timeInMillis)
-            },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+    if (showEndPicker) {
+        val endState = rememberDatePickerState(
+            initialSelectedDateMillis = endDate
         )
+        DatePickerDialog(
+            onDismissRequest = { showEndPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showEndPicker = false
+                    val picked = endState.selectedDateMillis
+                    if (picked != null && picked < startDate) {
+                        dateError = "La data 'A' non può essere precedente alla data 'Da'"
+                    } else if (picked != null) {
+                        dateError = null
+                        viewModel.updateEndDate(picked)
+                    }
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEndPicker = false }) { Text("Annulla") }
+            }
+        ) {
+            DatePicker(state = endState)
+        }
     }
 
     Scaffold(
@@ -109,21 +130,53 @@ fun AnalyticsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        OutlinedTextField(
-                            value = dateFormat.format(Date(startDate)),
-                            onValueChange = {},
-                            label = { Text("Da") },
-                            modifier = Modifier.weight(1f).clickable { startDatePicker.show() },
-                            readOnly = true,
-                            trailingIcon = { Icon(Icons.Default.Event, contentDescription = null) }
-                        )
-                        OutlinedTextField(
-                            value = dateFormat.format(Date(endDate)),
-                            onValueChange = {},
-                            label = { Text("A") },
-                            modifier = Modifier.weight(1f).clickable { endDatePicker.show() },
-                            readOnly = true,
-                            trailingIcon = { Icon(Icons.Default.Event, contentDescription = null) }
+                        Box(
+                            modifier = Modifier.weight(1f).clickable { showStartPicker = true }
+                        ) {
+                            OutlinedTextField(
+                                value = dateFormat.format(Date(startDate)),
+                                onValueChange = { },
+                                label = { Text("Da") },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                enabled = false,
+                                isError = dateError != null,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                trailingIcon = { Icon(Icons.Default.Event, contentDescription = null) }
+                            )
+                        }
+                        Box(
+                            modifier = Modifier.weight(1f).clickable { showEndPicker = true }
+                        ) {
+                            OutlinedTextField(
+                                value = dateFormat.format(Date(endDate)),
+                                onValueChange = { },
+                                label = { Text("A") },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                enabled = false,
+                                isError = dateError != null,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                ),
+                                trailingIcon = { Icon(Icons.Default.Event, contentDescription = null) }
+                            )
+                        }
+                    }
+                    if (dateError != null) {
+                        Text(
+                            text = dateError ?: "",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                         )
                     }
                 }
@@ -148,7 +201,8 @@ fun AnalyticsScreen(
             }
 
             // DETTAGLIO MESE SELEZIONATO
-            if (selectedMonthDetail != null) {
+            val m = selectedMonthDetail
+            if (m != null) {
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.elevatedCardColors(
@@ -160,41 +214,41 @@ fun AnalyticsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Dettaglio ${selectedMonthDetail!!.monthLabel}", 
-                            style = MaterialTheme.typography.titleMedium, 
+                            text = "Dettaglio ${m.monthLabel}",
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Divider()
+                        HorizontalDivider()
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Budget Pianificato:")
-                            Text("${String.format("%.2f", selectedMonthDetail!!.plannedBudget)}€", fontWeight = FontWeight.Bold)
+                            Text("${String.format("%.2f", m.plannedBudget)}€", fontWeight = FontWeight.Bold)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Spesa Effettiva:")
-                            Text("${String.format("%.2f", selectedMonthDetail!!.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                            Text("${String.format("%.2f", m.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Differenza:", fontWeight = FontWeight.Bold)
-                            val diff = selectedMonthDetail!!.plannedBudget - selectedMonthDetail!!.actualSpending
+                            val diff = m.plannedBudget - m.actualSpending
                             Text(
-                                "${String.format("%.2f", diff)}€", 
-                                fontWeight = FontWeight.Bold, 
+                                "${String.format("%.2f", diff)}€",
+                                fontWeight = FontWeight.Bold,
                                 color = if (diff >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                             )
                         }
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }

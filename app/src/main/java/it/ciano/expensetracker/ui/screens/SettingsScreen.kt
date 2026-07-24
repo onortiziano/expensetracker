@@ -10,6 +10,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.sharp.ArrowBack
+import androidx.compose.material.icons.automirrored.twotone.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material.icons.sharp.*
@@ -67,7 +73,7 @@ fun SettingsScreen(navController: NavHostController) {
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
         onResult = { uri ->
-            uri?.let { settingsViewModel.backupAll(it) { _success -> } }
+            uri?.let { settingsViewModel.backupAll(it) { _ -> } }
         }
     )
 
@@ -106,11 +112,11 @@ fun SettingsScreen(navController: NavHostController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = mainViewModel.getIcon(
-                                Icons.Filled.ArrowBack, 
-                                Icons.Outlined.ArrowBack, 
-                                Icons.Rounded.ArrowBack, 
-                                Icons.Sharp.ArrowBack, 
-                                Icons.TwoTone.ArrowBack
+                                Icons.AutoMirrored.Filled.ArrowBack, 
+                                Icons.AutoMirrored.Outlined.ArrowBack, 
+                                Icons.AutoMirrored.Rounded.ArrowBack, 
+                                Icons.AutoMirrored.Sharp.ArrowBack, 
+                                Icons.AutoMirrored.TwoTone.ArrowBack
                             ), 
                             contentDescription = "Torna indietro"
                         )
@@ -150,7 +156,19 @@ fun SettingsScreen(navController: NavHostController) {
             
             SettingButton(
                 label = "Budget Mensile Totale",
-                onClick = { showBudgetDialog = true }
+                onClick = {
+                    currentGlobalBudget?.let { b ->
+                        budgetInput = String.format("%.2f", b.amount).replace(".", decimalSeparator)
+                        selectedMonth = b.month
+                        selectedYear = b.year
+                    } ?: run {
+                        budgetInput = ""
+                        selectedMonth = currentMonth
+                        selectedYear = currentYear
+                    }
+                    budgetError = null
+                    showBudgetDialog = true
+                }
             )
             
             SettingButton(
@@ -284,6 +302,16 @@ fun BudgetDialog(
     var monthExpanded by remember { mutableStateOf(false) }
     var yearExpanded by remember { mutableStateOf(false) }
 
+    val hasWrongSeparator = if (separator == ",") amount.contains(".") else amount.contains(",")
+    val parsedAmount = amount.replace(separator, ".").toDoubleOrNull()
+    val localError = when {
+        amount.isEmpty() -> "Inserisci un importo"
+        hasWrongSeparator -> "Utilizzare il separatore corretto ($separator)"
+        parsedAmount == null -> "Importo non valido"
+        parsedAmount < 0 -> "Importo non valido"
+        else -> null
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Budget Mensile Totale", fontWeight = FontWeight.Bold) },
@@ -362,17 +390,18 @@ fun BudgetDialog(
                     label = { Text("Budget per questo mese (€)") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    isError = error != null,
+                    isError = (localError ?: error) != null,
                     singleLine = true,
                     trailingIcon = {
-                        if (error != null) {
+                        if ((localError ?: error) != null) {
                             Icon(Icons.Default.Error, contentDescription = "Errore", tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 )
-                if (error != null) {
+                if ((localError ?: error) != null) {
+                    val displayError = localError ?: error
                     Text(
-                        text = error,
+                        text = displayError ?: "",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 16.dp)
@@ -381,7 +410,7 @@ fun BudgetDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onConfirm) { Text("Salva") }
+            Button(onClick = onConfirm, enabled = localError == null) { Text("Salva") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Annulla") }
@@ -427,7 +456,7 @@ fun SettingButton(label: String, onClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = label, style = MaterialTheme.typography.bodyLarge)
-                Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray)
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray)
             }
         }
     )

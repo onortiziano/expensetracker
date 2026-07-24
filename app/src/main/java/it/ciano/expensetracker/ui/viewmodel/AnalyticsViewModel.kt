@@ -3,6 +3,7 @@ package it.ciano.expensetracker.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import it.ciano.expensetracker.data.AppDatabase
 import it.ciano.expensetracker.data.repository.*
@@ -17,6 +18,7 @@ data class BudgetComparison(
     val year: Int
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AnalyticsViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val globalBudgetRepo = GlobalBudgetRepository(application)
@@ -48,14 +50,13 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
             *months.map { monthData ->
                 combine(
                     globalBudgetRepo.getBudgetForMonth(monthData.month, monthData.year),
-                    transactionRepo.getTransactionsByPeriod(start, end) // In realtà dovremmo filtrare per mese specifico
+                    transactionRepo.getMonthlyExpenses(
+                        "%02d".format(monthData.month),
+                        "%04d".format(monthData.year)
+                    )
                 ) { budget, transactions ->
                     val totalBudget = budget?.amount ?: 0.0
                     val spending = transactions
-                        .filter { 
-                            val cal = Calendar.getInstance().apply { timeInMillis = it.date }
-                            cal.get(Calendar.MONTH) + 1 == monthData.month && cal.get(Calendar.YEAR) == monthData.year 
-                        }
                         .filter { it.type == "EXPENSE" }
                         .sumOf { it.amount }
                     

@@ -29,7 +29,10 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getTransactionsByPeriod(startDate: Long, endDate: Long): Flow<List<Transaction>>
-	
+
+    @Query("SELECT * FROM transactions WHERE type = 'EXPENSE' AND strftime('%m', date/1000, 'unixepoch') = :month AND strftime('%Y', date/1000, 'unixepoch') = :year")
+    fun getMonthlyExpenses(month: String, year: String): Flow<List<Transaction>>
+
     @Update
     suspend fun updateTransaction(transaction: Transaction)
 }
