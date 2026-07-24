@@ -39,6 +39,10 @@ class TransactionRepository(
         return transactionDao.getTransactionsByPeriod(startDate, endDate)
     }
 
+    fun getMonthlyExpenses(month: String, year: String): Flow<List<Transaction>> {
+        return transactionDao.getMonthlyExpenses(month, year)
+    }
+
     fun getTotalExpenses(): Flow<Double?> = transactionDao.getTotalExpenses()
     fun getTotalIncome(): Flow<Double?> = transactionDao.getTotalIncome()
 

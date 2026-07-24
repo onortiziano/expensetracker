@@ -41,35 +41,15 @@ fun AnalyticsScreen(
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     val startDatePicker = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val cal = Calendar.getInstance().apply {
-                    set(year, month, dayOfMonth, 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                viewModel.updateStartDate(cal.timeInMillis)
-            },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-        )
+        makeDatePicker(context) { year, month, dayOfMonth ->
+            viewModel.updateStartDate(midnightMillis(year, month, dayOfMonth))
+        }
     }
 
     val endDatePicker = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                val cal = Calendar.getInstance().apply {
-                    set(year, month, dayOfMonth, 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                viewModel.updateEndDate(cal.timeInMillis)
-            },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-        )
+        makeDatePicker(context) { year, month, dayOfMonth ->
+            viewModel.updateEndDate(midnightMillis(year, month, dayOfMonth))
+        }
     }
 
     Scaffold(
@@ -148,7 +128,8 @@ fun AnalyticsScreen(
             }
 
             // DETTAGLIO MESE SELEZIONATO
-            if (selectedMonthDetail != null) {
+            val m = selectedMonthDetail
+            if (m != null) {
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.elevatedCardColors(
@@ -160,31 +141,31 @@ fun AnalyticsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Dettaglio ${selectedMonthDetail!!.monthLabel}", 
+                            text = "Dettaglio ${m.monthLabel}", 
                             style = MaterialTheme.typography.titleMedium, 
                             fontWeight = FontWeight.Bold
                         )
-                        Divider()
+                        HorizontalDivider()
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Budget Pianificato:")
-                            Text("${String.format("%.2f", selectedMonthDetail!!.plannedBudget)}€", fontWeight = FontWeight.Bold)
+                            Text("${String.format("%.2f", m.plannedBudget)}€", fontWeight = FontWeight.Bold)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Spesa Effettiva:")
-                            Text("${String.format("%.2f", selectedMonthDetail!!.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                            Text("${String.format("%.2f", m.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Differenza:", fontWeight = FontWeight.Bold)
-                            val diff = selectedMonthDetail!!.plannedBudget - selectedMonthDetail!!.actualSpending
+                            val diff = m.plannedBudget - m.actualSpending
                             Text(
                                 "${String.format("%.2f", diff)}€", 
                                 fontWeight = FontWeight.Bold, 
@@ -198,4 +179,24 @@ fun AnalyticsScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+}
+
+private fun midnightMillis(year: Int, month: Int, dayOfMonth: Int): Long {
+    return Calendar.getInstance().apply {
+        set(year, month, dayOfMonth, 0, 0, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+}
+
+private fun makeDatePicker(
+    context: android.content.Context,
+    onPick: (year: Int, month: Int, dayOfMonth: Int) -> Unit
+): DatePickerDialog {
+    return DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth -> onPick(year, month, dayOfMonth) },
+        Calendar.getInstance().get(Calendar.YEAR),
+        Calendar.getInstance().get(Calendar.MONTH),
+        Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+    )
 }
