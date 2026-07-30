@@ -63,7 +63,9 @@ This project is licensed under the **Apache License 2.0**. See the [LICENSE](LIC
 
 ---
 
-## ☕ Support
+## 🇬🇧 Support / 🇮🇹 Supporto
+
+If you like this project and want to help keep it active, you can offer me a coffee or make a small donation.
 
 Se ti piace questo progetto e vuoi aiutarmi a mantenerlo attivo, puoi offrirmi un caffè o una piccola donazione.
 
