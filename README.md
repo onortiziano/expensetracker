@@ -62,4 +62,12 @@ You can customize the app's behavior in the **Settings** screen:
 This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for more details.
 
 ---
+
+## ☕ Support
+
+Se ti piace questo progetto e vuoi aiutarmi a mantenerlo attivo, puoi offrirmi un caffè o una piccola donazione.
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=for-the-badge&logo=paypal)](https://paypal.me/onortiziano)
+
+---
 *Developed with passion for a cleaner and more organized financial life.*
