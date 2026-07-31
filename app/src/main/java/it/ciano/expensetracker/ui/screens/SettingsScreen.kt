@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
@@ -89,8 +90,8 @@ fun SettingsScreen(navController: NavHostController) {
     if (showRestartDialog) {
         AlertDialog(
             onDismissRequest = { },
-            title = { Text("Ripristino Completato") },
-            text = { Text("L'app deve riavviarsi per applicare le nuove impostazioni.") },
+            title = { Text(stringResource(R.string.str_ripristino_completato)) },
+            text = { Text(stringResource(R.string.str_l_app_deve_riavviarsi_per_applicare_le_nuove_impostazion)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -99,7 +100,7 @@ fun SettingsScreen(navController: NavHostController) {
                         context.startActivity(intent)
                         Process.killProcess(Process.myPid())
                     }
-                ) { Text("Riavvia Ora") }
+                ) { Text(stringResource(R.string.str_riavvia_ora)) }
             }
         )
     }
@@ -207,7 +208,7 @@ fun SettingsScreen(navController: NavHostController) {
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Backup")
+                            Text(stringResource(R.string.str_backup))
                         }
                     }
                 )
@@ -227,7 +228,7 @@ fun SettingsScreen(navController: NavHostController) {
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Importa")
+                            Text(stringResource(R.string.str_importa))
                         }
                     }
                 )
@@ -333,7 +334,7 @@ fun BudgetDialog(
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            label = { Text("Mese") },
+                            label = { Text(stringResource(R.string.str_mese)) },
                             textStyle = MaterialTheme.typography.bodySmall
                         )
                         ExposedDropdownMenu(
@@ -364,7 +365,7 @@ fun BudgetDialog(
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = yearExpanded) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            label = { Text("Anno") },
+                            label = { Text(stringResource(R.string.str_anno)) },
                             textStyle = MaterialTheme.typography.bodySmall
                         )
                         ExposedDropdownMenu(
@@ -387,7 +388,7 @@ fun BudgetDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = onAmountChange,
-                    label = { Text("Budget per questo mese (€)") },
+                    label = { Text(stringResource(R.string.str_budget_per_questo_mese)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     isError = (localError ?: error) != null,
@@ -410,10 +411,10 @@ fun BudgetDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onConfirm, enabled = localError == null) { Text("Salva") }
+            Button(onClick = onConfirm, enabled = localError == null) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Annulla") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.str_annulla)) }
         }
     )
 }

@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.ui.screens.Routes
@@ -103,7 +104,7 @@ fun HomeScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 NavigationDrawerItem(
-                    label = { Text("Home") },
+                    label = { Text(stringResource(R.string.str_home)) },
                     selected = true,
                     onClick = { 
                         scope.launch { drawerState.close() }
@@ -114,7 +115,7 @@ fun HomeScreen(navController: NavHostController) {
                 )
                 
                 NavigationDrawerItem(
-                    label = { Text("Cronologia") },
+                    label = { Text(stringResource(R.string.str_cronologia)) },
                     selected = false,
                     onClick = { 
                         scope.launch { drawerState.close() }
@@ -125,7 +126,7 @@ fun HomeScreen(navController: NavHostController) {
                 )
                 
                 NavigationDrawerItem(
-                    label = { Text("Impostazioni") },
+                    label = { Text(stringResource(R.string.str_impostazioni)) },
                     selected = false,
                     onClick = { 
                         scope.launch { drawerState.close() }
@@ -140,7 +141,7 @@ fun HomeScreen(navController: NavHostController) {
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text("Expense Tracker") },
+                    title = { Text(stringResource(R.string.str_expense_tracker)) },
                     navigationIcon = {
                         IconButton(onClick = { 
                             scope.launch { drawerState.open() } 
@@ -275,7 +276,7 @@ fun HomeScreen(navController: NavHostController) {
             },
             confirmButton = {
                 TextButton(onClick = { selectedTransactionForDetails = null }) {
-                    Text("Chiudi")
+                    Text(stringResource(R.string.str_chiudi))
                 }
             }
         )
@@ -286,7 +287,7 @@ fun HomeScreen(navController: NavHostController) {
         AlertDialog(
             onDismissRequest = { showModifyConfirmDialog = null },
             title = { Text("Modifica Transazione", fontWeight = FontWeight.Bold) },
-            text = { Text("Vuoi modificare i dettagli di questa transazione?") },
+            text = { Text(stringResource(R.string.str_vuoi_modificare_i_dettagli_di_questa_transazione)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -295,12 +296,12 @@ fun HomeScreen(navController: NavHostController) {
                         navController.navigate("${Routes.MODIFY_TRANSACTION}/${trans.id}")
                     }
                 ) {
-                    Text("Sì, modifica")
+                    Text(stringResource(R.string.str_s_modifica))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showModifyConfirmDialog = null }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.str_annulla))
                 }
             }
         )

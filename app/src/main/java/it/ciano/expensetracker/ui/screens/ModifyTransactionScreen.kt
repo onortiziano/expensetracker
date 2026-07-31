@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.activity.compose.BackHandler
@@ -133,7 +134,7 @@ fun ModifyTransactionScreen(
                         OutlinedTextField(
                             value = title,
                             onValueChange = { transactionViewModel.updateTitle(it) },
-                            label = { Text("Titolo") },
+                            label = { Text(stringResource(R.string.str_titolo)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -141,7 +142,7 @@ fun ModifyTransactionScreen(
                         OutlinedTextField(
                             value = amount,
                             onValueChange = { transactionViewModel.updateAmount(it) },
-                            label = { Text("Importo") },
+                            label = { Text(stringResource(R.string.str_importo)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
@@ -150,7 +151,7 @@ fun ModifyTransactionScreen(
                         OutlinedTextField(
                             value = note,
                             onValueChange = { transactionViewModel.updateNote(it) },
-                            label = { Text("Note") },
+                            label = { Text(stringResource(R.string.str_note)) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3
                         )
@@ -175,13 +176,13 @@ fun ModifyTransactionScreen(
                             FilterChip(
                                 selected = type == "EXPENSE",
                                 onClick = { transactionViewModel.updateType("EXPENSE") },
-                                label = { Text("Uscita") },
+                                label = { Text(stringResource(R.string.str_uscita)) },
                                 modifier = Modifier.weight(1f)
                             )
                             FilterChip(
                                 selected = type == "INCOME",
                                 onClick = { transactionViewModel.updateType("INCOME") },
-                                label = { Text("Entrata") },
+                                label = { Text(stringResource(R.string.str_entrata)) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -201,7 +202,7 @@ fun ModifyTransactionScreen(
                                 readOnly = true,
                                 value = mainCategoryName,
                                 onValueChange = {},
-                                label = { Text("Categoria Principale") },
+                                label = { Text(stringResource(R.string.str_categoria_principale)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mainExpanded) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth()
                             )
@@ -244,7 +245,7 @@ fun ModifyTransactionScreen(
                                     readOnly = true,
                                     value = subCategoryName,
                                     onValueChange = {},
-                                    label = { Text("Sottocategoria") },
+                                    label = { Text(stringResource(R.string.str_sottocategoria)) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subExpanded) },
                                     modifier = Modifier.menuAnchor().fillMaxWidth()
                                 )
@@ -369,7 +370,7 @@ fun ModifyTransactionScreen(
                         OutlinedTextField(
                             value = newCategoryName,
                             onValueChange = { newCategoryName = it },
-                            label = { Text("Nome Categoria") },
+                            label = { Text(stringResource(R.string.str_nome_categoria)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -383,12 +384,12 @@ fun ModifyTransactionScreen(
                                         categoryType = "MAIN"
                                         selectedParentId = null 
                                     },
-                                    label = { Text("Principale") }
+                                    label = { Text(stringResource(R.string.str_principale)) }
                                 )
                                 FilterChip(
                                     selected = categoryType == "SUB",
                                     onClick = { categoryType = "SUB" },
-                                    label = { Text("Sottocategoria") }
+                                    label = { Text(stringResource(R.string.str_sottocategoria)) }
                                 )
                             }
                         }
@@ -408,7 +409,7 @@ fun ModifyTransactionScreen(
                                         readOnly = true,
                                         value = parentName,
                                         onValueChange = {},
-                                        label = { Text("Scegli il Padre") },
+                                        label = { Text(stringResource(R.string.str_scegli_il_padre)) },
                                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
                                         modifier = Modifier.menuAnchor().fillMaxWidth()
                                     )
@@ -462,11 +463,11 @@ fun ModifyTransactionScreen(
                             }
                         },
                         enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
-                    ) { Text("Salva") }
+                    ) { Text(stringResource(R.string.str_salva)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddCategoryDialog = false }) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                 }
             )
@@ -481,7 +482,7 @@ fun ModifyTransactionScreen(
                         OutlinedTextField(
                             value = newTagName,
                             onValueChange = { newTagName = it },
-                            label = { Text("Nome Tag") },
+                            label = { Text(stringResource(R.string.str_nome_tag)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -520,11 +521,11 @@ fun ModifyTransactionScreen(
                             }
                         },
                         enabled = newTagName.isNotBlank()
-                    ) { Text("Salva") }
+                    ) { Text(stringResource(R.string.str_salva)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddTagDialog = false }) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                 }
             )

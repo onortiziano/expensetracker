@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
@@ -92,7 +93,7 @@ fun RemoveTransactionScreen(
                         onClick = { navController.popBackStack() },
 							modifier = Modifier.weight(1f).height(56.dp)
                     ) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                     
                     // BOTTONE CONFERMA ELIMINAZIONE

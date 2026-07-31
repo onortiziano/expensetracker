@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.runtime.stringResource
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Tag
@@ -66,7 +67,7 @@ fun TransactionItem(
             },
             dismissButton = { 
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.str_annulla))
                 }
             }
         )

@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import java.text.SimpleDateFormat
@@ -57,10 +58,10 @@ fun AnalyticsScreen(
                         dateError = null
                         viewModel.updateStartDate(picked)
                     }
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.str_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStartPicker = false }) { Text("Annulla") }
+                TextButton(onClick = { showStartPicker = false }) { Text(stringResource(R.string.str_annulla)) }
             }
         ) {
             DatePicker(state = startState)
@@ -83,10 +84,10 @@ fun AnalyticsScreen(
                         dateError = null
                         viewModel.updateEndDate(picked)
                     }
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.str_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showEndPicker = false }) { Text("Annulla") }
+                TextButton(onClick = { showEndPicker = false }) { Text(stringResource(R.string.str_annulla)) }
             }
         ) {
             DatePicker(state = endState)
@@ -136,7 +137,7 @@ fun AnalyticsScreen(
                             OutlinedTextField(
                                 value = dateFormat.format(Date(startDate)),
                                 onValueChange = { },
-                                label = { Text("Da") },
+                                label = { Text(stringResource(R.string.str_da)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                                 enabled = false,
@@ -156,7 +157,7 @@ fun AnalyticsScreen(
                             OutlinedTextField(
                                 value = dateFormat.format(Date(endDate)),
                                 onValueChange = { },
-                                label = { Text("A") },
+                                label = { Text(stringResource(R.string.str_a)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                                 enabled = false,
@@ -223,14 +224,14 @@ fun AnalyticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Budget Pianificato:")
+                            Text(stringResource(R.string.str_budget_pianificato))
                             Text("${String.format("%.2f", m.plannedBudget)}€", fontWeight = FontWeight.Bold)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Spesa Effettiva:")
+                            Text(stringResource(R.string.str_spesa_effettiva))
                             Text("${String.format("%.2f", m.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                         }
                         Row(

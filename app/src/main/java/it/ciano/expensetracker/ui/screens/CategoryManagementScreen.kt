@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Category
@@ -133,7 +134,7 @@ fun CategoryManagementScreen(
             AlertDialog(
                 onDismissRequest = { showModifyConfirmDialog = null },
                 title = { Text("Modifica Categoria", fontWeight = FontWeight.Bold) },
-                text = { Text("Vuoi modificare i dettagli di questa categoria?") },
+                text = { Text(stringResource(R.string.str_vuoi_modificare_i_dettagli_di_questa_categoria)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -141,10 +142,10 @@ fun CategoryManagementScreen(
                             showModifyConfirmDialog = null
                             showDialog = true
                         }
-                    ) { Text("Sì, modifica") }
+                    ) { Text(stringResource(R.string.str_s_modifica)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text("Annulla") }
+                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text(stringResource(R.string.str_annulla)) }
                 }
             )
         }
@@ -176,7 +177,7 @@ fun CategorySwipeItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Elimina Categoria") },
+            title = { Text(stringResource(R.string.str_elimina_categoria)) },
             text = { Text("Sei sicuro di voler eliminare '${category.name}'? L'operazione non può essere annullata.") },
             confirmButton = {
                 TextButton(
@@ -185,11 +186,11 @@ fun CategorySwipeItem(
                         showDeleteDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                ) { Text("Elimina") }
+                ) { Text(stringResource(R.string.str_elimina)) }
             },
             dismissButton = { 
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.str_annulla))
                 }
             }
         )
@@ -278,14 +279,14 @@ fun CategoryDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nome Categoria") },
+                    label = { Text(stringResource(R.string.str_nome_categoria)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = budgetText,
                     onValueChange = { budgetText = it },
-                    label = { Text("Budget (€) - Opzionale") },
+                    label = { Text(stringResource(R.string.str_budget_opzionale)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     isError = !isBudgetValid
@@ -308,12 +309,12 @@ fun CategoryDialog(
                                 categoryType = "MAIN"
                                 selectedParentId = null 
                             },
-                            label = { Text("Principale") }
+                            label = { Text(stringResource(R.string.str_principale)) }
                         )
                         FilterChip(
                             selected = categoryType == "SUB",
                             onClick = { categoryType = "SUB" },
-                            label = { Text("Sottocategoria") }
+                            label = { Text(stringResource(R.string.str_sottocategoria)) }
                         )
                     }
                 }
@@ -333,7 +334,7 @@ fun CategoryDialog(
                                 readOnly = true,
                                 value = parentName,
                                 onValueChange = {},
-                                label = { Text("Scegli il Padre") },
+                                label = { Text(stringResource(R.string.str_scegli_il_padre)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth()
                             )
@@ -363,10 +364,10 @@ fun CategoryDialog(
                     onConfirm(name, budget, selectedParentId)
                 },
                 enabled = isBudgetValid && name.isNotBlank()
-            ) { Text("Salva") }
+            ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
-            TextButton(onClick = { onDismiss() }) { Text("Annulla") }
+            TextButton(onClick = { onDismiss() }) { Text(stringResource(R.string.str_annulla)) }
         }
     )
 }

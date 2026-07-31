@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Tag
@@ -122,7 +123,7 @@ fun TagManagementScreen(
             AlertDialog(
                 onDismissRequest = { showModifyConfirmDialog = null },
                 title = { Text("Modifica Tag", fontWeight = FontWeight.Bold) },
-                text = { Text("Vuoi modificare i dettagli di questo tag?") },
+                text = { Text(stringResource(R.string.str_vuoi_modificare_i_dettagli_di_questo_tag)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -130,10 +131,10 @@ fun TagManagementScreen(
                             showModifyConfirmDialog = null
                             showDialog = true
                         }
-                    ) { Text("Sì, modifica") }
+                    ) { Text(stringResource(R.string.str_s_modifica)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text("Annulla") }
+                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text(stringResource(R.string.str_annulla)) }
                 }
             )
         }
@@ -141,7 +142,7 @@ fun TagManagementScreen(
         if (tagToDelete != null) {
             AlertDialog(
                 onDismissRequest = { tagToDelete = null },
-                title = { Text("Elimina Tag") },
+                title = { Text(stringResource(R.string.str_elimina_tag)) },
                 text = { Text("Sei sicuro di voler eliminare '${tagToDelete?.name}'? Questa azione non può essere annullata.") },
                 confirmButton = {
                     TextButton(
@@ -150,10 +151,10 @@ fun TagManagementScreen(
                             tagToDelete = null
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                    ) { Text("Elimina") }
+                    ) { Text(stringResource(R.string.str_elimina)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { tagToDelete = null }) { Text("Annulla") }
+                    TextButton(onClick = { tagToDelete = null }) { Text(stringResource(R.string.str_annulla)) }
                 }
             )
         }
@@ -260,7 +261,7 @@ fun TagDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nome Tag") },
+                    label = { Text(stringResource(R.string.str_nome_tag)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -308,10 +309,10 @@ fun TagDialog(
                     onConfirm(name, selectedColor)
                 },
                 enabled = name.isNotBlank()
-            ) { Text("Salva") }
+            ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Annulla") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.str_annulla)) }
         }
     )
 }

@@ -1,5 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ExpenseTracker</string>
+    <string name="str_data">Data</string>
+    <string name="str_titolo">Titolo</string>
+    <string name="str_importo">Importo</string>
+    <string name="str_note">Note</string>
+    <string name="str_uscita">Uscita</string>
+    <string name="str_entrata">Entrata</string>
+    <string name="str_categoria_principale">Categoria Principale</string>
+    <string name="str_sottocategoria">Sottocategoria</string>
+    <string name="str_nome_categoria">Nome Categoria</string>
+    <string name="str_budget_opzionale">Budget (€) - Opzionale</string>
+    <string name="str_principale">Principale</string>
+    <string name="str_scegli_il_padre">Scegli il Padre</string>
+    <string name="str_salva">Salva</string>
+    <string name="str_annulla">Annulla</string>
+    <string name="str_nome_tag">Nome Tag</string>
+    <string name="str_crea">Crea</string>
+    <string name="str_home">Home</string>
+    <string name="str_cronologia">Cronologia</string>
+    <string name="str_impostazioni">Impostazioni</string>
+    <string name="str_expense_tracker">Expense Tracker</string>
+    <string name="str_chiudi">Chiudi</string>
+    <string name="str_vuoi_modificare_i_dettagli_di_questa_transazione">Vuoi modificare i dettagli di questa transazione?</string>
+    <string name="str_s_modifica">Sì, modifica</string>
+    <string name="str_ripristino_completato">Ripristino Completato</string>
+    <string name="str_l_app_deve_riavviarsi_per_applicare_le_nuove_impostazion">L\'app deve riavviarsi per applicare le nuove impostazioni.</string>
+    <string name="str_riavvia_ora">Riavvia Ora</string>
+    <string name="str_backup">Backup</string>
+    <string name="str_importa">Importa</string>
+    <string name="str_mese">Mese</string>
+    <string name="str_anno">Anno</string>
+    <string name="str_budget_per_questo_mese">Budget per questo mese (€)</string>
+    <string name="str_vuoi_modificare_i_dettagli_di_questa_categoria">Vuoi modificare i dettagli di questa categoria?</string>
+    <string name="str_elimina_categoria">Elimina Categoria</string>
+    <string name="str_elimina">Elimina</string>
+    <string name="str_vuoi_modificare_i_dettagli_di_questo_tag">Vuoi modificare i dettagli di questo tag?</string>
+    <string name="str_elimina_tag">Elimina Tag</string>
+    <string name="str_ok">OK</string>
+    <string name="str_da">Da</string>
+    <string name="str_a">A</string>
+    <string name="str_budget_pianificato">Budget Pianificato:</string>
+    <string name="str_spesa_effettiva">Spesa Effettiva:</string>
 </resources>
-

@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.data.model.Category
@@ -151,7 +152,7 @@ fun AddTransactionScreen(
                             OutlinedTextField(
                                 value = dateFormat.format(Date(selectedDate)),
                                 onValueChange = {},
-                                label = { Text("Data") },
+                                label = { Text(stringResource(R.string.str_data)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                                 trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) }
@@ -167,7 +168,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = title,
                             onValueChange = { transactionViewModel.updateTitle(it) },
-                            label = { Text("Titolo") },
+                            label = { Text(stringResource(R.string.str_titolo)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -175,7 +176,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = amount,
                             onValueChange = { transactionViewModel.updateAmount(it) },
-                            label = { Text("Importo") },
+                            label = { Text(stringResource(R.string.str_importo)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
@@ -184,7 +185,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = note,
                             onValueChange = { transactionViewModel.updateNote(it) },
-                            label = { Text("Note") },
+                            label = { Text(stringResource(R.string.str_note)) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3
                         )
@@ -209,13 +210,13 @@ fun AddTransactionScreen(
                             FilterChip(
                                 selected = type == "EXPENSE",
                                 onClick = { transactionViewModel.updateType("EXPENSE") },
-                                label = { Text("Uscita") },
+                                label = { Text(stringResource(R.string.str_uscita)) },
                                 modifier = Modifier.weight(1f)
                             )
                             FilterChip(
                                 selected = type == "INCOME",
                                 onClick = { transactionViewModel.updateType("INCOME") },
-                                label = { Text("Entrata") },
+                                label = { Text(stringResource(R.string.str_entrata)) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -235,7 +236,7 @@ fun AddTransactionScreen(
                                 readOnly = true,
                                 value = mainCategoryName,
                                 onValueChange = {},
-                                label = { Text("Categoria Principale") },
+                                label = { Text(stringResource(R.string.str_categoria_principale)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mainExpanded) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth()
                             )
@@ -278,7 +279,7 @@ fun AddTransactionScreen(
                                     readOnly = true,
                                     value = subCategoryName,
                                     onValueChange = {},
-                                    label = { Text("Sottocategoria") },
+                                    label = { Text(stringResource(R.string.str_sottocategoria)) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subExpanded) },
                                     modifier = Modifier.menuAnchor().fillMaxWidth()
                                 )
@@ -403,7 +404,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = newCategoryName,
                             onValueChange = { newCategoryName = it },
-                            label = { Text("Nome Categoria") },
+                            label = { Text(stringResource(R.string.str_nome_categoria)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -415,7 +416,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = newCategoryBudget,
                             onValueChange = { newCategoryBudget = it },
-                            label = { Text("Budget (€) - Opzionale") },
+                            label = { Text(stringResource(R.string.str_budget_opzionale)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             isError = !isBudgetValid,
@@ -439,12 +440,12 @@ fun AddTransactionScreen(
                                         categoryType = "MAIN"
                                         selectedParentId = null 
                                     },
-                                    label = { Text("Principale") }
+                                    label = { Text(stringResource(R.string.str_principale)) }
                                 )
                                 FilterChip(
                                     selected = categoryType == "SUB",
                                     onClick = { categoryType = "SUB" },
-                                    label = { Text("Sottocategoria") }
+                                    label = { Text(stringResource(R.string.str_sottocategoria)) }
                                 )
                             }
                         }
@@ -464,7 +465,7 @@ fun AddTransactionScreen(
                                         readOnly = true,
                                         value = parentName,
                                         onValueChange = {},
-                                        label = { Text("Scegli il Padre") },
+                                        label = { Text(stringResource(R.string.str_scegli_il_padre)) },
                                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
                                         modifier = Modifier.menuAnchor().fillMaxWidth()
                                     )
@@ -521,11 +522,11 @@ fun AddTransactionScreen(
                             }
                         },
                         enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
-                    ) { Text("Salva") }
+                    ) { Text(stringResource(R.string.str_salva)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddCategoryDialog = false }) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                 }
             )
@@ -540,7 +541,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = newTagName,
                             onValueChange = { newTagName = it },
-                            label = { Text("Nome Tag") },
+                            label = { Text(stringResource(R.string.str_nome_tag)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -579,11 +580,11 @@ fun AddTransactionScreen(
                             }
                         },
                         enabled = newTagName.isNotBlank()
-                    ) { Text("Crea") }
+                    ) { Text(stringResource(R.string.str_crea)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddTagDialog = false }) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                 }
             )
