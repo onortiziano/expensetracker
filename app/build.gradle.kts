@@ -99,4 +99,6 @@ dependencies {
 
     // --- Icone Material Extended (Per l'estetica premium) ---
     implementation("androidx.compose.material:material-icons-extended")
+    // --- AppCompat (necessario per AppCompatActivity + wrap locale su device OEM) ---
+    implementation("androidx.appcompat:appcompat:1.7.0")
 }

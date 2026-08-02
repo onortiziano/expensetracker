@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ExpenseTracker</string>
-</resources>
 
+    <!-- Selettore lingua -->
+    <string name="str_lingua">Lingua</string>
+    <string name="str_lingua_sistema">Sistema</string>
+    <string name="str_lingua_italiano">Italiano</string>
+    <string name="str_lingua_inglese">English</string>
+
+    <!-- Home (test) -->
+    <string name="str_home">Home</string>
+    <string name="str_cronologia">Cronologia</string>
+    <string name="str_impostazioni">Impostazioni</string>
+    <string name="str_bilancio_totale">Bilancio Totale</string>
+    <string name="str_entrate">Entrate</string>
+    <string name="str_uscite">Uscite</string>
+</resources>

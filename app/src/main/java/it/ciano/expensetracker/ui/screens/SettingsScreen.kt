@@ -2,6 +2,7 @@ package it.ciano.expensetracker.ui.screens
 
 import android.content.Intent
 import android.os.Process
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -52,6 +53,12 @@ fun SettingsScreen(navController: NavHostController) {
     val currency by settingsViewModel.currency.collectAsState()
     val decimalSeparator by settingsViewModel.decimalSeparator.collectAsState()
     val iconStyle by settingsViewModel.iconStyle.collectAsState()
+    val appLanguage by settingsViewModel.appLanguage.collectAsState()
+
+    // Ricrea l'Activity dopo il cambio lingua (su HyperOS le API di sistema non bastano)
+    settingsViewModel.onLanguageChanged = {
+        (context as? ComponentActivity)?.recreate()
+    }
     
     val currentCalendar = Calendar.getInstance()
     val currentMonth = currentCalendar.get(Calendar.MONTH) + 1
@@ -130,7 +137,25 @@ fun SettingsScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(text = "Preferenze Visualizzazione", style = MaterialTheme.typography.titleMedium, color = Color.Gray)
-            
+
+            SettingDropdown(
+                label = "Lingua",
+                currentValue = when (appLanguage) {
+                    "it" -> "Italiano"
+                    "en" -> "English"
+                    else -> "Sistema"
+                },
+                options = listOf("Sistema", "Italiano", "English"),
+                onOptionSelected = { selected ->
+                    val code = when (selected) {
+                        "Italiano" -> "it"
+                        "English" -> "en"
+                        else -> "system"
+                    }
+                    settingsViewModel.updateAppLanguage(code)
+                }
+            )
+
             SettingDropdown(
                 label = "Simbolo Valuta",
                 currentValue = currency,

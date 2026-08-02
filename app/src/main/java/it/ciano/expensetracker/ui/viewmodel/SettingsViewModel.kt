@@ -30,6 +30,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _iconStyle = MutableStateFlow(userPreferences.getIconStyle())
     val iconStyle: StateFlow<String> = _iconStyle.asStateFlow()
 
+    private val _appLanguage = MutableStateFlow(userPreferences.getAppLanguage())
+    val appLanguage: StateFlow<String> = _appLanguage.asStateFlow()
+
+    // Callback per ricreare l'Activity dopo il cambio lingua (necessario su HyperOS)
+    var onLanguageChanged: (() -> Unit)? = null
+
+    fun updateAppLanguage(code: String) {
+        if (code == _appLanguage.value) return
+        userPreferences.saveAppLanguage(code)
+        _appLanguage.value = code
+        onLanguageChanged?.invoke()
+    }
+
     fun updateCurrency(newSymbol: String) {
         userPreferences.saveCurrency(newSymbol)
         _currency.value = newSymbol
