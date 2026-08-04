@@ -19,6 +19,10 @@ object Routes {
     const val CATEGORY_MANAGEMENT = "category_management"
     const val TAG_MANAGEMENT = "tag_management"
     const val ANALYTICS = "analytics"
+    const val SETTINGS_VISUAL_PREFERENCES = "settings_visual_preferences"
+    const val SETTINGS_BUDGET_MANAGEMENT = "settings_budget_management"
+    const val SETTINGS_CATEGORY_TAG_MANAGEMENT = "settings_category_tag_management"
+    const val SETTINGS_DATA_MANAGEMENT = "settings_data_management"
 }
 
 @Composable
@@ -56,6 +60,22 @@ fun AppNavigation() {
 
         composable(Routes.ANALYTICS) {
             AnalyticsScreen(navController)
+        }
+
+        composable(Routes.SETTINGS_VISUAL_PREFERENCES) {
+            SettingsVisualPreferencesScreen(navController)
+        }
+
+        composable(Routes.SETTINGS_BUDGET_MANAGEMENT) {
+            SettingsBudgetScreen(navController)
+        }
+
+        composable(Routes.SETTINGS_CATEGORY_TAG_MANAGEMENT) {
+            SettingsCategoriesTagsScreen(navController)
+        }
+
+        composable(Routes.SETTINGS_DATA_MANAGEMENT) {
+            SettingsDataScreen(navController)
         }
 
         // Per la Modifica

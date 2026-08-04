@@ -42,6 +42,7 @@ import androidx.navigation.NavHostController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import it.ciano.expensetracker.R
+import it.ciano.expensetracker.ui.theme.DarkGrey
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
@@ -84,7 +85,7 @@ fun HomeScreen(navController: NavHostController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(DarkGrey)
                         .padding(24.dp)
                 ) {
                     Column {
