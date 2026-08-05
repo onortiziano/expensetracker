@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.screens.Routes
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
@@ -45,7 +47,7 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cronologia", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_cronologia), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -56,7 +58,7 @@ fun HistoryScreen(
                                 Icons.AutoMirrored.Sharp.ArrowBack, 
                                 Icons.AutoMirrored.TwoTone.ArrowBack
                             ), 
-                            contentDescription = "Torna indietro"
+                            contentDescription = stringResource(R.string.str_torna_indietro)
                         )
                     }
                 }
@@ -70,7 +72,7 @@ fun HistoryScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Nessuna transazione registrata", fontSize = 18.sp, color = Color.Gray)
+                Text(text = stringResource(R.string.str_nessuna_transazione), fontSize = 18.sp, color = Color.Gray)
             }
         } else {
             LazyColumn(

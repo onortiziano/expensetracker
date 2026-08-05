@@ -32,8 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
@@ -105,10 +107,10 @@ fun AddTransactionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nuova Transazione", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_nuova_transazione), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
                     }
                 }
             )
@@ -141,7 +143,7 @@ fun AddTransactionScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(text = "Dettagli Transazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(R.string.str_dettagli_transazione), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
                         // DATA SELECTOR
                         Box(
@@ -151,7 +153,7 @@ fun AddTransactionScreen(
                             OutlinedTextField(
                                 value = dateFormat.format(Date(selectedDate)),
                                 onValueChange = {},
-                                label = { Text("Data") },
+                                label = { Text(stringResource(R.string.str_data)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                                 trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) }
@@ -167,7 +169,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = title,
                             onValueChange = { transactionViewModel.updateTitle(it) },
-                            label = { Text("Titolo") },
+                            label = { Text(stringResource(R.string.str_titolo)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -175,7 +177,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = amount,
                             onValueChange = { transactionViewModel.updateAmount(it) },
-                            label = { Text("Importo") },
+                            label = { Text(stringResource(R.string.str_importo)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
@@ -184,7 +186,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = note,
                             onValueChange = { transactionViewModel.updateNote(it) },
-                            label = { Text("Note") },
+                            label = { Text(stringResource(R.string.str_note)) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3
                         )
@@ -199,9 +201,9 @@ fun AddTransactionScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(text = "Classificazione", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(R.string.str_classificazione), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
 
-                        Text(text = "Tipo di operazione", fontSize = 13.sp)
+                        Text(text = stringResource(R.string.str_tipo_operazione), fontSize = 13.sp)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -209,22 +211,22 @@ fun AddTransactionScreen(
                             FilterChip(
                                 selected = type == "EXPENSE",
                                 onClick = { transactionViewModel.updateType("EXPENSE") },
-                                label = { Text("Uscita") },
+                                label = { Text(stringResource(R.string.str_uscita)) },
                                 modifier = Modifier.weight(1f)
                             )
                             FilterChip(
                                 selected = type == "INCOME",
                                 onClick = { transactionViewModel.updateType("INCOME") },
-                                label = { Text("Entrata") },
+                                label = { Text(stringResource(R.string.str_entrata)) },
                                 modifier = Modifier.weight(1f)
                             )
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(text = "Categoria Principale", fontSize = 13.sp)
+                        Text(text = stringResource(R.string.str_categoria_principale), fontSize = 13.sp)
                         var mainExpanded by remember { mutableStateOf(false) }
-                        val mainCategoryName = categoryMap[selectedMainCategoryId] ?: "Scegli Categoria"
+                        val mainCategoryName = categoryMap[selectedMainCategoryId] ?: stringResource(R.string.str_scegli_categoria)
 
                         ExposedDropdownMenuBox(
                             expanded = mainExpanded,
@@ -235,7 +237,7 @@ fun AddTransactionScreen(
                                 readOnly = true,
                                 value = mainCategoryName,
                                 onValueChange = {},
-                                label = { Text("Categoria Principale") },
+                                label = { Text(stringResource(R.string.str_categoria_principale)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = mainExpanded) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth()
                             )
@@ -253,7 +255,7 @@ fun AddTransactionScreen(
                                     )
                                 }
                                 DropdownMenuItem(
-                                    text = { Text("+ Aggiungi Nuova", color = MaterialTheme.colorScheme.primary) },
+                                    text = { Text(stringResource(R.string.str_aggiungi_nuova), color = MaterialTheme.colorScheme.primary) },
                                     onClick = {
                                         mainExpanded = false
                                         showAddCategoryDialog = true
@@ -265,9 +267,9 @@ fun AddTransactionScreen(
                         val subCategories = allCategories.filter { it.parentCategoryId == selectedMainCategoryId }
                         if (selectedMainCategoryId != 0 && subCategories.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "Sottocategoria", fontSize = 13.sp)
+                            Text(text = stringResource(R.string.str_sottocategoria), fontSize = 13.sp)
                             var subExpanded by remember { mutableStateOf(false) }
-                            val subCategoryName = categoryMap[selectedSubCategoryId] ?: "Scegli Sottocategoria"
+                            val subCategoryName = categoryMap[selectedSubCategoryId] ?: stringResource(R.string.str_scegli_sottocategoria)
 
                             ExposedDropdownMenuBox(
                                 expanded = subExpanded,
@@ -278,7 +280,7 @@ fun AddTransactionScreen(
                                     readOnly = true,
                                     value = subCategoryName,
                                     onValueChange = {},
-                                    label = { Text("Sottocategoria") },
+                                    label = { Text(stringResource(R.string.str_sottocategoria)) },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subExpanded) },
                                     modifier = Modifier.menuAnchor().fillMaxWidth()
                                 )
@@ -314,11 +316,11 @@ fun AddTransactionScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "Tag", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.str_tag), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             TextButton(onClick = { showAddTagDialog = true }) {
                                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Aggiungi Tag", fontSize = 12.sp)
+                                Text(stringResource(R.string.str_aggiungi_tag), fontSize = 12.sp)
                             }
                         }
                         
@@ -380,7 +382,7 @@ fun AddTransactionScreen(
                             .height(56.dp),
                         shape = MaterialTheme.shapes.medium
                     ) {
-                        Text("Salva Transazione", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.str_salva_transazione), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 
@@ -397,13 +399,13 @@ fun AddTransactionScreen(
                     selectedParentId = null
                     categoryType = "MAIN"
                 },
-                title = { Text("Nuova Categoria", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_nuova_categoria), fontWeight = FontWeight.Bold) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
                             value = newCategoryName,
                             onValueChange = { newCategoryName = it },
-                            label = { Text("Nome Categoria") },
+                            label = { Text(stringResource(R.string.str_nome_categoria)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
@@ -415,7 +417,7 @@ fun AddTransactionScreen(
                         OutlinedTextField(
                             value = newCategoryBudget,
                             onValueChange = { newCategoryBudget = it },
-                            label = { Text("Budget (€) - Opzionale") },
+                            label = { Text(stringResource(R.string.str_budget_opzionale)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             isError = !isBudgetValid,
@@ -423,7 +425,7 @@ fun AddTransactionScreen(
                         )
                         if (!isBudgetValid) {
                             Text(
-                                text = "Inserire un numero valido",
+                                text = stringResource(R.string.str_numero_non_valido),
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(start = 16.dp)
@@ -431,7 +433,7 @@ fun AddTransactionScreen(
                         }
 
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.str_tipo_categoria), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 FilterChip(
                                     selected = categoryType == "MAIN",
@@ -439,22 +441,22 @@ fun AddTransactionScreen(
                                         categoryType = "MAIN"
                                         selectedParentId = null 
                                     },
-                                    label = { Text("Principale") }
+                                    label = { Text(stringResource(R.string.str_principale)) }
                                 )
                                 FilterChip(
                                     selected = categoryType == "SUB",
                                     onClick = { categoryType = "SUB" },
-                                    label = { Text("Sottocategoria") }
+                                    label = { Text(stringResource(R.string.str_sottocategoria)) }
                                 )
                             }
                         }
 
                         if (categoryType == "SUB") {
                             var parentExpanded by remember { mutableStateOf(false) }
-                            val parentName = selectedParentId?.let { categoryMap[it] } ?: "Seleziona Padre"
+                            val parentName = selectedParentId?.let { categoryMap[it] } ?: stringResource(R.string.str_seleziona_padre)
                             
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(R.string.str_sottocategoria_di), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 ExposedDropdownMenuBox(
                                     expanded = parentExpanded,
                                     onExpandedChange = { parentExpanded = it },
@@ -464,7 +466,7 @@ fun AddTransactionScreen(
                                         readOnly = true,
                                         value = parentName,
                                         onValueChange = {},
-                                        label = { Text("Scegli il Padre") },
+                                        label = { Text(stringResource(R.string.str_scegli_padre)) },
                                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
                                         modifier = Modifier.menuAnchor().fillMaxWidth()
                                     )
@@ -521,11 +523,11 @@ fun AddTransactionScreen(
                             }
                         },
                         enabled = newCategoryName.isNotBlank() && (categoryType == "MAIN" || selectedParentId != null)
-                    ) { Text("Salva") }
+                    ) { Text(stringResource(R.string.str_salva)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddCategoryDialog = false }) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                 }
             )
@@ -534,18 +536,18 @@ fun AddTransactionScreen(
         if (showAddTagDialog) {
             AlertDialog(
                 onDismissRequest = { showAddTagDialog = false },
-                title = { Text("Nuovo Tag", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_nuovo_tag), fontWeight = FontWeight.Bold) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
                             value = newTagName,
                             onValueChange = { newTagName = it },
-                            label = { Text("Nome Tag") },
+                            label = { Text(stringResource(R.string.str_nome_tag)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true
                         )
                         
-                        Text("Colore Tag", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.str_colore_tag), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -579,11 +581,11 @@ fun AddTransactionScreen(
                             }
                         },
                         enabled = newTagName.isNotBlank()
-                    ) { Text("Crea") }
+                    ) { Text(stringResource(R.string.str_crea)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddTagDialog = false }) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                 }
             )

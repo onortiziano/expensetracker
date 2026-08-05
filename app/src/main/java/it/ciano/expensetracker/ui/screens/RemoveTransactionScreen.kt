@@ -11,8 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -44,10 +46,10 @@ fun RemoveTransactionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Elimina Transazione", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_elimina_transazione), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
                     }
                 }
             )
@@ -67,7 +69,7 @@ fun RemoveTransactionScreen(
                 // Icona di avviso
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Elimina",
+                    contentDescription = stringResource(R.string.str_elimina),
                     modifier = Modifier.size(80.dp),
                     tint = MaterialTheme.colorScheme.error
                 )
@@ -75,7 +77,7 @@ fun RemoveTransactionScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
-                    text = "Sei sicuro di voler eliminare questa transazione?",
+                    text = stringResource(R.string.str_conferma_elimina_transazione_breve),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -92,7 +94,7 @@ fun RemoveTransactionScreen(
                         onClick = { navController.popBackStack() },
 							modifier = Modifier.weight(1f).height(56.dp)
                     ) {
-                        Text("Annulla")
+                        Text(stringResource(R.string.str_annulla))
                     }
                     
                     // BOTTONE CONFERMA ELIMINAZIONE
@@ -108,7 +110,7 @@ fun RemoveTransactionScreen(
                             containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text("Elimina", color = androidx.compose.ui.graphics.Color.White)
+                        Text(stringResource(R.string.str_elimina), color = androidx.compose.ui.graphics.Color.White)
                     }
                 }
             }

@@ -22,8 +22,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
@@ -48,10 +50,10 @@ fun TagManagementScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestione Tag", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_gestione_tag), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
                     }
                 }
             )
@@ -61,7 +63,7 @@ fun TagManagementScreen(
                 tagToEdit = null
                 showDialog = true
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Aggiungi Tag")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.str_aggiungi_tag))
             }
         }
     ) { paddingValues ->
@@ -72,7 +74,7 @@ fun TagManagementScreen(
                 .fillMaxSize()
         ) {
             Text(
-                text = "Elenco Tag",
+                text = stringResource(R.string.str_elenco_tag),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -121,8 +123,8 @@ fun TagManagementScreen(
         if (showModifyConfirmDialog != null) {
             AlertDialog(
                 onDismissRequest = { showModifyConfirmDialog = null },
-                title = { Text("Modifica Tag", fontWeight = FontWeight.Bold) },
-                text = { Text("Vuoi modificare i dettagli di questo tag?") },
+                title = { Text(stringResource(R.string.str_modifica_tag), fontWeight = FontWeight.Bold) },
+                text = { Text(stringResource(R.string.str_conferma_modifica_tag)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -130,10 +132,10 @@ fun TagManagementScreen(
                             showModifyConfirmDialog = null
                             showDialog = true
                         }
-                    ) { Text("Sì, modifica") }
+                    ) { Text(stringResource(R.string.str_si_modifica)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text("Annulla") }
+                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text(stringResource(R.string.str_annulla)) }
                 }
             )
         }
@@ -141,8 +143,8 @@ fun TagManagementScreen(
         if (tagToDelete != null) {
             AlertDialog(
                 onDismissRequest = { tagToDelete = null },
-                title = { Text("Elimina Tag") },
-                text = { Text("Sei sicuro di voler eliminare '${tagToDelete?.name}'? Questa azione non può essere annullata.") },
+                title = { Text(stringResource(R.string.str_elimina_tag)) },
+                text = { Text(stringResource(R.string.str_conferma_elimina_tag, tagToDelete?.name ?: "")) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -150,10 +152,10 @@ fun TagManagementScreen(
                             tagToDelete = null
                         },
                         colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                    ) { Text("Elimina") }
+                    ) { Text(stringResource(R.string.str_elimina)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { tagToDelete = null }) { Text("Annulla") }
+                    TextButton(onClick = { tagToDelete = null }) { Text(stringResource(R.string.str_annulla)) }
                 }
             )
         }
@@ -193,7 +195,7 @@ fun TagSwipeItem(
                     .padding(horizontal = 16.dp),
                 contentAlignment = if (isSwipingLeft) Alignment.CenterEnd else Alignment.CenterStart
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.White)
+                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.str_elimina), tint = Color.White)
             }
         }
     ) {
@@ -254,19 +256,19 @@ fun TagDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (tag == null) "Nuovo Tag" else "Modifica Tag", fontWeight = FontWeight.Bold) },
+        title = { Text(if (tag == null) stringResource(R.string.str_nuovo_tag) else stringResource(R.string.str_modifica_tag), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nome Tag") },
+                    label = { Text(stringResource(R.string.str_nome_tag)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = "Scegli Colore", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.str_scegli_colore), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -308,10 +310,10 @@ fun TagDialog(
                     onConfirm(name, selectedColor)
                 },
                 enabled = name.isNotBlank()
-            ) { Text("Salva") }
+            ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Annulla") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.str_annulla)) }
         }
     )
 }

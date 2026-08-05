@@ -11,11 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
@@ -46,7 +49,7 @@ fun SettingsBudgetScreen(navController: NavHostController) {
     var selectedYear by remember { mutableStateOf(currentYear) }
 
     SettingsScaffold(
-        title = "Gestione budget",
+        title = stringResource(R.string.str_gestione_budget),
         mainViewModel = mainViewModel,
         navController = navController
     ) { paddingValues ->
@@ -55,7 +58,7 @@ fun SettingsBudgetScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SettingButton(
-                label = "Budget Mensile Totale",
+                label = stringResource(R.string.str_budget_mensile_totale),
                 onClick = {
                     currentGlobalBudget?.let { b ->
                         budgetInput = String.format("%.2f", b.amount).replace(".", decimalSeparator)
@@ -72,13 +75,18 @@ fun SettingsBudgetScreen(navController: NavHostController) {
             )
 
             SettingButton(
-                label = "Analisi Budget",
+                label = stringResource(R.string.str_analisi_budget),
                 onClick = { navController.navigate(Routes.ANALYTICS) }
             )
         }
     }
 
     if (showBudgetDialog) {
+        val separatorError = stringResource(R.string.str_errore_separatore, decimalSeparator)
+        val budgetBelowError = stringResource(
+            R.string.str_errore_budget_inferiore,
+            String.format("%.2f", totalCategoryBudget).replace(".", decimalSeparator)
+        )
         BudgetDialog(
             amount = budgetInput,
             onAmountChange = { budgetInput = it },
@@ -97,9 +105,9 @@ fun SettingsBudgetScreen(navController: NavHostController) {
                 val budgetValue = normalizedBudget.toDoubleOrNull()
 
                 if (budgetValue == null || hasWrongSeparator) {
-                    budgetError = "Utilizzare il separatore corretto ($decimalSeparator)"
+                    budgetError = separatorError
                 } else if (budgetValue < totalCategoryBudget) {
-                    budgetError = "Il budget totale non può essere inferiore alla somma dei budget categoria (${String.format("%.2f", totalCategoryBudget).replace(".", decimalSeparator)}€)"
+                    budgetError = budgetBelowError
                 } else {
                     budgetError = null
                     settingsViewModel.saveGlobalBudget(budgetValue, selectedMonth, selectedYear)
@@ -127,26 +135,29 @@ fun BudgetDialog(
     error: String?,
     separator: String
 ) {
-    val months = listOf("Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre")
+    val months = stringArrayResource(R.array.months).toList()
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val years = (currentYear - 2..currentYear + 2).toList().map { it.toString() }
     
     var monthExpanded by remember { mutableStateOf(false) }
     var yearExpanded by remember { mutableStateOf(false) }
 
+    val emptyError = stringResource(R.string.str_errore_importo_vuoto)
+    val separatorError = stringResource(R.string.str_errore_separatore, separator)
+    val invalidError = stringResource(R.string.str_importo_non_valido)
     val hasWrongSeparator = if (separator == ",") amount.contains(".") else amount.contains(",")
     val parsedAmount = amount.replace(separator, ".").toDoubleOrNull()
     val localError = when {
-        amount.isEmpty() -> "Inserisci un importo"
-        hasWrongSeparator -> "Utilizzare il separatore corretto ($separator)"
-        parsedAmount == null -> "Importo non valido"
-        parsedAmount < 0 -> "Importo non valido"
+        amount.isEmpty() -> emptyError
+        hasWrongSeparator -> separatorError
+        parsedAmount == null -> invalidError
+        parsedAmount < 0 -> invalidError
         else -> null
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Budget Mensile Totale", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.str_budget_mensile_totale), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(
@@ -165,7 +176,7 @@ fun BudgetDialog(
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            label = { Text("Mese") },
+                            label = { Text(stringResource(R.string.str_mese)) },
                             textStyle = MaterialTheme.typography.bodySmall
                         )
                         ExposedDropdownMenu(
@@ -196,7 +207,7 @@ fun BudgetDialog(
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = yearExpanded) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            label = { Text("Anno") },
+                            label = { Text(stringResource(R.string.str_anno)) },
                             textStyle = MaterialTheme.typography.bodySmall
                         )
                         ExposedDropdownMenu(
@@ -219,14 +230,14 @@ fun BudgetDialog(
                 OutlinedTextField(
                     value = amount,
                     onValueChange = onAmountChange,
-                    label = { Text("Budget per questo mese (€)") },
+                    label = { Text(stringResource(R.string.str_budget_mese)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     isError = (localError ?: error) != null,
                     singleLine = true,
                     trailingIcon = {
                         if ((localError ?: error) != null) {
-                            Icon(Icons.Default.Error, contentDescription = "Errore", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Error, contentDescription = stringResource(R.string.str_errore), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 )
@@ -242,10 +253,10 @@ fun BudgetDialog(
             }
         },
         confirmButton = {
-            Button(onClick = onConfirm, enabled = localError == null) { Text("Salva") }
+            Button(onClick = onConfirm, enabled = localError == null) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Annulla") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.str_annulla)) }
         }
     )
 }

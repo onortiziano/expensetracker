@@ -14,10 +14,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.theme.DarkGrey
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 
@@ -54,7 +56,7 @@ fun SettingsScaffold(
                                 Icons.AutoMirrored.Sharp.ArrowBack,
                                 Icons.AutoMirrored.TwoTone.ArrowBack
                             ),
-                            contentDescription = "Torna indietro"
+                            contentDescription = stringResource(R.string.str_torna_indietro)
                         )
                     }
                 }
@@ -111,10 +113,10 @@ fun RestartDialog(show: Boolean, onRestart: () -> Unit) {
     if (show) {
         AlertDialog(
             onDismissRequest = { },
-            title = { Text("Ripristino Completato") },
-            text = { Text("L'app deve riavviarsi per applicare le nuove impostazioni.") },
+            title = { Text(stringResource(R.string.str_ripristino_completato)) },
+            text = { Text(stringResource(R.string.str_riavvio_necessario)) },
             confirmButton = {
-                TextButton(onClick = onRestart) { Text("Riavvia Ora") }
+                TextButton(onClick = onRestart) { Text(stringResource(R.string.str_riavvia_ora)) }
             }
         )
     }

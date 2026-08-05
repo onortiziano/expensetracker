@@ -90,13 +90,13 @@ fun HomeScreen(navController: NavHostController) {
                 ) {
                     Column {
                         Text(
-                            text = "Expense Tracker",
+                            text = stringResource(R.string.app_name),
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Gestione Spese",
+                            text = stringResource(R.string.str_gestione_spese),
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = 14.sp
                         )
@@ -143,12 +143,12 @@ fun HomeScreen(navController: NavHostController) {
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text("Expense Tracker") },
+                    title = { Text(stringResource(R.string.app_name)) },
                     navigationIcon = {
                         IconButton(onClick = { 
                             scope.launch { drawerState.open() } 
                         }) {
-                            Icon(mainViewModel.getIcon(Icons.Filled.Menu, Icons.Outlined.Menu, Icons.Rounded.Menu, Icons.Sharp.Menu, Icons.TwoTone.Menu), contentDescription = "Apri Menu")
+                            Icon(mainViewModel.getIcon(Icons.Filled.Menu, Icons.Outlined.Menu, Icons.Rounded.Menu, Icons.Sharp.Menu, Icons.TwoTone.Menu), contentDescription = stringResource(R.string.str_apri_menu))
                         }
                     }
                 )
@@ -235,29 +235,29 @@ fun HomeScreen(navController: NavHostController) {
             title = { Text(details.transaction.title, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(text = "Importo: ${mainViewModel.formatCurrency(details.transaction.amount)}", fontWeight = FontWeight.Medium)
+                    Text(text = stringResource(R.string.str_importo_con, mainViewModel.formatCurrency(details.transaction.amount)), fontWeight = FontWeight.Medium)
                     val category = categories.find { it.id == details.transaction.categoryId }
                     val categoryDisplayName = if (category != null) {
                         if (category.parentCategoryId != null && category.parentCategoryId != 0) {
                             val parent = categories.find { it.id == category.parentCategoryId }
-                            "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                            "${parent?.name ?: stringResource(R.string.str_sconosciuto)} > ${category.name}"
                         } else {
                             category.name
                         }
                     } else {
-                        "Senza Categoria"
+                        stringResource(R.string.str_senza_categoria)
                     }
-                    Text(text = "Categoria: $categoryDisplayName")
+                    Text(text = stringResource(R.string.str_categoria_con, categoryDisplayName))
                     
                     if (details.transaction.note.isNotBlank()) {
                         HorizontalDivider()
-                        Text(text = "Note:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(text = stringResource(R.string.str_note_colon), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(text = details.transaction.note)
                     }
                     
                     if (details.tags.isNotEmpty()) {
                         HorizontalDivider()
-                        Text(text = "Tag:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(text = stringResource(R.string.str_tag_colon), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -278,7 +278,7 @@ fun HomeScreen(navController: NavHostController) {
             },
             confirmButton = {
                 TextButton(onClick = { selectedTransactionForDetails = null }) {
-                    Text("Chiudi")
+                    Text(stringResource(R.string.str_chiudi))
                 }
             }
         )
@@ -288,8 +288,8 @@ fun HomeScreen(navController: NavHostController) {
     if (showModifyConfirmDialog != null) {
         AlertDialog(
             onDismissRequest = { showModifyConfirmDialog = null },
-            title = { Text("Modifica Transazione", fontWeight = FontWeight.Bold) },
-            text = { Text("Vuoi modificare i dettagli di questa transazione?") },
+            title = { Text(stringResource(R.string.str_modifica_transazione), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.str_conferma_modifica_transazione)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -298,12 +298,12 @@ fun HomeScreen(navController: NavHostController) {
                         navController.navigate("${Routes.MODIFY_TRANSACTION}/${trans.id}")
                     }
                 ) {
-                    Text("Sì, modifica")
+                    Text(stringResource(R.string.str_si_modifica))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showModifyConfirmDialog = null }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.str_annulla))
                 }
             }
         )

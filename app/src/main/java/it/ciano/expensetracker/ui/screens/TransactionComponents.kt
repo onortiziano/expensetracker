@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.ui.res.stringResource
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Tag
@@ -52,8 +54,8 @@ fun TransactionItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text(text = "Elimina Transazione") },
-            text = { Text(text = "Sei sicuro di voler eliminare questa voce? L'operazione non può essere annullata.") },
+            title = { Text(text = stringResource(R.string.str_elimina_transazione)) },
+            text = { Text(text = stringResource(R.string.str_conferma_elimina_transazione)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -61,12 +63,12 @@ fun TransactionItem(
                         showDeleteDialog = false
                     }
                 ) {
-                    Text("Sì, elimina", color = Color.Red)
+                    Text(stringResource(R.string.str_si_elimina), color = Color.Red)
                 }
             },
             dismissButton = { 
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.str_annulla))
                 }
             }
         )
@@ -86,7 +88,7 @@ fun TransactionItem(
                     .padding(horizontal = 16.dp),
                 contentAlignment = if (isSwipingLeft) Alignment.CenterEnd else Alignment.CenterStart
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.White)
+                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.str_elimina), tint = Color.White)
             }
         },
         content = {
@@ -111,7 +113,7 @@ fun TransactionItem(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.Notes, 
-                                    contentDescription = "Nota presente", 
+                                    contentDescription = stringResource(R.string.str_nota_presente), 
                                     tint = Color.Gray, 
                                     modifier = Modifier.size(14.dp)
                                 )
@@ -122,17 +124,17 @@ fun TransactionItem(
                         val categoryDisplayName = if (category != null) {
                             if (category.parentCategoryId != null && category.parentCategoryId != 0) {
                                 val parent = categories.find { it.id == category.parentCategoryId }
-                                "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                                "${parent?.name ?: stringResource(R.string.str_sconosciuto)} > ${category.name}"
                             } else {
                                 category.name
                             }
                         } else {
-                            "Senza Categoria"
+                            stringResource(R.string.str_senza_categoria)
                         }
                         
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                text = "Categoria: $categoryDisplayName", 
+                                text = stringResource(R.string.str_categoria_con, categoryDisplayName), 
                                 fontSize = 12.sp, 
                                 color = Color.Gray,
                                 maxLines = 1,

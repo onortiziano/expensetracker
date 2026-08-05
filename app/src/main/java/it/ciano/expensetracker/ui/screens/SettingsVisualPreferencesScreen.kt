@@ -9,11 +9,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
@@ -40,8 +42,12 @@ fun SettingsVisualPreferencesScreen(navController: NavHostController) {
     val separatorOptions = listOf(",", ".")
     val styleOptions = listOf("FILLED", "OUTLINED", "ROUNDED", "SHARP", "TWO_TONE")
 
+    val systemLanguageLabel = stringResource(R.string.str_lingua_sistema)
+    val italianLabel = stringResource(R.string.str_lingua_italiano)
+    val englishLabel = stringResource(R.string.str_lingua_inglese)
+
     SettingsScaffold(
-        title = "Preferenze visualizzazione",
+        title = stringResource(R.string.str_preferenze_visualizzazione),
         mainViewModel = mainViewModel,
         navController = navController
     ) { paddingValues ->
@@ -50,17 +56,17 @@ fun SettingsVisualPreferencesScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             SettingDropdown(
-                label = "Lingua",
+                label = stringResource(R.string.str_lingua),
                 currentValue = when (appLanguage) {
-                    "it" -> "Italiano"
-                    "en" -> "English"
-                    else -> "Sistema"
+                    "it" -> italianLabel
+                    "en" -> englishLabel
+                    else -> systemLanguageLabel
                 },
-                options = listOf("Sistema", "Italiano", "English"),
+                options = listOf(systemLanguageLabel, italianLabel, englishLabel),
                 onOptionSelected = { selected ->
                     val code = when (selected) {
-                        "Italiano" -> "it"
-                        "English" -> "en"
+                        italianLabel -> "it"
+                        englishLabel -> "en"
                         else -> "system"
                     }
                     settingsViewModel.updateAppLanguage(code)
@@ -68,21 +74,21 @@ fun SettingsVisualPreferencesScreen(navController: NavHostController) {
             )
 
             SettingDropdown(
-                label = "Simbolo Valuta",
+                label = stringResource(R.string.str_simbolo_valuta),
                 currentValue = currency,
                 options = currencyOptions,
                 onOptionSelected = { settingsViewModel.updateCurrency(it) }
             )
 
             SettingDropdown(
-                label = "Separatore Decimale",
+                label = stringResource(R.string.str_separatore_decimale),
                 currentValue = decimalSeparator,
                 options = separatorOptions,
                 onOptionSelected = { settingsViewModel.updateDecimalSeparator(it) }
             )
 
             SettingDropdown(
-                label = "Stile Icone",
+                label = stringResource(R.string.str_stile_icone),
                 currentValue = iconStyle,
                 options = styleOptions,
                 onOptionSelected = { settingsViewModel.updateIconStyle(it) }
@@ -97,7 +103,7 @@ fun SettingsVisualPreferencesScreen(navController: NavHostController) {
                 shape = MaterialTheme.shapes.medium,
                 colors = settingsButtonColors()
             ) {
-                Text("Salva Impostazioni", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.str_salva_impostazioni), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

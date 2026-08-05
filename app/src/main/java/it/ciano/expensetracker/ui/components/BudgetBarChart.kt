@@ -10,9 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.BudgetComparison
 
 @Composable
@@ -22,7 +24,7 @@ fun BudgetBarChart(
 ) {
     if (data.isEmpty()) {
         Box(modifier = Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
-            Text("Nessun dato disponibile per il periodo selezionato", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.str_nessun_dato), style = MaterialTheme.typography.bodyMedium)
         }
         return
     }
@@ -43,9 +45,9 @@ fun BudgetBarChart(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            LegendItem(color = MaterialTheme.colorScheme.primary, label = "Budget")
+            LegendItem(color = MaterialTheme.colorScheme.primary, label = stringResource(R.string.str_budget))
             Spacer(modifier = Modifier.width(16.dp))
-            LegendItem(color = MaterialTheme.colorScheme.error, label = "Spesa")
+            LegendItem(color = MaterialTheme.colorScheme.error, label = stringResource(R.string.str_spesa))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
