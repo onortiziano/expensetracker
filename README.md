@@ -44,11 +44,6 @@ A professional, lightweight, and privacy-focused expense tracking application de
 
 ## 🚀 Installation
 
-### From F-Droid (Recommended)
-1. Install the [F-Droid client](https://f-droid.org/).
-2. Search for **Expense Tracker**.
-3. Click **Install**.
-
 ### From GitHub Releases
 1. Go to the [Releases](https://github.com/onortiziano/expensetracker/releases) page.
 2. Download the latest `.apk` file.
