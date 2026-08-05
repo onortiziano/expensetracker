@@ -1,52 +1,50 @@
 package it.ciano.expensetracker
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import it.ciano.expensetracker.ui.theme.ExpensetrackerTheme
+import it.ciano.expensetracker.ui.theme.ExpenseTrackerTheme
 import it.ciano.expensetracker.ui.screens.AppNavigation
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        val code = LocaleHelper.getSavedLanguage(newBase)
+        super.attachBaseContext(LocaleHelper.wrap(newBase, code))
+    }
+
+    override fun applyOverrideConfiguration(overrideConfiguration: Configuration?) {
+        val code = LocaleHelper.getSavedLanguage(this)
+        if (code != LocaleHelper.LANGUAGE_SYSTEM) {
+            val locale = java.util.Locale(code)
+            val config = Configuration(resources.configuration)
+            config.setLocale(locale)
+            config.setLayoutDirection(locale)
+            super.applyOverrideConfiguration(config)
+        } else {
+            super.applyOverrideConfiguration(overrideConfiguration)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        android.util.Log.d("ExpenseTracker", "APP AVVIATA - VERSIONE DEBUG")
         enableEdgeToEdge()
         setContent {
-            ExpensetrackerTheme {
+            ExpenseTrackerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
-                 ) {
-                       AppNavigation() // Avvia la navigazione!
-                   }
+                ) {
+                    AppNavigation()
+                }
             }
         }
     }
 }
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ExpensetrackerTheme {
-        Greeting("Android")
-    }
-}
-

@@ -39,7 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import it.ciano.expensetracker.ui.screens.Routes
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import it.ciano.expensetracker.R
+import it.ciano.expensetracker.ui.theme.DarkGrey
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
@@ -82,7 +85,7 @@ fun HomeScreen(navController: NavHostController) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(DarkGrey)
                         .padding(24.dp)
                 ) {
                     Column {
@@ -103,7 +106,7 @@ fun HomeScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 NavigationDrawerItem(
-                    label = { Text("Home") },
+                    label = { Text(stringResource(R.string.str_home)) },
                     selected = true,
                     onClick = { 
                         scope.launch { drawerState.close() }
@@ -114,7 +117,7 @@ fun HomeScreen(navController: NavHostController) {
                 )
                 
                 NavigationDrawerItem(
-                    label = { Text("Cronologia") },
+                    label = { Text(stringResource(R.string.str_cronologia)) },
                     selected = false,
                     onClick = { 
                         scope.launch { drawerState.close() }
@@ -125,7 +128,7 @@ fun HomeScreen(navController: NavHostController) {
                 )
                 
                 NavigationDrawerItem(
-                    label = { Text("Impostazioni") },
+                    label = { Text(stringResource(R.string.str_impostazioni)) },
                     selected = false,
                     onClick = { 
                         scope.launch { drawerState.close() }
@@ -178,7 +181,7 @@ fun HomeScreen(navController: NavHostController) {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(text = "Bilancio Totale", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                                Text(text = stringResource(R.string.str_bilancio_totale), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                                 Text(
                                     text = mainViewModel.formatCurrency(balance),
                                     style = MaterialTheme.typography.headlineMedium,
@@ -191,11 +194,11 @@ fun HomeScreen(navController: NavHostController) {
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "Entrate", fontSize = 12.sp, color = Color.Gray)
+                                        Text(text = stringResource(R.string.str_entrate), fontSize = 12.sp, color = Color.Gray)
                                         Text(text = "+" + mainViewModel.formatCurrency(totalIncome).removePrefix("+"), color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                                     }
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(text = "Uscite", fontSize = 12.sp, color = Color.Gray)
+                                        Text(text = stringResource(R.string.str_uscite), fontSize = 12.sp, color = Color.Gray)
                                         Text(text = "-" + mainViewModel.formatCurrency(totalExpenses).removePrefix("-"), color = Color.Red, fontWeight = FontWeight.Bold)
                                     }
                                 }

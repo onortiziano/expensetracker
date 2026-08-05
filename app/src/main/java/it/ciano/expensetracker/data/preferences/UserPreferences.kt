@@ -13,6 +13,15 @@ class UserPreferences(context: Context) {
         private const val KEY_CURRENCY = "currency_symbol"
         private const val KEY_DECIMAL_SEPARATOR = "decimal_separator"
         private const val KEY_ICON_STYLE = "icon_style"
+        private const val KEY_APP_LANGUAGE = "app_language"
+    }
+
+    fun saveAppLanguage(code: String) {
+        sharedPreferences.edit().putString(KEY_APP_LANGUAGE, code).commit()
+    }
+
+    fun getAppLanguage(): String {
+        return sharedPreferences.getString(KEY_APP_LANGUAGE, "system") ?: "system"
     }
 
     fun saveCurrency(symbol: String) {

@@ -14,13 +14,13 @@ import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 
 @Composable
-fun SettingsScreen(navController: NavHostController) {
+fun SettingsCategoriesTagsScreen(navController: NavHostController) {
     val context = LocalContext.current
     val app = context.applicationContext as android.app.Application
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
 
     SettingsScaffold(
-        title = "Impostazioni",
+        title = "Gestione categorie/tag",
         mainViewModel = mainViewModel,
         navController = navController
     ) { paddingValues ->
@@ -28,17 +28,11 @@ fun SettingsScreen(navController: NavHostController) {
             modifier = Modifier.padding(paddingValues).padding(16.dp).fillMaxSize().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            SettingButton(label = "Preferenze visualizzazione") {
-                navController.navigate(Routes.SETTINGS_VISUAL_PREFERENCES)
+            SettingButton(label = "Categorie") {
+                navController.navigate(Routes.CATEGORY_MANAGEMENT)
             }
-            SettingButton(label = "Gestione budget") {
-                navController.navigate(Routes.SETTINGS_BUDGET_MANAGEMENT)
-            }
-            SettingButton(label = "Gestione categorie/tag") {
-                navController.navigate(Routes.SETTINGS_CATEGORY_TAG_MANAGEMENT)
-            }
-            SettingButton(label = "Gestione backup") {
-                navController.navigate(Routes.SETTINGS_DATA_MANAGEMENT)
+            SettingButton(label = "Gestione Tag") {
+                navController.navigate(Routes.TAG_MANAGEMENT)
             }
         }
     }
