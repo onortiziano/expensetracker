@@ -5,3 +5,25 @@ app/build/
 *.iml
 .idea/
 local.properties
+
+# Note locali per agenti (non versionare)
+AGENTS.md
+
+# Android Studio / Kotlin
+.kotlin/
+.cxx/
+captures/
+deps_report.txt
+
+# Keystore e artefatti firma (iniettati via CI secrets)
+*.keystore
+*.jks
+
+# Artefatti build copiati fuori da build/
+*.apk
+*.aab
+
+# Sistema/editor
+.DS_Store
+*~
+*.swp
