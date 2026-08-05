@@ -17,9 +17,13 @@ A professional, lightweight, and privacy-focused expense tracking application de
 - **Surgical Transaction Editing**: Complete control over transaction details, including optional notes and a refined editing workflow.
 
 ### 🌍 Internationalization & Flexibility
+- **Full UI Translation (Italian & English)**: The entire interface is translated and externalized through Android string resources — the UI automatically follows your system language.
+- **Runtime Language Selector**: Choose **System**, **Italiano** or **English** directly from the app; the selection is applied instantly (with an automatic app restart on devices where system APIs are not enough).
 - **Dynamic Currency Support**: Choose your preferred currency symbol ($, €, £, ¥, etc.) to match your local or travel needs.
 - **Custom Decimal Separators**: Full control over decimal separators (`,` or `.`), ensuring the app adapts to your regional formatting preferences.
-- **Locale-Aware Defaults**: Automatically detects system locale on first launch to provide a seamless "out-of-the-box" experience.
+
+### ⚙️ Organized Settings
+- The **Settings** screen is split into dedicated sub-screens for a cleaner experience: **Visual Preferences**, **Budget Management**, **Category/Tag Management** and **Data Management (Backup)**.
 
 ### 🛡️ Robust Data Integrity
 - **Atomic Backup & Restore**: Implements a comprehensive backup system that captures the entire SQLite state (including `.db`, `-wal`, and `-shm` files), preventing data loss and ensuring consistency.
@@ -52,10 +56,11 @@ A professional, lightweight, and privacy-focused expense tracking application de
 
 ## ⚙️ Configuration
 
-You can customize the app's behavior in the **Settings** screen:
-- **Currency**: Change the symbol displayed for all amounts.
-- **Separator**: Switch between dot and comma for decimals.
-- **Icon Style**: Change the look and feel of the app's iconography.
+You can customize the app's behavior in the **Settings** screen, organized into sub-screens:
+- **Visual Preferences**: language (System / Italiano / English), currency symbol, decimal separator, and icon style.
+- **Budget Management**: set the total monthly budget and open the budget analytics.
+- **Category/Tag Management**: manage expense categories and tags.
+- **Data Management**: backup and restore your data.
 
 ## 📜 License
 
