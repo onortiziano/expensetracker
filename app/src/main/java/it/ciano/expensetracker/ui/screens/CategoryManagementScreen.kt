@@ -21,9 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
@@ -49,10 +51,10 @@ fun CategoryManagementScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestione Categorie", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_gestione_categorie), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
                     }
                 }
             )
@@ -62,7 +64,7 @@ fun CategoryManagementScreen(
                 categoryToEdit = null
                 showDialog = true
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Aggiungi Categoria")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.str_aggiungi_categoria))
             }
         }
     ) { paddingValues ->
@@ -73,7 +75,7 @@ fun CategoryManagementScreen(
                 .fillMaxSize()
         ) {
             Text(
-                text = "Elenco Categorie",
+                text = stringResource(R.string.str_elenco_categorie),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -86,7 +88,7 @@ fun CategoryManagementScreen(
                 items(categories) { category ->
                     val displayName = if (category.parentCategoryId != null) {
                         val parent = categories.find { it.id == category.parentCategoryId }
-                        "${parent?.name ?: "Sconosciuto"} > ${category.name}"
+                        "${parent?.name ?: stringResource(R.string.str_sconosciuto)} > ${category.name}"
                     } else {
                         category.name
                     }
@@ -132,8 +134,8 @@ fun CategoryManagementScreen(
         if (showModifyConfirmDialog != null) {
             AlertDialog(
                 onDismissRequest = { showModifyConfirmDialog = null },
-                title = { Text("Modifica Categoria", fontWeight = FontWeight.Bold) },
-                text = { Text("Vuoi modificare i dettagli di questa categoria?") },
+                title = { Text(stringResource(R.string.str_modifica_categoria), fontWeight = FontWeight.Bold) },
+                text = { Text(stringResource(R.string.str_conferma_modifica_categoria)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -141,10 +143,10 @@ fun CategoryManagementScreen(
                             showModifyConfirmDialog = null
                             showDialog = true
                         }
-                    ) { Text("Sì, modifica") }
+                    ) { Text(stringResource(R.string.str_si_modifica)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text("Annulla") }
+                    TextButton(onClick = { showModifyConfirmDialog = null }) { Text(stringResource(R.string.str_annulla)) }
                 }
             )
         }
@@ -176,8 +178,8 @@ fun CategorySwipeItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Elimina Categoria") },
-            text = { Text("Sei sicuro di voler eliminare '${category.name}'? L'operazione non può essere annullata.") },
+            title = { Text(stringResource(R.string.str_elimina_categoria)) },
+            text = { Text(stringResource(R.string.str_conferma_elimina_categoria, category.name)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -185,11 +187,11 @@ fun CategorySwipeItem(
                         showDeleteDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                ) { Text("Elimina") }
+                ) { Text(stringResource(R.string.str_elimina)) }
             },
             dismissButton = { 
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.str_annulla))
                 }
             }
         )
@@ -209,7 +211,7 @@ fun CategorySwipeItem(
                     .padding(horizontal = 16.dp),
                 contentAlignment = if (isSwipingLeft) Alignment.CenterEnd else Alignment.CenterStart
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.White)
+                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.str_elimina), tint = Color.White)
             }
         }
     ) {
@@ -237,9 +239,9 @@ fun CategorySwipeItem(
                     )
                     Text(
                         text = if (category.budget != null) {
-                            "Budget: ${String.format("%.2f", category.budget).replace(".", separator)}€"
+                            stringResource(R.string.str_budget_formato, String.format("%.2f", category.budget).replace(".", separator))
                         } else {
-                            "Senza budget"
+                            stringResource(R.string.str_senza_budget)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
@@ -272,27 +274,27 @@ fun CategoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (category == null) "Nuova Categoria" else "Modifica Categoria", fontWeight = FontWeight.Bold) },
+        title = { Text(if (category == null) stringResource(R.string.str_nuova_categoria) else stringResource(R.string.str_modifica_categoria), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nome Categoria") },
+                    label = { Text(stringResource(R.string.str_nome_categoria)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = budgetText,
                     onValueChange = { budgetText = it },
-                    label = { Text("Budget (€) - Opzionale") },
+                    label = { Text(stringResource(R.string.str_budget_opzionale)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     isError = !isBudgetValid
                 )
                 if (!isBudgetValid) {
                     Text(
-                        text = "Inserire un numero valido",
+                        text = stringResource(R.string.str_numero_non_valido),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 16.dp)
@@ -300,7 +302,7 @@ fun CategoryDialog(
                 }
                 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = "Tipo di categoria", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.str_tipo_categoria), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilterChip(
                             selected = categoryType == "MAIN",
@@ -308,22 +310,22 @@ fun CategoryDialog(
                                 categoryType = "MAIN"
                                 selectedParentId = null 
                             },
-                            label = { Text("Principale") }
+                            label = { Text(stringResource(R.string.str_principale)) }
                         )
                         FilterChip(
                             selected = categoryType == "SUB",
                             onClick = { categoryType = "SUB" },
-                            label = { Text("Sottocategoria") }
+                            label = { Text(stringResource(R.string.str_sottocategoria)) }
                         )
                     }
                 }
 
                 if (categoryType == "SUB") {
                     var parentExpanded by remember { mutableStateOf(false) }
-                    val parentName = selectedParentId?.let { id -> availableParents.find { it.id == id }?.name } ?: "Seleziona Padre"
+                    val parentName = selectedParentId?.let { id -> availableParents.find { it.id == id }?.name } ?: stringResource(R.string.str_seleziona_padre)
                     
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(text = "Sottocategoria di...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(R.string.str_sottocategoria_di), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         ExposedDropdownMenuBox(
                             expanded = parentExpanded,
                             onExpandedChange = { parentExpanded = it },
@@ -333,7 +335,7 @@ fun CategoryDialog(
                                 readOnly = true,
                                 value = parentName,
                                 onValueChange = {},
-                                label = { Text("Scegli il Padre") },
+                                label = { Text(stringResource(R.string.str_scegli_padre)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
                                 modifier = Modifier.menuAnchor().fillMaxWidth()
                             )
@@ -363,10 +365,10 @@ fun CategoryDialog(
                     onConfirm(name, budget, selectedParentId)
                 },
                 enabled = isBudgetValid && name.isNotBlank()
-            ) { Text("Salva") }
+            ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
-            TextButton(onClick = { onDismiss() }) { Text("Annulla") }
+            TextButton(onClick = { onDismiss() }) { Text(stringResource(R.string.str_annulla)) }
         }
     )
 }

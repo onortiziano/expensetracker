@@ -16,9 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
@@ -48,7 +50,7 @@ fun SettingsDataScreen(navController: NavHostController) {
     )
 
     SettingsScaffold(
-        title = "Gestione backup",
+        title = stringResource(R.string.str_gestione_dati),
         mainViewModel = mainViewModel,
         navController = navController
     ) { paddingValues ->
@@ -74,7 +76,7 @@ fun SettingsDataScreen(navController: NavHostController) {
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Backup")
+                            Text(stringResource(R.string.str_backup))
                         }
                     }
                 )
@@ -95,7 +97,7 @@ fun SettingsDataScreen(navController: NavHostController) {
                                 contentDescription = null
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Importa")
+                            Text(stringResource(R.string.str_importa))
                         }
                     }
                 )

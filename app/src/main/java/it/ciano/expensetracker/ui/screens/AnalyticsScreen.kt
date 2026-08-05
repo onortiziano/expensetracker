@@ -11,12 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import java.text.SimpleDateFormat
 import java.util.*
+import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.AnalyticsViewModel
 import it.ciano.expensetracker.ui.viewmodel.BudgetComparison
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
@@ -41,6 +43,9 @@ fun AnalyticsScreen(
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
 
+    val errorStartAfterEnd = stringResource(R.string.str_errore_data_da_a)
+    val errorEndBeforeStart = stringResource(R.string.str_errore_data_a_da)
+
     if (showStartPicker) {
         val startState = rememberDatePickerState(
             initialSelectedDateMillis = startDate
@@ -52,15 +57,15 @@ fun AnalyticsScreen(
                     showStartPicker = false
                     val picked = startState.selectedDateMillis
                     if (picked != null && picked > endDate) {
-                        dateError = "La data 'Da' non può essere successiva alla data 'A'"
+                        dateError = errorStartAfterEnd
                     } else if (picked != null) {
                         dateError = null
                         viewModel.updateStartDate(picked)
                     }
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.str_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStartPicker = false }) { Text("Annulla") }
+                TextButton(onClick = { showStartPicker = false }) { Text(stringResource(R.string.str_annulla)) }
             }
         ) {
             DatePicker(state = startState)
@@ -78,15 +83,15 @@ fun AnalyticsScreen(
                     showEndPicker = false
                     val picked = endState.selectedDateMillis
                     if (picked != null && picked < startDate) {
-                        dateError = "La data 'A' non può essere precedente alla data 'Da'"
+                        dateError = errorEndBeforeStart
                     } else if (picked != null) {
                         dateError = null
                         viewModel.updateEndDate(picked)
                     }
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.str_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showEndPicker = false }) { Text("Annulla") }
+                TextButton(onClick = { showEndPicker = false }) { Text(stringResource(R.string.str_annulla)) }
             }
         ) {
             DatePicker(state = endState)
@@ -96,10 +101,10 @@ fun AnalyticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Analisi Budget", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.str_analisi_budget), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Torna indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
                     }
                 }
             )
@@ -125,7 +130,7 @@ fun AnalyticsScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(text = "Periodo di Analisi", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.str_periodo_analisi), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -136,7 +141,7 @@ fun AnalyticsScreen(
                             OutlinedTextField(
                                 value = dateFormat.format(Date(startDate)),
                                 onValueChange = { },
-                                label = { Text("Da") },
+                                label = { Text(stringResource(R.string.str_da)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                                 enabled = false,
@@ -156,7 +161,7 @@ fun AnalyticsScreen(
                             OutlinedTextField(
                                 value = dateFormat.format(Date(endDate)),
                                 onValueChange = { },
-                                label = { Text("A") },
+                                label = { Text(stringResource(R.string.str_a)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                                 enabled = false,
@@ -191,7 +196,7 @@ fun AnalyticsScreen(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Confronto Budget vs Spesa", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.str_confronto_budget_spesa), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     BudgetBarChart(
                         data = comparisonData,
@@ -214,7 +219,7 @@ fun AnalyticsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Dettaglio ${m.monthLabel}",
+                            text = stringResource(R.string.str_dettaglio_mese, m.monthLabel),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -223,21 +228,21 @@ fun AnalyticsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Budget Pianificato:")
+                            Text(stringResource(R.string.str_budget_pianificato))
                             Text("${String.format("%.2f", m.plannedBudget)}€", fontWeight = FontWeight.Bold)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Spesa Effettiva:")
+                            Text(stringResource(R.string.str_spesa_effettiva))
                             Text("${String.format("%.2f", m.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Differenza:", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.str_differenza), fontWeight = FontWeight.Bold)
                             val diff = m.plannedBudget - m.actualSpending
                             Text(
                                 "${String.format("%.2f", diff)}€",

@@ -8,11 +8,155 @@
     <string name="str_lingua_italiano">Italian</string>
     <string name="str_lingua_inglese">English</string>
 
-    <!-- Home (test) -->
+    <!-- Navigation -->
     <string name="str_home">Home</string>
     <string name="str_cronologia">History</string>
     <string name="str_impostazioni">Settings</string>
+    <string name="str_gestione_spese">Expense Management</string>
+    <string name="str_apri_menu">Open Menu</string>
+    <string name="str_torna_indietro">Go back</string>
+
+    <!-- Common actions -->
+    <string name="str_salva">Save</string>
+    <string name="str_annulla">Cancel</string>
+    <string name="str_elimina">Delete</string>
+    <string name="str_ok">OK</string>
+    <string name="str_chiudi">Close</string>
+    <string name="str_crea">Create</string>
+    <string name="str_si_elimina">Yes, delete</string>
+    <string name="str_si_modifica">Yes, edit</string>
+
+    <!-- Home -->
     <string name="str_bilancio_totale">Total Balance</string>
     <string name="str_entrate">Income</string>
     <string name="str_uscite">Expenses</string>
+    <string name="str_importo_con">Amount: %1$s</string>
+
+    <!-- Categories -->
+    <string name="str_sconosciuto">Unknown</string>
+    <string name="str_senza_categoria">No Category</string>
+    <string name="str_categoria_con">Category: %1$s</string>
+    <string name="str_nota_presente">Note present</string>
+    <string name="str_note_colon">Notes:</string>
+    <string name="str_tag_colon">Tags:</string>
+
+    <!-- Transactions -->
+    <string name="str_nuova_transazione">New Transaction</string>
+    <string name="str_modifica_transazione">Edit Transaction</string>
+    <string name="str_aggiorna_transazione">Update Transaction</string>
+    <string name="str_salva_transazione">Save Transaction</string>
+    <string name="str_elimina_transazione">Delete Transaction</string>
+    <string name="str_conferma_elimina_transazione">Are you sure you want to delete this entry? This action cannot be undone.</string>
+    <string name="str_conferma_elimina_transazione_breve">Are you sure you want to delete this transaction?</string>
+    <string name="str_conferma_modifica_transazione">Do you want to edit the details of this transaction?</string>
+    <string name="str_dettagli_transazione">Transaction Details</string>
+    <string name="str_data">Date</string>
+    <string name="str_titolo">Title</string>
+    <string name="str_importo">Amount</string>
+    <string name="str_note">Notes</string>
+    <string name="str_classificazione">Classification</string>
+    <string name="str_tipo_operazione">Operation type</string>
+    <string name="str_uscita">Expense</string>
+    <string name="str_entrata">Income</string>
+    <string name="str_categoria_principale">Main Category</string>
+    <string name="str_scegli_categoria">Choose Category</string>
+    <string name="str_scegli_sottocategoria">Choose Subcategory</string>
+    <string name="str_aggiungi_nuova">+ Add New</string>
+    <string name="str_sottocategoria">Subcategory</string>
+    <string name="str_tag">Tags</string>
+    <string name="str_aggiungi_tag">Add Tag</string>
+
+    <!-- Categories: management and dialog -->
+    <string name="str_gestione_categorie">Category Management</string>
+    <string name="str_elenco_categorie">Categories List</string>
+    <string name="str_aggiungi_categoria">Add Category</string>
+    <string name="str_nuova_categoria">New Category</string>
+    <string name="str_modifica_categoria">Edit Category</string>
+    <string name="str_conferma_modifica_categoria">Do you want to edit the details of this category?</string>
+    <string name="str_elimina_categoria">Delete Category</string>
+    <string name="str_conferma_elimina_categoria">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+    <string name="str_nome_categoria">Category Name</string>
+    <string name="str_budget_opzionale">Budget (€) - Optional</string>
+    <string name="str_budget_formato">Budget: %1$s€</string>
+    <string name="str_senza_budget">No budget</string>
+    <string name="str_tipo_categoria">Category type</string>
+    <string name="str_principale">Main</string>
+    <string name="str_sottocategoria_di">Subcategory of...</string>
+    <string name="str_seleziona_padre">Select Parent</string>
+    <string name="str_scegli_padre">Choose the Parent</string>
+    <string name="str_numero_non_valido">Enter a valid number</string>
+
+    <!-- Tags -->
+    <string name="str_gestione_tag">Tag Management</string>
+    <string name="str_elenco_tag">Tags List</string>
+    <string name="str_nuovo_tag">New Tag</string>
+    <string name="str_modifica_tag">Edit Tag</string>
+    <string name="str_conferma_modifica_tag">Do you want to edit the details of this tag?</string>
+    <string name="str_elimina_tag">Delete Tag</string>
+    <string name="str_conferma_elimina_tag">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+    <string name="str_nome_tag">Tag Name</string>
+    <string name="str_colore_tag">Tag Color</string>
+    <string name="str_scegli_colore">Choose Color</string>
+
+    <!-- Settings -->
+    <string name="str_preferenze_visualizzazione">Display Preferences</string>
+    <string name="str_simbolo_valuta">Currency Symbol</string>
+    <string name="str_separatore_decimale">Decimal Separator</string>
+    <string name="str_stile_icone">Icon Style</string>
+    <string name="str_gestione_organizzazione">Organization Management</string>
+    <string name="str_gestione_budget">Budget Management</string>
+    <string name="str_budget_mensile_totale">Total Monthly Budget</string>
+    <string name="str_analisi_budget">Budget Analysis</string>
+    <string name="str_categorie">Categories</string>
+    <string name="str_gestione_dati">Data Management</string>
+    <string name="str_backup">Backup</string>
+    <string name="str_importa">Import</string>
+    <string name="str_salva_impostazioni">Save Settings</string>
+    <string name="str_ripristino_completato">Restore Completed</string>
+    <string name="str_riavvio_necessario">The app needs to restart to apply the new settings.</string>
+    <string name="str_riavvia_ora">Restart Now</string>
+
+    <!-- Budget Dialog -->
+    <string name="str_mese">Month</string>
+    <string name="str_anno">Year</string>
+    <string name="str_budget_mese">Budget for this month (€)</string>
+    <string name="str_errore_importo_vuoto">Enter an amount</string>
+    <string name="str_importo_non_valido">Invalid amount</string>
+    <string name="str_errore_separatore">Use the correct separator (%1$s)</string>
+    <string name="str_errore_budget_inferiore">Total budget cannot be lower than the sum of category budgets (%1$s€)</string>
+    <string name="str_errore">Error</string>
+
+    <!-- Analytics -->
+    <string name="str_periodo_analisi">Analysis Period</string>
+    <string name="str_da">From</string>
+    <string name="str_a">To</string>
+    <string name="str_errore_data_da_a">The \'From\' date cannot be after the \'To\' date</string>
+    <string name="str_errore_data_a_da">The \'To\' date cannot be before the \'From\' date</string>
+    <string name="str_confronto_budget_spesa">Budget vs Spending Comparison</string>
+    <string name="str_dettaglio_mese">Details %1$s</string>
+    <string name="str_budget_pianificato">Planned Budget:</string>
+    <string name="str_spesa_effettiva">Actual Spending:</string>
+    <string name="str_differenza">Difference:</string>
+    <string name="str_budget">Budget</string>
+    <string name="str_spesa">Spending</string>
+    <string name="str_nessun_dato">No data available for the selected period</string>
+
+    <!-- Misc -->
+    <string name="str_nessuna_transazione">No transactions recorded</string>
+
+    <!-- Months -->
+    <string-array name="months">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
 </resources>
