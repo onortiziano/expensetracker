@@ -22,7 +22,6 @@ data class BudgetComparison(
 class AnalyticsViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val globalBudgetRepo = GlobalBudgetRepository(application)
-    private val categoryBudgetRepo = CategoryBudgetRepository(application)
     private val transactionRepo = TransactionRepository(
         db.transactionDao(),
         db.transactionTagDao(),
@@ -51,8 +50,8 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
                 combine(
                     globalBudgetRepo.getBudgetForMonth(monthData.month, monthData.year),
                     transactionRepo.getMonthlyExpenses(
-                        "%02d".format(monthData.month),
-                        "%04d".format(monthData.year)
+                        monthStartMillis(monthData.month, monthData.year),
+                        monthEndExclusiveMillis(monthData.month, monthData.year)
                     )
                 ) { budget, transactions ->
                     val totalBudget = budget?.amount ?: 0.0
@@ -70,6 +69,21 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             }.toTypedArray()
         ) { it.toList() }
+    }
+
+    private fun monthStartMillis(month: Int, year: Int): Long {
+        val cal = Calendar.getInstance()
+        cal.clear()
+        cal.set(year, month - 1, 1)
+        return cal.timeInMillis
+    }
+
+    private fun monthEndExclusiveMillis(month: Int, year: Int): Long {
+        val cal = Calendar.getInstance()
+        cal.clear()
+        cal.set(year, month - 1, 1)
+        cal.add(Calendar.MONTH, 1)
+        return cal.timeInMillis
     }
 
     private fun generateMonthRange(start: Long, end: Long): List<MonthYear> {

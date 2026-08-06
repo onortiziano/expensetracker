@@ -120,6 +120,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         zipOut.closeEntry()
     }
 
+    private fun isSafeZipEntryName(name: String): Boolean {
+        return name != ".." &&
+            !name.startsWith("../") &&
+            !name.startsWith("/") &&
+            !name.contains("..")
+    }
+
     fun restoreAll(uri: Uri, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -139,7 +146,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 ZipInputStream(FileInputStream(zipTempFile)).use { zipIn ->
                     var entry = zipIn.nextEntry
                     while (entry != null) {
-                        if (!entry.isDirectory) {
+                        if (!entry.isDirectory && isSafeZipEntryName(entry.name)) {
                             val tempFile = File(context.cacheDir, "restore_${entry.name}.tmp")
                             tempFile.outputStream().use { zipIn.copyTo(it) }
                             tempFiles[entry.name] = tempFile

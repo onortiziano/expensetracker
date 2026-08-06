@@ -18,20 +18,14 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactions(): Flow<List<Transaction>>
 
-    @Query("SELECT * FROM transactions WHERE categoryId = :catId ORDER BY date DESC")
-    fun getTransactionsByCategory(catId: Int): Flow<List<Transaction>>
-
     @Query("SELECT SUM(amount) FROM transactions WHERE type = 'EXPENSE'")
     fun getTotalExpenses(): Flow<Double?>
 
     @Query("SELECT SUM(amount) FROM transactions WHERE type = 'INCOME'")
     fun getTotalIncome(): Flow<Double?>
 
-    @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getTransactionsByPeriod(startDate: Long, endDate: Long): Flow<List<Transaction>>
-
-    @Query("SELECT * FROM transactions WHERE type = 'EXPENSE' AND strftime('%m', date/1000, 'unixepoch') = :month AND strftime('%Y', date/1000, 'unixepoch') = :year")
-    fun getMonthlyExpenses(month: String, year: String): Flow<List<Transaction>>
+    @Query("SELECT * FROM transactions WHERE type = 'EXPENSE' AND date >= :startInclusive AND date < :endExclusive ORDER BY date DESC")
+    fun getMonthlyExpenses(startInclusive: Long, endExclusive: Long): Flow<List<Transaction>>
 
     @Update
     suspend fun updateTransaction(transaction: Transaction)

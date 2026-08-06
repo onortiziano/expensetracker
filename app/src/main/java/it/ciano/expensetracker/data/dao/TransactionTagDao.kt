@@ -12,9 +12,6 @@ interface TransactionTagDao {
     @Query("DELETE FROM transaction_tags WHERE transactionId = :transactionId")
     suspend fun deleteTagsForTransaction(transactionId: Int)
 
-    @Query("SELECT * FROM transaction_tags WHERE transactionId = :transactionId")
-    suspend fun getTransactionTags(transactionId: Int): List<TransactionTag>
-
     @Query("SELECT * FROM transaction_tags")
     fun getAllTransactionTags(): Flow<List<TransactionTag>>
 }

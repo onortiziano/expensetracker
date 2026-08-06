@@ -16,11 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import java.text.SimpleDateFormat
 import java.util.*
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.viewmodel.AnalyticsViewModel
 import it.ciano.expensetracker.ui.viewmodel.BudgetComparison
+import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.ui.components.BudgetBarChart
 
@@ -29,8 +29,10 @@ import it.ciano.expensetracker.ui.components.BudgetBarChart
 fun AnalyticsScreen(
     navController: NavHostController
 ) {
-    val app = (androidx.compose.ui.platform.LocalContext.current.applicationContext as android.app.Application)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = (context.applicationContext as android.app.Application)
     val viewModel: AnalyticsViewModel = viewModel(factory = ViewModelFactory(app))
+    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
 
     val startDate by viewModel.startDate.collectAsState()
     val endDate by viewModel.endDate.collectAsState()
@@ -38,7 +40,7 @@ fun AnalyticsScreen(
 
     var selectedMonthDetail by remember { mutableStateOf<BudgetComparison?>(null) }
     var dateError by remember { mutableStateOf<String?>(null) }
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
 
     var showStartPicker by remember { mutableStateOf(false) }
     var showEndPicker by remember { mutableStateOf(false) }
@@ -229,14 +231,14 @@ fun AnalyticsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(stringResource(R.string.str_budget_pianificato))
-                            Text("${String.format("%.2f", m.plannedBudget)}€", fontWeight = FontWeight.Bold)
+                            Text(mainViewModel.formatCurrency(m.plannedBudget), fontWeight = FontWeight.Bold)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(stringResource(R.string.str_spesa_effettiva))
-                            Text("${String.format("%.2f", m.actualSpending)}€", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                            Text(mainViewModel.formatCurrency(m.actualSpending), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -245,7 +247,7 @@ fun AnalyticsScreen(
                             Text(stringResource(R.string.str_differenza), fontWeight = FontWeight.Bold)
                             val diff = m.plannedBudget - m.actualSpending
                             Text(
-                                "${String.format("%.2f", diff)}€",
+                                mainViewModel.formatCurrency(diff),
                                 fontWeight = FontWeight.Bold,
                                 color = if (diff >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                             )

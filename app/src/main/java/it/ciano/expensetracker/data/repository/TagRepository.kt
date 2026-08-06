@@ -12,6 +12,4 @@ class TagRepository(private val tagDao: TagDao) {
     suspend fun updateTag(tag: Tag) = tagDao.updateTag(tag)
     
     suspend fun deleteTag(tag: Tag) = tagDao.deleteTag(tag)
-    
-    suspend fun getTagById(tagId: Int): Tag? = tagDao.getTagById(tagId)
 }

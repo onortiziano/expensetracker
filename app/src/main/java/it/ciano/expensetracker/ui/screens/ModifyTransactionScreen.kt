@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.activity.compose.BackHandler
+import android.app.DatePickerDialog
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
@@ -34,6 +36,9 @@ import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
+import java.util.Calendar
+import java.util.Date
+import kotlinx.coroutines.flow.combine
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -68,6 +73,26 @@ fun ModifyTransactionScreen(
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
     val categoryMap by categoryViewModel.categoryMap.collectAsState()
 
+    val date by transactionViewModel.selectedDate.collectAsState()
+
+    val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
+    val effectiveDate = if (date != 0L) date else System.currentTimeMillis()
+
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val calendar = Calendar.getInstance()
+                calendar.set(year, month, dayOfMonth, 0, 0, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                transactionViewModel.updateDate(calendar.timeInMillis)
+            },
+            Calendar.getInstance().get(Calendar.YEAR),
+            Calendar.getInstance().get(Calendar.MONTH),
+            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var selectedParentId by remember { mutableStateOf<Int?>(null) }
@@ -78,11 +103,15 @@ fun ModifyTransactionScreen(
     var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) }
 
     LaunchedEffect(transactionId) {
-        transactionViewModel.transactionsWithTags.collect { transactions ->
-            val item = transactions.find { it.transaction.id == transactionId }
+        combine(
+            transactionViewModel.transactionsWithTags,
+            categoryViewModel.allCategories
+        ) { transactions, categories ->
+            transactions.find { it.transaction.id == transactionId } to categories
+        }.collect { (item, categories) ->
             item?.let { transWithTags ->
-                transactionViewModel.loadTransaction(transWithTags, allCategories)
-                
+                transactionViewModel.loadTransaction(transWithTags, categories)
+
                 // FIX: Formattazione separatore decimale all'apertura
                 val sepChar = separator.firstOrNull() ?: ','
                 val formattedAmount = transWithTags.transaction.amount.toString().replace('.', sepChar)
@@ -132,6 +161,27 @@ fun ModifyTransactionScreen(
                     ) {
                         Text(text = stringResource(R.string.str_dettagli_transazione), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                         
+                        // DATA SELECTOR
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                value = dateFormat.format(Date(effectiveDate)),
+                                onValueChange = {},
+                                label = { Text(stringResource(R.string.str_data)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                readOnly = true,
+                                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) }
+                            )
+                            // Overlay trasparente che intercetta il click
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable { datePickerDialog.show() }
+                            )
+                        }
+
                         OutlinedTextField(
                             value = title,
                             onValueChange = { transactionViewModel.updateTitle(it) },
@@ -337,7 +387,7 @@ fun ModifyTransactionScreen(
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
-                                date = System.currentTimeMillis()
+                                date = effectiveDate
                             )
                             transactionViewModel.updateTransaction(updatedTransaction, selectedTags)
                             navController.popBackStack()

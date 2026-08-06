@@ -85,7 +85,7 @@ fun SettingsBudgetScreen(navController: NavHostController) {
         val separatorError = stringResource(R.string.str_errore_separatore, decimalSeparator)
         val budgetBelowError = stringResource(
             R.string.str_errore_budget_inferiore,
-            String.format("%.2f", totalCategoryBudget).replace(".", decimalSeparator)
+            mainViewModel.formatCurrency(totalCategoryBudget)
         )
         BudgetDialog(
             amount = budgetInput,

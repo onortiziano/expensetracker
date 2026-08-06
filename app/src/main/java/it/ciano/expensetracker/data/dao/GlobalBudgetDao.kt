@@ -11,10 +11,4 @@ interface GlobalBudgetDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: GlobalBudget): Long
-
-    @Query("SELECT * FROM global_budgets ORDER BY year DESC, month DESC")
-    fun getAllBudgets(): Flow<List<GlobalBudget>>
-
-    @Query("DELETE FROM global_budgets WHERE month = :month AND year = :year")
-    suspend fun deleteBudgetForMonth(month: Int, year: Int)
 }

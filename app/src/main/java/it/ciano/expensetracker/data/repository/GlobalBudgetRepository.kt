@@ -16,8 +16,4 @@ class GlobalBudgetRepository(application: Application) {
     suspend fun saveBudget(budget: GlobalBudget) {
         globalBudgetDao.insertBudget(budget)
     }
-
-    fun getAllBudgets(): Flow<List<GlobalBudget>> {
-        return globalBudgetDao.getAllBudgets()
-    }
 }

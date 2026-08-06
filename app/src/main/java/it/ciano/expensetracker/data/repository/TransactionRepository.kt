@@ -31,16 +31,8 @@ class TransactionRepository(
         }
     }
 
-    fun getTransactionsByCategory(categoryId: Int): Flow<List<Transaction>> {
-        return transactionDao.getTransactionsByCategory(categoryId)
-    }
-
-    fun getTransactionsByPeriod(startDate: Long, endDate: Long): Flow<List<Transaction>> {
-        return transactionDao.getTransactionsByPeriod(startDate, endDate)
-    }
-
-    fun getMonthlyExpenses(month: String, year: String): Flow<List<Transaction>> {
-        return transactionDao.getMonthlyExpenses(month, year)
+    fun getMonthlyExpenses(startInclusive: Long, endExclusive: Long): Flow<List<Transaction>> {
+        return transactionDao.getMonthlyExpenses(startInclusive, endExclusive)
     }
 
     fun getTotalExpenses(): Flow<Double?> = transactionDao.getTotalExpenses()
