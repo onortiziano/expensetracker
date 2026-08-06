@@ -62,10 +62,14 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     private val _selectedTags = MutableStateFlow(setOf<Int>())
     val selectedTags: StateFlow<Set<Int>> = _selectedTags
 
+    private val _selectedDate = MutableStateFlow(0L)
+    val selectedDate: StateFlow<Long> = _selectedDate
+
     // --- FUNZIONI DI AGGIORNAMENTO ---
     fun updateTitle(value: String) { _title.value = value }
     fun updateAmount(value: String) { _amount.value = value }
     fun updateNote(value: String) { _note.value = value }
+    fun updateDate(value: Long) { _selectedDate.value = value }
     fun updateType(value: String) { _type.value = value }
     fun updateMainCategory(id: Int) { 
         _selectedMainCategoryId.value = id 
@@ -85,6 +89,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _amount.value = transaction.amount.toString()
         _note.value = transaction.note
         _type.value = transaction.type
+        _selectedDate.value = transaction.date
         
         val category = allCategories.find { it.id == transaction.categoryId }
         if (category != null && category.parentCategoryId != null) {
@@ -126,5 +131,6 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _selectedMainCategoryId.value = 0
         _selectedSubCategoryId.value = 0
         _selectedTags.value = emptySet()
+        _selectedDate.value = 0L
     }
 }

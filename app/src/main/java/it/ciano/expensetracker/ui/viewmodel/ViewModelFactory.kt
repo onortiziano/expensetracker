@@ -11,7 +11,6 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
     private val database = AppDatabase.getDatabase(application)
     private val transactionRepository = TransactionRepository(database.transactionDao(), database.transactionTagDao(), database.tagDao())
     private val categoryRepository = CategoryRepository(database.categoryDao())
-    private val budgetRepository = BudgetRepository(database.budgetDao())
     private val tagRepository = TagRepository(database.tagDao())
 
     @Suppress("UNCHECKED_CAST")
@@ -21,8 +20,6 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
                 TransactionViewModel(transactionRepository) as T
             modelClass.isAssignableFrom(CategoryViewModel::class.java) -> 
                 CategoryViewModel(categoryRepository) as T
-            modelClass.isAssignableFrom(BudgetViewModel::class.java) -> 
-                BudgetViewModel(budgetRepository) as T
             modelClass.isAssignableFrom(MainViewModel::class.java) -> 
                 MainViewModel(application) as T
             modelClass.isAssignableFrom(SettingsViewModel::class.java) -> 

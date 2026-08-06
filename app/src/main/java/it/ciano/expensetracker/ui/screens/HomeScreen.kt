@@ -110,7 +110,10 @@ fun HomeScreen(navController: NavHostController) {
                     selected = true,
                     onClick = { 
                         scope.launch { drawerState.close() }
-                        navController.navigate(Routes.HOME) 
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.HOME) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     },
                     icon = { Icon(mainViewModel.getIcon(Icons.Filled.Home, Icons.Outlined.Home, Icons.Rounded.Home, Icons.Sharp.Home, Icons.TwoTone.Home), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)

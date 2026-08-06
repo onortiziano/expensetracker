@@ -28,6 +28,7 @@ import androidx.navigation.NavHostController
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
+import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -41,6 +42,7 @@ fun CategoryManagementScreen(
     val app = context.applicationContext as android.app.Application
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     val settingsViewModel: SettingsViewModel = viewModel(factory = ViewModelFactory(app))
+    val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categories by categoryViewModel.allCategories.collectAsState()
     val separator by settingsViewModel.decimalSeparator.collectAsState()
     val scope = rememberCoroutineScope()
@@ -92,10 +94,15 @@ fun CategoryManagementScreen(
                     } else {
                         category.name
                     }
+                    val budgetText = if (category.budget != null) {
+                        stringResource(R.string.str_budget_formato, mainViewModel.formatCurrency(category.budget))
+                    } else {
+                        stringResource(R.string.str_senza_budget)
+                    }
                     CategorySwipeItem(
                         category = category,
                         displayName = displayName,
-                        separator = separator,
+                        budgetText = budgetText,
                         onEditRequest = {
                             showModifyConfirmDialog = category
                         },
@@ -158,7 +165,7 @@ fun CategoryManagementScreen(
 fun CategorySwipeItem(
     category: Category,
     displayName: String,
-    separator: String,
+    budgetText: String,
     onEditRequest: () -> Unit,
     onDeleteRequest: (Category) -> Unit
 ) {
@@ -238,11 +245,7 @@ fun CategorySwipeItem(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = if (category.budget != null) {
-                            stringResource(R.string.str_budget_formato, String.format("%.2f", category.budget).replace(".", separator))
-                        } else {
-                            stringResource(R.string.str_senza_budget)
-                        },
+                        text = budgetText,
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )

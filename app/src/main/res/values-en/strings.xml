@@ -77,7 +77,7 @@
     <string name="str_conferma_elimina_categoria">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
     <string name="str_nome_categoria">Category Name</string>
     <string name="str_budget_opzionale">Budget (€) - Optional</string>
-    <string name="str_budget_formato">Budget: %1$s€</string>
+    <string name="str_budget_formato">Budget: %1$s</string>
     <string name="str_senza_budget">No budget</string>
     <string name="str_tipo_categoria">Category type</string>
     <string name="str_principale">Main</string>
@@ -123,7 +123,7 @@
     <string name="str_errore_importo_vuoto">Enter an amount</string>
     <string name="str_importo_non_valido">Invalid amount</string>
     <string name="str_errore_separatore">Use the correct separator (%1$s)</string>
-    <string name="str_errore_budget_inferiore">Total budget cannot be lower than the sum of category budgets (%1$s€)</string>
+    <string name="str_errore_budget_inferiore">Total budget cannot be lower than the sum of category budgets (%1$s)</string>
     <string name="str_errore">Error</string>
 
     <!-- Analytics -->

@@ -17,7 +17,4 @@ interface TagDao {
 
     @Query("SELECT * FROM tags ORDER BY name ASC")
     fun getAllTags(): Flow<List<Tag>>
-
-    @Query("SELECT * FROM tags WHERE tagId = :tagId")
-    suspend fun getTagById(tagId: Int): Tag?
 }

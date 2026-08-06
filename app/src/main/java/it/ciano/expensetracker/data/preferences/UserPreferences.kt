@@ -17,7 +17,7 @@ class UserPreferences(context: Context) {
     }
 
     fun saveAppLanguage(code: String) {
-        sharedPreferences.edit().putString(KEY_APP_LANGUAGE, code).commit()
+        sharedPreferences.edit().putString(KEY_APP_LANGUAGE, code).apply()
     }
 
     fun getAppLanguage(): String {
@@ -25,7 +25,7 @@ class UserPreferences(context: Context) {
     }
 
     fun saveCurrency(symbol: String) {
-        sharedPreferences.edit().putString(KEY_CURRENCY, symbol).commit()
+        sharedPreferences.edit().putString(KEY_CURRENCY, symbol).apply()
     }
 
     fun getCurrency(): String {
@@ -42,7 +42,7 @@ class UserPreferences(context: Context) {
     }
 
     fun saveDecimalSeparator(separator: String) {
-        sharedPreferences.edit().putString(KEY_DECIMAL_SEPARATOR, separator).commit()
+        sharedPreferences.edit().putString(KEY_DECIMAL_SEPARATOR, separator).apply()
     }
 
     fun getDecimalSeparator(): String {
@@ -55,7 +55,7 @@ class UserPreferences(context: Context) {
     }
 
     fun saveIconStyle(style: String) {
-        sharedPreferences.edit().putString(KEY_ICON_STYLE, style).commit()
+        sharedPreferences.edit().putString(KEY_ICON_STYLE, style).apply()
     }
 
     fun getIconStyle(): String {

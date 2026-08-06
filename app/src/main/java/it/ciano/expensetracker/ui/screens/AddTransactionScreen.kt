@@ -43,7 +43,6 @@ import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
 import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
-import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -76,7 +75,7 @@ fun AddTransactionScreen(
 
     // --- GESTIONE DATA ---
     var selectedDate by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
 
     val datePickerDialog = remember {
         DatePickerDialog(
