@@ -38,7 +38,6 @@ import it.ciano.expensetracker.ui.viewmodel.SettingsViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import java.util.Calendar
 import java.util.Date
-import kotlinx.coroutines.flow.combine
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -78,7 +77,10 @@ fun ModifyTransactionScreen(
     val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
     val effectiveDate = if (date != 0L) date else System.currentTimeMillis()
 
-    val datePickerDialog = remember {
+    val (pickerYear, pickerMonth, pickerDay) = datePickerInitialValues(
+        if (date != 0L) date else System.currentTimeMillis()
+    )
+    val datePickerDialog = remember(date, pickerYear, pickerMonth, pickerDay) {
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
@@ -87,9 +89,9 @@ fun ModifyTransactionScreen(
                 calendar.set(Calendar.MILLISECOND, 0)
                 transactionViewModel.updateDate(calendar.timeInMillis)
             },
-            Calendar.getInstance().get(Calendar.YEAR),
-            Calendar.getInstance().get(Calendar.MONTH),
-            Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+            pickerYear,
+            pickerMonth,
+            pickerDay
         )
     }
 
@@ -103,20 +105,19 @@ fun ModifyTransactionScreen(
     var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) }
 
     LaunchedEffect(transactionId) {
-        combine(
+        val loaded = awaitTransactionToModify(
             transactionViewModel.transactionsWithTags,
-            categoryViewModel.allCategories
-        ) { transactions, categories ->
-            transactions.find { it.transaction.id == transactionId } to categories
-        }.collect { (item, categories) ->
-            item?.let { transWithTags ->
-                transactionViewModel.loadTransaction(transWithTags, categories)
+            categoryViewModel.allCategories,
+            transactionId
+        )
+        if (loaded != null) {
+            val (transWithTags, categories) = loaded
+            transactionViewModel.loadTransaction(transWithTags, categories)
 
-                // FIX: Formattazione separatore decimale all'apertura
-                val sepChar = separator.firstOrNull() ?: ','
-                val formattedAmount = transWithTags.transaction.amount.toString().replace('.', sepChar)
-                transactionViewModel.updateAmount(formattedAmount)
-            }
+            // FIX: Formattazione separatore decimale all'apertura
+            val sepChar = separator.firstOrNull() ?: ','
+            val formattedAmount = transWithTags.transaction.amount.toString().replace('.', sepChar)
+            transactionViewModel.updateAmount(formattedAmount)
         }
     }
 
