@@ -27,3 +27,4 @@ deps_report.txt
 .DS_Store
 *~
 *.swp
+build_and_install.sh
