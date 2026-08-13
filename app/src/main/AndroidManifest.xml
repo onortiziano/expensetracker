@@ -23,6 +23,23 @@
                 <action android:name="it.ciano.expensetracker.ADD_EXPENSE" />
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".data.ingest.ExpenseIngestActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.ExpenseTracker.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="expensetracker"
+                    android:host="add_expense" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
