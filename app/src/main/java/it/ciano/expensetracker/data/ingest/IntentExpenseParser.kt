@@ -26,7 +26,8 @@ object IntentExpenseParser {
         val amountRaw = params[KEY_AMOUNT]?.trim().orEmpty()
         if (amountRaw.isEmpty()) return IngestResult.Error(IngestError.MISSING_AMOUNT)
 
-        val amount = parseAmount(amountRaw) ?: return IngestResult.Error(IngestError.INVALID_AMOUNT)
+        val amount = parseAmount(amountRaw)?.takeIf { it.isFinite() }
+            ?: return IngestResult.Error(IngestError.INVALID_AMOUNT)
         if (amount <= 0.0) return IngestResult.Error(IngestError.INVALID_AMOUNT)
 
         val categoryName = params[KEY_CATEGORY]?.trim()
@@ -55,7 +56,9 @@ object IntentExpenseParser {
 
         for (pattern in DATE_PATTERNS) {
             try {
-                return SimpleDateFormat(pattern, Locale.US).parse(value)?.time
+                val formatter = SimpleDateFormat(pattern, Locale.US).apply { isLenient = false }
+                val parsed = formatter.parse(value) ?: continue
+                if (formatter.format(parsed) == value) return parsed.time
             } catch (_: ParseException) {
                 // prova il pattern successivo
             }

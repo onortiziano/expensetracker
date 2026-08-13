@@ -11,6 +11,10 @@ class ExpenseIngestActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            finish()
+            return
+        }
         handleIntent(intent)
     }
 

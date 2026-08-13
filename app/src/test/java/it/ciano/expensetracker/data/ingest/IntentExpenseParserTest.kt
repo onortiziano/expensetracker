@@ -117,4 +117,36 @@ class IntentExpenseParserTest {
         }
         assertEquals(cal.timeInMillis, expense.date)
     }
+
+    @Test
+    fun `parse con amount NaN restituisce errore invalid`() {
+        assertEquals(
+            IngestResult.Error(IngestError.INVALID_AMOUNT),
+            IntentExpenseParser.parse(mapOf("amount" to "NaN"))
+        )
+    }
+
+    @Test
+    fun `parse con amount Infinity restituisce errore invalid`() {
+        assertEquals(
+            IngestResult.Error(IngestError.INVALID_AMOUNT),
+            IntentExpenseParser.parse(mapOf("amount" to "Infinity"))
+        )
+    }
+
+    @Test
+    fun `parse con data impossibile usa la data corrente`() {
+        val before = System.currentTimeMillis()
+        val result = IntentExpenseParser.parse(mapOf("amount" to "5", "date" to "2026-02-31"))
+        val expense = (result as IngestResult.Success).expense
+        assertTrue(expense.date in before - 1000..System.currentTimeMillis() + 1000)
+    }
+
+    @Test
+    fun `parse con data con testo in coda usa la data corrente`() {
+        val before = System.currentTimeMillis()
+        val result = IntentExpenseParser.parse(mapOf("amount" to "5", "date" to "2026-08-13garbage"))
+        val expense = (result as IngestResult.Success).expense
+        assertTrue(expense.date in before - 1000..System.currentTimeMillis() + 1000)
+    }
 }

@@ -3,11 +3,16 @@ package it.ciano.expensetracker.data.ingest
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.AppDatabase
 import it.ciano.expensetracker.data.repository.CategoryRepository
 import it.ciano.expensetracker.data.repository.TransactionRepository
+import kotlinx.coroutines.CancellationException
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 object ExpenseIngest {
 
@@ -22,9 +27,16 @@ object ExpenseIngest {
                         TransactionRepository(db.transactionDao(), db.transactionTagDao(), db.tagDao())
                     )
                     repository.insertExpense(result.expense)
-                    showToast(appContext, appContext.getString(R.string.ingest_success, result.expense.amount.toString()))
+                    val formattedAmount = DecimalFormat(
+                        "0.00",
+                        DecimalFormatSymbols(Locale.getDefault())
+                    ).format(result.expense.amount)
+                    showToast(appContext, appContext.getString(R.string.ingest_success, formattedAmount))
                     true
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
+                    Log.e("ExpenseIngest", "Inserimento spesa fallito", e)
                     showToast(appContext, appContext.getString(R.string.ingest_error_db))
                     false
                 }
