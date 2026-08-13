@@ -45,6 +45,9 @@ sealed class IngestResult {
 - Helper Android-dipendenti separati e minimi (da `Intent`/`Uri` a `Map<String,String?>`):
   - `extractExtras(intent: Intent): Map<String, String?>`
   - `extractQuery(uri: Uri): Map<String, String?>`
+- **Input `date` locale-indipendente** (ISO-8601 o epoch millis): il parser non
+  dipende dalla lingua dell'app; ISO-8601 è il formato consigliato per l'app
+  mittente (Kai9000). La formattazione/visualizzazione resta responsabilità della UI.
 
 ### `ExpenseIngestRepository` (suspend)
 
@@ -84,6 +87,21 @@ sealed class IngestResult {
   con `<intent-filter>`: action `VIEW`/`SEND`, data scheme `expensetracker`,
   host `add_expense`. Tema trasparente dedicato in `res/values/themes.xml`.
 
+## Localizzazione (i18n)
+
+L'app è multilingua (IT/EN via string resources + selettore lingua runtime).
+
+- **Tutte le stringhe mostrate** (Toast di esito/errore) devono essere definite
+  in `res/values/strings.xml` (default IT) e `res/values-en/strings.xml` (EN) e
+  risolte con `context.getString(R.string.ingest_...)`.
+- Il context usato è quello dell'Application (già avvolto da
+  `LocaleHelper.wrap` in `ExpenseTrackerApp.attachBaseContext`), quindi anche un
+  `BroadcastReceiver` risolve la **lingua salvata** dall'utente, non quella di sistema.
+- **Date visualizzate**: seguire il pattern esistente
+  `android.text.format.DateFormat.getDateFormat(context)` (locale-aware, usato
+  già in Add/Modify/Analytics). `Transaction.date` resta epoch millis; la lista
+  esistente renderizza già le date localizzate, nessuna modifica necessaria.
+
 ## Data flow
 
 ```
@@ -105,9 +123,10 @@ altra app / am broadcast / am start
 ## Error handling
 
 - `amount` mancante o non numerico o `<= 0` → `Error("Importo non valido")`, nessun inserimento.
+  I messaggi di errore/successo sono **localizzati** (string resources, lingua salvata).
 - `date` malformata → fallback alla data corrente (nessun errore bloccante).
 - Categoria mai bloccante: sempre risolta o auto-creata.
-- Errori di inserimento DB → Toast di errore, nessun crash.
+- Errori di inserimento DB → Toast localizzato di errore, nessun crash.
 
 ## Testing
 
