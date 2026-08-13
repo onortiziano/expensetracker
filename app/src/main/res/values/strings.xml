@@ -159,4 +159,10 @@
         <item>Novembre</item>
         <item>Dicembre</item>
     </string-array>
+
+    <!-- Ingestione via Intent -->
+    <string name="ingest_success">Spesa inserita: %1$s</string>
+    <string name="ingest_error_missing_amount">Importo mancante</string>
+    <string name="ingest_error_invalid_amount">Importo non valido</string>
+    <string name="ingest_error_db">Errore durante l\'inserimento della spesa</string>
 </resources>

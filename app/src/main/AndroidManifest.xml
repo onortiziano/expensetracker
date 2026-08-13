@@ -15,6 +15,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".data.ingest.ExpenseIngestReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="it.ciano.expensetracker.ADD_EXPENSE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

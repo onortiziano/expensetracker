@@ -159,4 +159,10 @@
         <item>November</item>
         <item>December</item>
     </string-array>
+
+    <!-- Intent ingestion -->
+    <string name="ingest_success">Expense added: %1$s</string>
+    <string name="ingest_error_missing_amount">Missing amount</string>
+    <string name="ingest_error_invalid_amount">Invalid amount</string>
+    <string name="ingest_error_db">Error while adding the expense</string>
 </resources>
