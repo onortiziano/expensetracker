@@ -33,6 +33,30 @@ A professional, lightweight, and privacy-focused expense tracking application de
 - **Dynamic Icon Styling**: Switch between different Material Design styles (**Filled**, **Outlined**, **Rounded**, **Sharp**, and **TwoTone**) in real-time via the settings menu.
 - **Material 3 Design**: Built with the latest Jetpack Compose components for a modern, responsive, and fluid user interface.
 
+## 🔌 External Integration
+
+### Intent-based Expense Ingestion
+- **Zero-Footprint Entry**: Other apps (or automation tools) can insert expenses directly into the database without opening Expense Tracker, with negligible battery consumption.
+- **Two Equivalent Entry Points**:
+  - **BroadcastReceiver** — send an explicit broadcast with action `it.ciano.expensetracker.ADD_EXPENSE`.
+  - **Deep Link** — launch the transparent Activity via URI `expensetracker://add_expense?amount=12.50`.
+- **Supported Parameters**: `amount` (required), `category` (defaults to "Varie"), `note`/`description`, `date` (ISO-8601 or epoch millis).
+- **Auto-Creation**: if the specified category does not exist, it is created automatically.
+
+#### Quick test (adb)
+
+```bash
+# Minimal expense via broadcast
+adb shell am broadcast -a it.ciano.expensetracker.ADD_EXPENSE \
+  -p it.ciano.expensetracker --es amount "12.50"
+
+# Full expense via deep link
+adb shell am start -a android.intent.action.VIEW \
+  -d "expensetracker://add_expense?amount=12.50&category=Pranzo&note=Ristorante&date=2026-08-13"
+```
+
+> See [TESTING_GUIDE.md](TESTING_GUIDE.md) for detailed usage, parameters, and known limitations.
+
 ## 🛠️ Tech Stack
 
 - **Language**: [Kotlin](https://kotlinlang.org/)
