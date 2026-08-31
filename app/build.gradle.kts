@@ -101,4 +101,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     // --- AppCompat (necessario per AppCompatActivity + wrap locale su device OEM) ---
     implementation("androidx.appcompat:appcompat:1.7.0")
+
+    // --- OCR Ricevute (ML Kit on-device) ---
+    implementation("com.google.mlkit:text-recognition:16.0.0")
 }

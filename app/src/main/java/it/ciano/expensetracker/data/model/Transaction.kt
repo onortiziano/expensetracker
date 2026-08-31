@@ -15,5 +15,6 @@ data class Transaction(
     val categoryId: Int,
     val date: Long, 
     
-    val note: String = "" 
+    val note: String = "",
+    val receiptUri: String = ""
 )
