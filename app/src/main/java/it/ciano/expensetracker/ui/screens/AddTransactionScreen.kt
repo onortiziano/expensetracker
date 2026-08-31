@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.core.content.FileProvider
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
@@ -45,6 +46,7 @@ import it.ciano.expensetracker.data.ocr.ReceiptOcrEngine
 import it.ciano.expensetracker.data.ocr.ReceiptCaptureManager
 import it.ciano.expensetracker.data.ocr.ReceiptParser
 import it.ciano.expensetracker.data.ocr.ReceiptStorage
+import android.util.Log
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
@@ -113,34 +115,45 @@ fun AddTransactionScreen(
     // --- OCR RICEVUTA ---
     var ocrProcessing by remember { mutableStateOf(false) }
 
-    val capturedPhotoPath = remember { mutableStateOf<String?>(null) }
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success ->
-        val path = capturedPhotoPath.value
-        if (success && path != null) {
+    // Legge il risultato della schermata CameraX quando si torna indietro
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        val saved = navBackStackEntry?.savedStateHandle
+        val path = saved?.get<String>("receipt_path")
+        if (path != null) {
+            val receiptPath = path
+            saved["receipt_path"] = null
             ocrProcessing = true
             scope.launch {
-                val file = java.io.File(path)
-                val uri = FileProvider.getUriForFile(context, ReceiptCaptureManager.AUTHORITY, file)
-                val text = ReceiptOcrEngine.recognize(uri, context)
-                ocrProcessing = false
-                if (text != null) {
-                    val parsed = ReceiptParser.parse(text)
-                    transactionViewModel.applyParsedReceipt(parsed, allCategories)
-                } else {
+                try {
+                    val file = java.io.File(receiptPath)
+                    Log.d("AddTxOCR", "File exists: ${file.exists()}, size: ${file.length()}")
+                    val uri = FileProvider.getUriForFile(context, ReceiptCaptureManager.AUTHORITY, file)
+                    Log.d("AddTxOCR", "URI: $uri")
+                    val text = ReceiptOcrEngine.recognize(uri, context)
+                    Log.d("AddTxOCR", "OCR text: ${text?.take(200) ?: "NULL"}")
+                    ocrProcessing = false
+                    if (text != null) {
+                        val parsed = ReceiptParser.parse(text)
+                        Log.d("AddTxOCR", "Parsed: amount=${parsed.amount}, date=${parsed.date}, title=${parsed.title}, category=${parsed.suggestedCategoryName}")
+                        transactionViewModel.applyParsedReceipt(parsed, allCategories)
+                    } else {
+                        Log.w("AddTxOCR", "OCR returned null")
+                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                    }
+                    transactionViewModel.updateReceipt(receiptPath)
+                } catch (e: Exception) {
+                    Log.e("AddTxOCR", "Error in OCR flow: ${e.message}", e)
+                    ocrProcessing = false
                     Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
                 }
-                transactionViewModel.updateReceipt(path)
             }
         }
     }
 
     fun launchCamera() {
-        val file = ReceiptStorage.createReceiptFile(context, System.currentTimeMillis())
-        capturedPhotoPath.value = file.absolutePath
-        val uri = FileProvider.getUriForFile(context, ReceiptCaptureManager.AUTHORITY, file)
-        takePictureLauncher.launch(uri)
+        navController.navigate(Routes.CAMERA_CAPTURE)
     }
 
     Scaffold(

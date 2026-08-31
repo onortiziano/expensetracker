@@ -173,4 +173,10 @@
     <string name="str_elaborazione_ocr">Elaborazione ricevuta...</string>
     <string name="str_ocr_fallita">Errore lettura ricevuta</string>
     <string name="str_visualizza_ricevuta">Visualizza ricevuta</string>
+    <string name="str_camera_titolo">Acquisisci ricevuta</string>
+    <string name="str_camera_scatta">Scatta</string>
+    <string name="str_camera_usa_foto">Usa foto</string>
+    <string name="str_camera_riprova">Riprova</string>
+    <string name="str_camera_permesso_negato">Permesso fotocamera negato. Concedilo dalle impostazioni per scattare la ricevuta.</string>
+    <string name="str_camera_errore_acquisizione">Errore durante l\'acquisizione della foto.</string>
 </resources>

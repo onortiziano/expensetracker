@@ -82,4 +82,28 @@ class ReceiptParserTest {
         val parsed = ReceiptParser.parse("TOTALE 0,15\nALTRO 1,00")
         assertEquals(0.15, parsed.amount!!, 0.001)
     }
+
+    @Test
+    fun `testo vuoto produce tutti campi null`() {
+        val parsed = ReceiptParser.parse("")
+        assertNull(parsed.amount)
+        assertNull(parsed.date)
+        assertNull(parsed.title)
+        assertNull(parsed.suggestedCategoryName)
+    }
+
+    @Test
+    fun `testo solo spazi produce tutti campi null`() {
+        val parsed = ReceiptParser.parse("   \n  \n  ")
+        assertNull(parsed.amount)
+        assertNull(parsed.date)
+        assertNull(parsed.title)
+        assertNull(parsed.suggestedCategoryName)
+    }
+
+    @Test
+    fun `testo illeggibile senza numeri non da importo`() {
+        val parsed = ReceiptParser.parse("###???\naaaa bbbb\nxxxx")
+        assertNull(parsed.amount)
+    }
 }

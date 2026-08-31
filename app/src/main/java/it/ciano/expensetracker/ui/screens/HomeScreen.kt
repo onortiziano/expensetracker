@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
@@ -65,6 +66,7 @@ import it.ciano.expensetracker.data.ocr.ReceiptOcrEngine
 import it.ciano.expensetracker.data.ocr.ReceiptCaptureManager
 import it.ciano.expensetracker.data.ocr.ReceiptParser
 import it.ciano.expensetracker.data.ocr.ReceiptStorage
+import android.util.Log
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
@@ -85,36 +87,47 @@ fun HomeScreen(navController: NavHostController) {
     // --- OCR RICEVUTA (quick-scan) ---
     var ocrProcessing by remember { mutableStateOf(false) }
 
-    val capturedPhotoPath = remember { mutableStateOf<String?>(null) }
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success ->
-        val path = capturedPhotoPath.value
-        if (success && path != null) {
+    // Legge il risultato della schermata CameraX quando si torna indietro
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        val saved = navBackStackEntry?.savedStateHandle
+        val path = saved?.get<String>("receipt_path")
+        if (path != null) {
+            val receiptPath = path
+            saved["receipt_path"] = null
             ocrProcessing = true
             scope.launch {
-                val file = java.io.File(path)
-                val uri = FileProvider.getUriForFile(context, ReceiptCaptureManager.AUTHORITY, file)
-                val text = ReceiptOcrEngine.recognize(uri, context)
-                ocrProcessing = false
-                transactionViewModel.updateType("EXPENSE")
-                if (text != null) {
-                    val parsed = ReceiptParser.parse(text)
-                    transactionViewModel.applyParsedReceipt(parsed, categories)
-                } else {
+                try {
+                    val file = java.io.File(receiptPath)
+                    Log.d("HomeOCR", "File exists: ${file.exists()}, size: ${file.length()}")
+                    val uri = FileProvider.getUriForFile(context, ReceiptCaptureManager.AUTHORITY, file)
+                    Log.d("HomeOCR", "URI: $uri")
+                    val text = ReceiptOcrEngine.recognize(uri, context)
+                    Log.d("HomeOCR", "OCR text: ${text?.take(200) ?: "NULL"}")
+                    ocrProcessing = false
+                    transactionViewModel.updateType("EXPENSE")
+                    if (text != null) {
+                        val parsed = ReceiptParser.parse(text)
+                        Log.d("HomeOCR", "Parsed: amount=${parsed.amount}, date=${parsed.date}, title=${parsed.title}, category=${parsed.suggestedCategoryName}")
+                        transactionViewModel.applyParsedReceipt(parsed, categories)
+                    } else {
+                        Log.w("HomeOCR", "OCR returned null")
+                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                    }
+                    transactionViewModel.updateReceipt(receiptPath)
+                    navController.navigate(Routes.ADD_TRANSACTION)
+                } catch (e: Exception) {
+                    Log.e("HomeOCR", "Error in OCR flow: ${e.message}", e)
+                    ocrProcessing = false
                     Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
                 }
-                transactionViewModel.updateReceipt(path)
-                navController.navigate(Routes.ADD_TRANSACTION)
             }
         }
     }
 
     fun launchCamera() {
-        val file = ReceiptStorage.createReceiptFile(context, System.currentTimeMillis())
-        capturedPhotoPath.value = file.absolutePath
-        val uri = FileProvider.getUriForFile(context, ReceiptCaptureManager.AUTHORITY, file)
-        takePictureLauncher.launch(uri)
+        navController.navigate(Routes.CAMERA_CAPTURE)
     }
 
     // USiamo le transazioni con i tag
