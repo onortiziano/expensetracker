@@ -5,12 +5,28 @@ in ExpenseTracker.
 
 ## Funzionalità
 
-1. **Quick-scan da Home:** il FAB con l'icona camera avvia la camera di
-   sistema, esegue l'OCR e apre `AddTransactionScreen` precompilato.
-2. **In Add Transaction:** l'icona camera nella barra in alto scatta e
-   precompila i campi senza cambiare schermata.
+1. **Quick-scan da Home:** il FAB con l'icona camera apre la schermata di
+   cattura dedicata (`CameraCaptureScreen`, CameraX), esegue l'OCR al rientro
+   e apre `AddTransactionScreen` precompilato.
+2. **In Add Transaction:** l'icona camera nella barra in alto apre la stessa
+   schermata di cattura e precompila i campi al rientro, senza perdere il
+   form.
 3. **Ricevuta nel dettaglio:** nel dialog del dettaglio transazione (Home)
    viene mostrata la miniatura della ricevuta se presente.
+
+### Schermata di cattura (CameraX)
+
+Al tocco della camera si apre una schermata dedicata (invece della camera di
+sistema) perché su alcuni device (per esempio MIUI/Xiaomi) il contract
+`TakePicture` salva file corrotti (immagine verde uniforme) senza contenuto.
+
+- Alla prima apertura viene richiesto il permesso `CAMERA`; senza permesso è
+  mostrato un messaggio con pulsante "Riprova".
+- È presente un'**anteprima live** della fotocamera frontale/posteriore.
+- Il pulsante di scatto cattura la foto; viene validata anti-immagine
+  "uniforme/corrotta" prima di procedere.
+- Dopo lo scatto appare l'**anteprima della foto** con i pulsanti
+  "Riprova" (nuovo scatto) e "Usa foto" (conferma e rientro al form con OCR).
 
 ## Cosa viene estratto
 
@@ -24,12 +40,15 @@ in ExpenseTracker.
 ## Test manuale
 
 1. Installa l'APK (debug) con `./gradlew installDebug`.
-2. Da Home tocca il FAB camera e fotografa una ricevuta reale o ben
-   illuminata.
-3. Verifica che la nuova spesa appaia in AddTransaction con importo/data
+2. Da Home tocca il FAB camera: concedi il permesso `CAMERA` se richiesto,
+   inquadra una ricevuta reale o ben illuminata e scatta.
+3. Verifica l'anteprima della foto; tocca "Usa foto".
+4. Verifica che la nuova spesa appaia in AddTransaction con importo/data
    precompilati; correggi se necessario e salva.
-4. Apri il dettaglio della transazione in Home e verifica la ricevuta.
-5. Modifica la transazione e verifica che la ricevuta venga conservata.
+5. Ripeti dall'icona camera dentro AddTransaction (deve precompilare senza
+   cambiare schermata).
+6. Apri il dettaglio della transazione in Home e verifica la ricevuta.
+7. Modifica la transazione e verifica che la ricevuta venga conservata.
 
 ## Test automatici
 
