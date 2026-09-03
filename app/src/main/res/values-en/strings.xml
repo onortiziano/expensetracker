@@ -165,4 +165,12 @@
     <string name="ingest_error_missing_amount">Missing amount</string>
     <string name="ingest_error_invalid_amount">Invalid amount</string>
     <string name="ingest_error_db">Error while adding the expense</string>
+
+    <!-- Receipt OCR -->
+    <string name="str_scatta_ricevuta">Scan receipt</string>
+    <string name="str_ricevuta">Receipt</string>
+    <string name="str_nessuna_ricevuta_trovata">No receipt found</string>
+    <string name="str_elaborazione_ocr">Processing receipt...</string>
+    <string name="str_ocr_fallita">Receipt reading error</string>
+    <string name="str_visualizza_ricevuta">View receipt</string>
 </resources>

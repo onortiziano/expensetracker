@@ -165,4 +165,18 @@
     <string name="ingest_error_missing_amount">Importo mancante</string>
     <string name="ingest_error_invalid_amount">Importo non valido</string>
     <string name="ingest_error_db">Errore durante l\'inserimento della spesa</string>
+
+    <!-- Ricevute OCR -->
+    <string name="str_scatta_ricevuta">Scatta ricevuta</string>
+    <string name="str_ricevuta">Ricevuta</string>
+    <string name="str_nessuna_ricevuta_trovata">Nessuna ricevuta trovata</string>
+    <string name="str_elaborazione_ocr">Elaborazione ricevuta...</string>
+    <string name="str_ocr_fallita">Errore lettura ricevuta</string>
+    <string name="str_visualizza_ricevuta">Visualizza ricevuta</string>
+    <string name="str_camera_titolo">Acquisisci ricevuta</string>
+    <string name="str_camera_scatta">Scatta</string>
+    <string name="str_camera_usa_foto">Usa foto</string>
+    <string name="str_camera_riprova">Riprova</string>
+    <string name="str_camera_permesso_negato">Permesso fotocamera negato. Concedilo dalle impostazioni per scattare la ricevuta.</string>
+    <string name="str_camera_errore_acquisizione">Errore durante l\'acquisizione della foto.</string>
 </resources>
