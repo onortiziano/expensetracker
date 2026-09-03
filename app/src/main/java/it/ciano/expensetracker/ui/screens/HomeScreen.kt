@@ -1,11 +1,15 @@
 package it.ciano.expensetracker.ui.screens
 
 import android.app.Application
+import android.graphics.BitmapFactory
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,6 +20,7 @@ import androidx.compose.material.icons.automirrored.sharp.List
 import androidx.compose.material.icons.automirrored.twotone.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Menu
@@ -33,14 +38,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.FileProvider
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.theme.DarkGrey
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
@@ -49,6 +59,9 @@ import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.TransactionWithTags
+import it.ciano.expensetracker.data.ocr.ReceiptOcrEngine
+import it.ciano.expensetracker.data.ocr.ReceiptParser
+import it.ciano.expensetracker.data.ocr.ReceiptStorage
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
@@ -65,7 +78,47 @@ fun HomeScreen(navController: NavHostController) {
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    
+
+    // --- OCR RICEVUTA (quick-scan) ---
+    var ocrProcessing by remember { mutableStateOf(false) }
+
+    // Legge il risultato della schermata CameraX quando si torna indietro
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        val saved = navBackStackEntry?.savedStateHandle
+        val path = saved?.get<String>("receipt_path")
+        if (path != null) {
+            val receiptPath = path
+            saved["receipt_path"] = null
+            ocrProcessing = true
+            scope.launch {
+                try {
+                    val file = java.io.File(receiptPath)
+                    val uri = FileProvider.getUriForFile(context, ReceiptStorage.AUTHORITY, file)
+                    val text = ReceiptOcrEngine.recognize(uri, context)
+                    ocrProcessing = false
+                    transactionViewModel.updateType("EXPENSE")
+                    if (text != null) {
+                        val parsed = ReceiptParser.parse(text)
+                        transactionViewModel.applyParsedReceipt(parsed, categories)
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                    }
+                    transactionViewModel.updateReceipt(receiptPath)
+                    navController.navigate(Routes.ADD_TRANSACTION)
+                } catch (e: Exception) {
+                    ocrProcessing = false
+                    Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun launchCamera() {
+        navController.navigate(Routes.CAMERA_CAPTURE)
+    }
+
     // USiamo le transazioni con i tag
     val transactionsWithTags by transactionViewModel.transactionsWithTags.collectAsState()
     
@@ -157,8 +210,24 @@ fun HomeScreen(navController: NavHostController) {
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
-                    Text("+", fontSize = 24.sp)
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallFloatingActionButton(
+                        onClick = { launchCamera() },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ) {
+                        if (ocrProcessing) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Filled.PhotoCamera, contentDescription = stringResource(R.string.str_scatta_ricevuta))
+                        }
+                    }
+                    FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
+                        Text("+", fontSize = 24.sp)
+                    }
                 }
             }
         ) { paddingValues ->
@@ -275,6 +344,27 @@ fun HomeScreen(navController: NavHostController) {
                                     Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium)
                                 }
                             }
+                        }
+                    }
+
+                    if (details.transaction.receiptUri.isNotBlank()) {
+                        HorizontalDivider()
+                        Text(text = stringResource(R.string.str_ricevuta), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        val bmp = remember(details.transaction.receiptUri) {
+                            BitmapFactory.decodeFile(details.transaction.receiptUri)
+                        }
+                        if (bmp != null) {
+                            Image(
+                                bitmap = bmp.asImageBitmap(),
+                                contentDescription = stringResource(R.string.str_ricevuta),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Fit
+                            )
+                        } else {
+                            Text(stringResource(R.string.str_nessuna_ricevuta_trovata))
                         }
                     }
                 }
