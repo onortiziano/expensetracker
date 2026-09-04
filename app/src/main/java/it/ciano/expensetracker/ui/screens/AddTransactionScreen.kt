@@ -55,7 +55,8 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddTransactionScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    receiptPath: String? = null
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -81,7 +82,8 @@ fun AddTransactionScreen(
     val separator = settingsViewModel.decimalSeparator.collectAsState().value
 
     // --- GESTIONE DATA ---
-    var selectedDate by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
+    val selectedDate by transactionViewModel.selectedDate.collectAsState()
+    val effectiveDate = if (selectedDate != 0L) selectedDate else Calendar.getInstance().timeInMillis
     val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
 
     val datePickerDialog = remember {
@@ -91,7 +93,7 @@ fun AddTransactionScreen(
                 val calendar = Calendar.getInstance()
                 calendar.set(year, month, dayOfMonth, 0, 0, 0)
                 calendar.set(Calendar.MILLISECOND, 0)
-                selectedDate = calendar.timeInMillis
+                transactionViewModel.updateDate(calendar.timeInMillis)
             },
             Calendar.getInstance().get(Calendar.YEAR),
             Calendar.getInstance().get(Calendar.MONTH),
@@ -120,8 +122,32 @@ fun AddTransactionScreen(
         val saved = navBackStackEntry?.savedStateHandle
         val path = saved?.get<String>("receipt_path")
         if (path != null) {
-            val receiptPath = path
             saved["receipt_path"] = null
+            ocrProcessing = true
+            scope.launch {
+                try {
+                    val file = java.io.File(path)
+                    val uri = FileProvider.getUriForFile(context, ReceiptStorage.AUTHORITY, file)
+                    val text = ReceiptOcrEngine.recognize(uri, context)
+                    ocrProcessing = false
+                    if (text != null) {
+                        val parsed = ReceiptParser.parse(text)
+                        transactionViewModel.applyParsedReceipt(parsed, allCategories, separator)
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                    }
+                    transactionViewModel.updateReceipt(path)
+                } catch (e: Exception) {
+                    ocrProcessing = false
+                    Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    // OCR dal nav arg (via HomeScreen FAB)
+    LaunchedEffect(receiptPath) {
+        if (receiptPath != null) {
             ocrProcessing = true
             scope.launch {
                 try {
@@ -131,7 +157,7 @@ fun AddTransactionScreen(
                     ocrProcessing = false
                     if (text != null) {
                         val parsed = ReceiptParser.parse(text)
-                        transactionViewModel.applyParsedReceipt(parsed, allCategories)
+                        transactionViewModel.applyParsedReceipt(parsed, allCategories, separator)
                     } else {
                         Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
                     }
@@ -204,7 +230,7 @@ fun AddTransactionScreen(
                                 .fillMaxWidth()
                         ) {
                             OutlinedTextField(
-                                value = dateFormat.format(Date(selectedDate)),
+                                value = dateFormat.format(Date(effectiveDate)),
                                 onValueChange = {},
                                 label = { Text(stringResource(R.string.str_data)) },
                                 modifier = Modifier.fillMaxWidth(),
@@ -434,7 +460,7 @@ fun AddTransactionScreen(
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
-                                date = selectedDate,
+                                date = effectiveDate,
                                 receiptUri = transactionViewModel.receiptUri.value
                             )
                             transactionViewModel.addTransaction(transaction, transactionViewModel.selectedTags.value)

@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 object Routes {
     const val HOME = "home"
     const val ADD_TRANSACTION = "add_transaction"
+    fun addTransaction(receiptPath: String? = null) = if (receiptPath != null) "add_transaction?receiptPath=$receiptPath" else ADD_TRANSACTION
     const val HISTORY = "history"
     const val SETTINGS = "settings"
     const val MODIFY_TRANSACTION = "modify_transaction"
@@ -39,8 +40,12 @@ fun AppNavigation() {
             HomeScreen(navController)
         }
         
-        composable(Routes.ADD_TRANSACTION) {
-            AddTransactionScreen(navController)
+        composable(
+            route = "${Routes.ADD_TRANSACTION}?receiptPath={receiptPath}",
+            arguments = listOf(navArgument("receiptPath") { type = NavType.StringType; nullable = true; defaultValue = null })
+        ) { backStackEntry ->
+            val receiptPath = backStackEntry.arguments?.getString("receiptPath")
+            AddTransactionScreen(navController, receiptPath)
         }
         
         composable(Routes.HISTORY) {

@@ -50,18 +50,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.FileProvider
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.ui.theme.DarkGrey
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
-import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.TransactionWithTags
-import it.ciano.expensetracker.data.ocr.ReceiptOcrEngine
-import it.ciano.expensetracker.data.ocr.ReceiptParser
-import it.ciano.expensetracker.data.ocr.ReceiptStorage
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
@@ -89,29 +84,9 @@ fun HomeScreen(navController: NavHostController) {
         val saved = navBackStackEntry?.savedStateHandle
         val path = saved?.get<String>("receipt_path")
         if (path != null) {
-            val receiptPath = path
             saved["receipt_path"] = null
-            ocrProcessing = true
-            scope.launch {
-                try {
-                    val file = java.io.File(receiptPath)
-                    val uri = FileProvider.getUriForFile(context, ReceiptStorage.AUTHORITY, file)
-                    val text = ReceiptOcrEngine.recognize(uri, context)
-                    ocrProcessing = false
-                    transactionViewModel.updateType("EXPENSE")
-                    if (text != null) {
-                        val parsed = ReceiptParser.parse(text)
-                        transactionViewModel.applyParsedReceipt(parsed, categories)
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
-                    }
-                    transactionViewModel.updateReceipt(receiptPath)
-                    navController.navigate(Routes.ADD_TRANSACTION)
-                } catch (e: Exception) {
-                    ocrProcessing = false
-                    Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
-                }
-            }
+            transactionViewModel.updateReceipt(path)
+            navController.navigate(Routes.addTransaction(receiptPath = path))
         }
     }
 

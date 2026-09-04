@@ -24,13 +24,36 @@ object ReceiptParser {
         "Salute" to listOf("farmacia", "ospedale", "clinica", "medico", "farmacie")
     )
 
+    private val TITLE_NOISE_PATTERNS = listOf(
+        Regex("^\\d+$"),                          // pure numeri
+        Regex("^\\d{3}$"),                        // numeri di riga (001, 002...)
+        Regex("^\\d+[\\s/.-]"),                   // date all'inizio riga
+        Regex("ricevuta\\s+fiscale", RegexOption.IGNORE_CASE),
+        Regex("scontrino\\s+parlante", RegexOption.IGNORE_CASE),
+        Regex("fattura", RegexOption.IGNORE_CASE),
+        Regex("p\\.?\\s?i\\.?v\\.?a", RegexOption.IGNORE_CASE),
+        Regex("partita\\s+iva", RegexOption.IGNORE_CASE),
+        Regex("cod\\.?\\s*fisc", RegexOption.IGNORE_CASE),
+        Regex("^\\d{11}$"),                       // partita IVA pura
+        Regex("^\\d{16}$"),                       // codice fiscale puro
+    )
+
     fun parse(rawText: String): ParsedReceipt {
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotEmpty() }
         val amount = extractAmount(lines)
         val date = extractDate(rawText)
-        val title = lines.firstOrNull()?.take(50)
+        val title = extractTitle(lines)
         val category = suggestCategory(rawText)
         return ParsedReceipt(amount, date, title, category)
+    }
+
+    private fun extractTitle(lines: List<String>): String? {
+        for (line in lines) {
+            if (line.length < 2) continue
+            if (TITLE_NOISE_PATTERNS.any { it.containsMatchIn(line) }) continue
+            return line.take(50)
+        }
+        return lines.firstOrNull()?.take(50)
     }
 
     private fun extractAmount(lines: List<String>): Double? {
