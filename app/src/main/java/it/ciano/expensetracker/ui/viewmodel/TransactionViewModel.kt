@@ -90,10 +90,14 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _receiptUri.value = uri
     }
 
-    fun applyParsedReceipt(parsed: ParsedReceipt, categories: List<Category>) {
-        parsed.title?.takeIf { _title.value.isBlank() }?.let { _title.value = it }
+    fun applyParsedReceipt(
+        parsed: ParsedReceipt,
+        categories: List<Category>,
+        decimalSeparator: String = ","
+    ) {
+        parsed.merchant?.takeIf { _title.value.isBlank() }?.let { _title.value = it }
         parsed.amount?.let { parsedAmount ->
-            if (_amount.value.isBlank()) _amount.value = parsedAmount.toString()
+            if (_amount.value.isBlank()) _amount.value = formatDecimals(parsedAmount, decimalSeparator)
         }
         if (_selectedDate.value == 0L) {
             parsed.date?.let { _selectedDate.value = it }
@@ -107,6 +111,14 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         }
     }
 
+
+    private fun formatDecimals(value: Double, decimalSeparator: String): String {
+        val sep = decimalSeparator.ifBlank { "," }
+        return when (sep) {
+            "," -> value.toString().replace(".", ",")
+            else -> value.toString()
+        }
+    }
 
     fun loadTransaction(item: TransactionWithTags, allCategories: List<Category>) {
         val transaction = item.transaction

@@ -21,7 +21,6 @@ class TransactionRepository(
             transactionTagDao.getAllTransactionTags(),
             tagDao.getAllTags()
         ) { transactions, transactionTags, tags ->
-            android.util.Log.d("REPO_DEBUG", "Combine: trans=${transactions.size}, tagLinks=${transactionTags.size}, tags=${tags.size}")
             transactions.map { transaction ->
                 val tagsForThisTransaction = transactionTags
                     .filter { it.transactionId == transaction.id }
@@ -40,13 +39,11 @@ class TransactionRepository(
 
     suspend fun insertTransaction(transaction: Transaction, tagIds: Set<Int>) {
         val transactionId = transactionDao.insertTransaction(transaction).toInt()
-        android.util.Log.d("REPO_TAGS", "Inserita transazione ID: $transactionId con tag: $tagIds")
         saveTagsForTransaction(transactionId, tagIds)
     }
 
     suspend fun updateTransaction(transaction: Transaction, tagIds: Set<Int>) {
         transactionDao.updateTransaction(transaction)
-        android.util.Log.d("REPO_TAGS", "Aggiornata transazione ID: ${transaction.id} con tag: $tagIds")
         saveTagsForTransaction(transaction.id, tagIds)
     }
 

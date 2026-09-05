@@ -20,7 +20,6 @@ import androidx.compose.material.icons.automirrored.sharp.List
 import androidx.compose.material.icons.automirrored.twotone.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Menu
@@ -47,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import it.ciano.expensetracker.R
@@ -73,26 +71,6 @@ fun HomeScreen(navController: NavHostController) {
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-
-    // --- OCR RICEVUTA (quick-scan) ---
-    var ocrProcessing by remember { mutableStateOf(false) }
-
-    // Legge il risultato della schermata CameraX quando si torna indietro
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-
-    LaunchedEffect(navBackStackEntry) {
-        val saved = navBackStackEntry?.savedStateHandle
-        val path = saved?.get<String>("receipt_path")
-        if (path != null) {
-            saved["receipt_path"] = null
-            transactionViewModel.updateReceipt(path)
-            navController.navigate(Routes.addTransaction(receiptPath = path))
-        }
-    }
-
-    fun launchCamera() {
-        navController.navigate(Routes.CAMERA_CAPTURE)
-    }
 
     // USiamo le transazioni con i tag
     val transactionsWithTags by transactionViewModel.transactionsWithTags.collectAsState()
@@ -185,24 +163,8 @@ fun HomeScreen(navController: NavHostController) {
                 )
             },
             floatingActionButton = {
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SmallFloatingActionButton(
-                        onClick = { launchCamera() },
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    ) {
-                        if (ocrProcessing) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Filled.PhotoCamera, contentDescription = stringResource(R.string.str_scatta_ricevuta))
-                        }
-                    }
-                    FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
-                        Text("+", fontSize = 24.sp)
-                    }
+                FloatingActionButton(onClick = { navController.navigate(Routes.ADD_TRANSACTION) }) {
+                    Text("+", fontSize = 24.sp)
                 }
             }
         ) { paddingValues ->

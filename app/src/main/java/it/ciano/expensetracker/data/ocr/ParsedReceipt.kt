@@ -3,6 +3,6 @@ package it.ciano.expensetracker.data.ocr
 data class ParsedReceipt(
     val amount: Double?,
     val date: Long?,
-    val title: String?,
+    val merchant: String?,
     val suggestedCategoryName: String?
 )

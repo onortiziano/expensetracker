@@ -55,8 +55,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddTransactionScreen(
-    navController: NavHostController,
-    receiptPath: String? = null
+    navController: NavHostController
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -128,40 +127,15 @@ fun AddTransactionScreen(
                 try {
                     val file = java.io.File(path)
                     val uri = FileProvider.getUriForFile(context, ReceiptStorage.AUTHORITY, file)
-                    val text = ReceiptOcrEngine.recognize(uri, context)
+                    val result = ReceiptOcrEngine.recognize(uri, context)
                     ocrProcessing = false
-                    if (text != null) {
-                        val parsed = ReceiptParser.parse(text)
+                    if (result != null) {
+                        val parsed = ReceiptParser.parse(result, separator)
                         transactionViewModel.applyParsedReceipt(parsed, allCategories, separator)
                     } else {
                         Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
                     }
                     transactionViewModel.updateReceipt(path)
-                } catch (e: Exception) {
-                    ocrProcessing = false
-                    Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
-
-    // OCR dal nav arg (via HomeScreen FAB)
-    LaunchedEffect(receiptPath) {
-        if (receiptPath != null) {
-            ocrProcessing = true
-            scope.launch {
-                try {
-                    val file = java.io.File(receiptPath)
-                    val uri = FileProvider.getUriForFile(context, ReceiptStorage.AUTHORITY, file)
-                    val text = ReceiptOcrEngine.recognize(uri, context)
-                    ocrProcessing = false
-                    if (text != null) {
-                        val parsed = ReceiptParser.parse(text)
-                        transactionViewModel.applyParsedReceipt(parsed, allCategories, separator)
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
-                    }
-                    transactionViewModel.updateReceipt(receiptPath)
                 } catch (e: Exception) {
                     ocrProcessing = false
                     Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
