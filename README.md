@@ -57,6 +57,15 @@ adb shell am start -a android.intent.action.VIEW \
 
 > See [TESTING_GUIDE.md](TESTING_GUIDE.md) for detailed usage, parameters, and known limitations.
 
+## 📷 Receipt OCR (Camera)
+
+- **One-Tap Ingestion**: snap a photo of a paper receipt (FAB or camera button on the add-transaction screen) and the form is filled automatically.
+- **On-Device Recognition**: Google ML Kit text recognition runs entirely on the device — the photo never leaves your phone.
+- **Smart Auto-Fill**: amount, date, merchant and a suggested category are parsed from the receipt text and pre-filled in the transaction form; every field stays editable.
+- **Preprocessing Pipeline**: image preprocessing with priority to grayscale plus Otsu binarization improves OCR accuracy on thermal-paper receipts and fixes the green-tint issue on some MIUI devices.
+- **Accurate Merchant Detection**: the parser searches for Italian company/legal suffixes (`S.R.L.`, `S.P.A.`, `S.N.C.`, `S.A.S.`, `S.A.P.A.`, `S.S.`, `S.C. A R.L.`, `S.C.R.L.`, `S.C.S.`, `S.T.S.`, `S.T.P.`, `S.R.L.S.`, *Ditta Individuale*) and picks that line as the merchant, falling back to the first valid receipt line when no suffix is found.
+- **Guided Flow**: after the shot you confirm the photo, then OCR and parsing run on the next screen; a dedicated diagnostic screen helps verify the capture → recognition pipeline.
+
 ## 🛠️ Tech Stack
 
 - **Language**: [Kotlin](https://kotlinlang.org/)
