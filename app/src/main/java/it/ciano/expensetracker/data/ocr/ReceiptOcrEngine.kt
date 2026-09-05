@@ -177,15 +177,17 @@ object ReceiptOcrEngine {
 
     /**
      * Costruisce le varianti di immagine su cui provare il riconoscimento:
+     *  - scala di grigi (maggior contrasto testo/sfondo su ricevute a colori)
      *  - originale
-     *  - scala di grigi (migliora il contrasto testo/sfondo su ricevute a colori)
      *  - contrasto aumentato
+     *  - binarizzata (bianco/nero puro via threshold Otsu)
      */
     private fun buildVariants(bitmap: Bitmap): List<Bitmap> {
         val variants = mutableListOf<Bitmap>()
-        variants.add(bitmap)
         variants.add(toGrayscale(bitmap))
+        variants.add(bitmap)
         variants.add(increaseContrast(bitmap))
+        variants.add(binarize(bitmap))
         return variants
     }
 
@@ -224,6 +226,69 @@ object ReceiptOcrEngine {
             colorFilter = ColorMatrixColorFilter(ColorMatrix(matrix))
         }
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
+        return out
+    }
+
+    /**
+     * Converte in bianco e nero puro usando il threshold di Otsu sull'istogramma
+     * della luminanza. Elimina il rumore di fondo delle ricevute termiche e
+     * massimizza il contrasto testo/sfondo prima del riconoscimento.
+     */
+    private fun binarize(bitmap: Bitmap): Bitmap {
+        val source = if (bitmap.config != Bitmap.Config.ARGB_8888) {
+            bitmap.copy(Bitmap.Config.ARGB_8888, false)
+        } else {
+            bitmap
+        }
+
+        val width = source.width
+        val height = source.height
+        val pixels = IntArray(width * height)
+        source.getPixels(pixels, 0, width, 0, 0, width, height)
+        if (source !== bitmap) source.recycle()
+
+        val histogram = IntArray(256)
+        for (pixel in pixels) {
+            val r = (pixel shr 16) and 0xff
+            val g = (pixel shr 8) and 0xff
+            val b = pixel and 0xff
+            val lum = (0.299f * r + 0.587f * g + 0.114f * b).toInt().coerceIn(0, 255)
+            histogram[lum]++
+        }
+
+        val total = width * height
+        var sum = 0L
+        for (i in 0..255) sum += i.toLong() * histogram[i]
+        var sumB = 0L
+        var wB = 0
+        var maxVariance = -1.0
+        var threshold = 128
+        for (t in 0..255) {
+            wB += histogram[t]
+            if (wB == 0) continue
+            val wF = total - wB
+            if (wF == 0) break
+            sumB += t.toLong() * histogram[t]
+            val mB = sumB.toDouble() / wB
+            val mF = (sum - sumB).toDouble() / wF
+            val variance = wB.toDouble() * wF.toDouble() * (mB - mF) * (mB - mF)
+            if (variance > maxVariance) {
+                maxVariance = variance
+                threshold = t
+            }
+        }
+
+        val out = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        for (i in pixels.indices) {
+            val p = pixels[i]
+            val r = (p shr 16) and 0xff
+            val g = (p shr 8) and 0xff
+            val b = p and 0xff
+            val lum = (0.299f * r + 0.587f * g + 0.114f * b).toInt()
+            val color = if (lum > threshold) 0xffffffff.toInt() else 0xff000000.toInt()
+            pixels[i] = color
+        }
+        out.setPixels(pixels, 0, width, 0, 0, width, height)
         return out
     }
 }
