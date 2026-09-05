@@ -3,6 +3,8 @@ package it.ciano.expensetracker.ui.screens
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Process
+import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -35,9 +37,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.core.content.FileProvider
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
+import it.ciano.expensetracker.data.ocr.ReceiptOcrEngine
+import it.ciano.expensetracker.data.ocr.ReceiptParser
+import it.ciano.expensetracker.data.ocr.ReceiptStorage
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.TagViewModel
@@ -74,7 +81,8 @@ fun AddTransactionScreen(
     val separator = settingsViewModel.decimalSeparator.collectAsState().value
 
     // --- GESTIONE DATA ---
-    var selectedDate by remember { mutableStateOf(Calendar.getInstance().timeInMillis) }
+    val selectedDate by transactionViewModel.selectedDate.collectAsState()
+    val effectiveDate = if (selectedDate != 0L) selectedDate else Calendar.getInstance().timeInMillis
     val dateFormat = remember { android.text.format.DateFormat.getDateFormat(context) }
 
     val datePickerDialog = remember {
@@ -84,7 +92,7 @@ fun AddTransactionScreen(
                 val calendar = Calendar.getInstance()
                 calendar.set(year, month, dayOfMonth, 0, 0, 0)
                 calendar.set(Calendar.MILLISECOND, 0)
-                selectedDate = calendar.timeInMillis
+                transactionViewModel.updateDate(calendar.timeInMillis)
             },
             Calendar.getInstance().get(Calendar.YEAR),
             Calendar.getInstance().get(Calendar.MONTH),
@@ -103,6 +111,43 @@ fun AddTransactionScreen(
     var newTagName by remember { mutableStateOf("") }
     var newTagColor by remember { mutableStateOf(0xFF6200EE.toInt()) }
 
+    // --- OCR RICEVUTA ---
+    var ocrProcessing by remember { mutableStateOf(false) }
+
+    // Legge il risultato della schermata CameraX quando si torna indietro
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    LaunchedEffect(navBackStackEntry) {
+        val saved = navBackStackEntry?.savedStateHandle
+        val path = saved?.get<String>("receipt_path")
+        if (path != null) {
+            saved["receipt_path"] = null
+            ocrProcessing = true
+            scope.launch {
+                try {
+                    val file = java.io.File(path)
+                    val uri = FileProvider.getUriForFile(context, ReceiptStorage.AUTHORITY, file)
+                    val result = ReceiptOcrEngine.recognize(uri, context)
+                    ocrProcessing = false
+                    if (result != null) {
+                        val parsed = ReceiptParser.parse(result, separator)
+                        transactionViewModel.applyParsedReceipt(parsed, allCategories, separator)
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                    }
+                    transactionViewModel.updateReceipt(path)
+                } catch (e: Exception) {
+                    ocrProcessing = false
+                    Toast.makeText(context, context.getString(R.string.str_ocr_fallita), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun launchCamera() {
+        navController.navigate(Routes.CAMERA_CAPTURE)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -110,6 +155,15 @@ fun AddTransactionScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { launchCamera() }, enabled = !ocrProcessing) {
+                        if (ocrProcessing) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Filled.PhotoCamera, contentDescription = stringResource(R.string.str_scatta_ricevuta))
+                        }
                     }
                 }
             )
@@ -150,7 +204,7 @@ fun AddTransactionScreen(
                                 .fillMaxWidth()
                         ) {
                             OutlinedTextField(
-                                value = dateFormat.format(Date(selectedDate)),
+                                value = dateFormat.format(Date(effectiveDate)),
                                 onValueChange = {},
                                 label = { Text(stringResource(R.string.str_data)) },
                                 modifier = Modifier.fillMaxWidth(),
@@ -189,6 +243,17 @@ fun AddTransactionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3
                         )
+
+                        if (transactionViewModel.receiptUri.value.isNotBlank()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50))
+                                Text(stringResource(R.string.str_ricevuta), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
                     }
                 }
 
@@ -369,7 +434,8 @@ fun AddTransactionScreen(
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
-                                date = selectedDate
+                                date = effectiveDate,
+                                receiptUri = transactionViewModel.receiptUri.value
                             )
                             transactionViewModel.addTransaction(transaction, transactionViewModel.selectedTags.value)
                             navController.popBackStack()

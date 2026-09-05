@@ -1,11 +1,15 @@
 package it.ciano.expensetracker.ui.screens
 
 import android.app.Application
+import android.graphics.BitmapFactory
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,7 +37,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +54,6 @@ import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 import it.ciano.expensetracker.ui.viewmodel.TransactionViewModel
 import it.ciano.expensetracker.ui.viewmodel.ViewModelFactory
 import it.ciano.expensetracker.data.model.Transaction
-import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
@@ -65,7 +71,7 @@ fun HomeScreen(navController: NavHostController) {
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
-    
+
     // USiamo le transazioni con i tag
     val transactionsWithTags by transactionViewModel.transactionsWithTags.collectAsState()
     
@@ -275,6 +281,27 @@ fun HomeScreen(navController: NavHostController) {
                                     Text(text = tag.name, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Medium)
                                 }
                             }
+                        }
+                    }
+
+                    if (details.transaction.receiptUri.isNotBlank()) {
+                        HorizontalDivider()
+                        Text(text = stringResource(R.string.str_ricevuta), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        val bmp = remember(details.transaction.receiptUri) {
+                            BitmapFactory.decodeFile(details.transaction.receiptUri)
+                        }
+                        if (bmp != null) {
+                            Image(
+                                bitmap = bmp.asImageBitmap(),
+                                contentDescription = stringResource(R.string.str_ricevuta),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Fit
+                            )
+                        } else {
+                            Text(stringResource(R.string.str_nessuna_ricevuta_trovata))
                         }
                     }
                 }

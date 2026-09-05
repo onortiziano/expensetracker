@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
@@ -207,6 +208,17 @@ fun ModifyTransactionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3
                         )
+
+                        if (transactionViewModel.receiptUri.value.isNotBlank()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50))
+                                Text(stringResource(R.string.str_ricevuta), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
                     }
                 }
 
@@ -388,7 +400,8 @@ fun ModifyTransactionScreen(
                                 type = type,
                                 categoryId = finalCategoryId,
                                 note = note,
-                                date = effectiveDate
+                                date = effectiveDate,
+                                receiptUri = transactionViewModel.receiptUri.value
                             )
                             transactionViewModel.updateTransaction(updatedTransaction, selectedTags)
                             navController.popBackStack()

@@ -6,6 +6,7 @@ import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import it.ciano.expensetracker.data.repository.TransactionRepository
+import it.ciano.expensetracker.data.ocr.ParsedReceipt
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.Channel
@@ -65,6 +66,9 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     private val _selectedDate = MutableStateFlow(0L)
     val selectedDate: StateFlow<Long> = _selectedDate
 
+    private val _receiptUri = MutableStateFlow("")
+    val receiptUri: StateFlow<String> = _receiptUri
+
     // --- FUNZIONI DI AGGIORNAMENTO ---
     fun updateTitle(value: String) { _title.value = value }
     fun updateAmount(value: String) { _amount.value = value }
@@ -80,7 +84,40 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         val current = _selectedTags.value
         val next = if (current.contains(tagId)) current - tagId else current + tagId
         _selectedTags.value = next
-        android.util.Log.d("TAG_VM", "Toggled tag $tagId. New set: $next")
+    }
+
+    fun updateReceipt(uri: String) {
+        _receiptUri.value = uri
+    }
+
+    fun applyParsedReceipt(
+        parsed: ParsedReceipt,
+        categories: List<Category>,
+        decimalSeparator: String = ","
+    ) {
+        parsed.merchant?.takeIf { _title.value.isBlank() }?.let { _title.value = it }
+        parsed.amount?.let { parsedAmount ->
+            if (_amount.value.isBlank()) _amount.value = formatDecimals(parsedAmount, decimalSeparator)
+        }
+        if (_selectedDate.value == 0L) {
+            parsed.date?.let { _selectedDate.value = it }
+        }
+        parsed.suggestedCategoryName?.let { suggested ->
+            if (_selectedMainCategoryId.value == 0) {
+                categories.firstOrNull { it.name.equals(suggested, ignoreCase = true) }?.let {
+                    _selectedMainCategoryId.value = it.id
+                }
+            }
+        }
+    }
+
+
+    private fun formatDecimals(value: Double, decimalSeparator: String): String {
+        val sep = decimalSeparator.ifBlank { "," }
+        return when (sep) {
+            "," -> value.toString().replace(".", ",")
+            else -> value.toString()
+        }
     }
 
     fun loadTransaction(item: TransactionWithTags, allCategories: List<Category>) {
@@ -100,6 +137,7 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
             _selectedSubCategoryId.value = 0
         }
         _selectedTags.value = item.tags.map { it.tagId }.toSet()
+        _receiptUri.value = transaction.receiptUri
     }
 
     fun addTransaction(transaction: Transaction, tagIds: Set<Int>) {
@@ -132,5 +170,6 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _selectedSubCategoryId.value = 0
         _selectedTags.value = emptySet()
         _selectedDate.value = 0L
+        _receiptUri.value = ""
     }
 }

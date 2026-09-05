@@ -165,4 +165,20 @@
     <string name="ingest_error_missing_amount">Missing amount</string>
     <string name="ingest_error_invalid_amount">Invalid amount</string>
     <string name="ingest_error_db">Error while adding the expense</string>
+
+    <!-- Receipt OCR -->
+    <string name="str_scatta_ricevuta">Scan receipt</string>
+    <string name="str_ricevuta">Receipt</string>
+    <string name="str_nessuna_ricevuta_trovata">No receipt found</string>
+    <string name="str_elaborazione_ocr">Processing receipt...</string>
+    <string name="str_ocr_fallita">Receipt reading error</string>
+    <string name="str_visualizza_ricevuta">View receipt</string>
+
+    <!-- Camera -->
+    <string name="str_camera_titolo">Capture receipt</string>
+    <string name="str_camera_scatta">Capture</string>
+    <string name="str_camera_usa_foto">Use photo</string>
+    <string name="str_camera_riprova">Retry</string>
+    <string name="str_camera_permesso_negato">Camera permission denied. Grant it in settings to capture receipts.</string>
+    <string name="str_camera_errore_acquisizione">Error while capturing photo.</string>
 </resources>
