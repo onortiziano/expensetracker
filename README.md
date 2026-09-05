@@ -59,7 +59,7 @@ adb shell am start -a android.intent.action.VIEW \
 
 ## 📷 Receipt OCR (Camera)
 
-- **One-Tap Ingestion**: snap a photo of a paper receipt (FAB or camera button on the add-transaction screen) and the form is filled automatically.
+- **One-Tap Ingestion**: open the "New transaction" screen and tap the camera icon in the top bar — the form is filled automatically.
 - **On-Device Recognition**: Google ML Kit text recognition runs entirely on the device — the photo never leaves your phone.
 - **Smart Auto-Fill**: amount, date, merchant and a suggested category are parsed from the receipt text and pre-filled in the transaction form; every field stays editable.
 - **Preprocessing Pipeline**: image preprocessing with priority to grayscale plus Otsu binarization improves OCR accuracy on thermal-paper receipts and fixes the green-tint issue on some MIUI devices.
