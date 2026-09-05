@@ -221,7 +221,27 @@ object ReceiptParser {
 
     // ---------- ESERCENTE ----------
 
+    /** Sigle di società/commerciali italiane: la riga che contiene una di queste è l'esercente. */
+    private val COMPANY_SUFFIX_REGEX = Regex(
+        """\b(?:s\.?\s*r\.?\s*l\.?\s*s?\.?|s\.?\s*p\.?\s*[aA]\.?|s\.?\s*n\.?\s*c\.?\s*|s\.?\s*a\.?\s*p\.?\s*[aA]\.?|s\.?\s*a\.?\s*s\.?|s\.?\s*c\.?\s*[aA]\.?\s*r\.?\s*l\.?|s\.?\s*c\.?\s*r\.?\s*l\.?|s\.?\s*c\.?\s*s\.?|s\.?\s*c\.?|s\.?\s*t\.?\s*s\.?|s\.?\s*t\.?\s*p\.?|s\.?\s*s\.?|ditta\s+individuale)\b""",
+        RegexOption.IGNORE_CASE
+    )
+
+    /** Rumore in coda alla riga esercente (partita IVA, cod. fiscale, telefono, e-mail). */
+    private val MERCHANT_TRAILING_NOISE = Regex(
+        """\s+(?:p\.?\s*i\.?\s*v\.?\s*a|partita\s+iva|c\.?\s*f\.?|cod\.?\s*fisc|t\.?\s*el[:\s]*\d|e-?mail)[:\s]*.*$""",
+        RegexOption.IGNORE_CASE
+    )
+
     private fun extractMerchant(lines: List<OcrLine>): String? {
+        for (line in lines) {
+            val text = line.text
+            if (text.length < 2) continue
+            if (!text.any { it.isLetter() }) continue
+            if (COMPANY_SUFFIX_REGEX.containsMatchIn(text)) {
+                return cleanMerchant(text).take(50)
+            }
+        }
         for (line in lines) {
             val text = line.text
             if (text.length < 2) continue
@@ -231,6 +251,9 @@ object ReceiptParser {
         }
         return lines.firstOrNull()?.text?.take(50)
     }
+
+    private fun cleanMerchant(text: String): String =
+        text.replace(MERCHANT_TRAILING_NOISE, "").trim()
 
     // ---------- CATEGORIA ----------
 

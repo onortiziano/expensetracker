@@ -306,4 +306,86 @@ class ReceiptParserTest {
         val parsed = ReceiptParser.parse("CONAD\n13/08/2026\nTOTALE 5,00")
         assertNotNull(parsed.merchant)
     }
+
+    // ---------- ESERCENTE: SIGLE DI SOCIETÀ ----------
+
+    @Test
+    fun `esercente e la riga con sigla srl anche se non e la prima`() {
+        val parsed = ReceiptParser.parse(
+            "RICEVUTA FISCALE\nPIAZZA 10\nCONAD SUPERMERCATO S.R.L.\nTOTALE 12,50"
+        )
+        assertEquals("CONAD SUPERMERCATO S.R.L.", parsed.merchant)
+    }
+
+    @Test
+    fun `esercente srl con partita iva resta solo la ragione sociale`() {
+        val parsed = ReceiptParser.parse(
+            "GESTIONI ALIMENTARI S.R.L. P.IVA 03456789012\nVIA ROMA 7\nTOTALE 5,00"
+        )
+        assertEquals("GESTIONI ALIMENTARI S.R.L.", parsed.merchant)
+    }
+
+    @Test
+    fun `esercente spa senza punti`() {
+        val parsed = ReceiptParser.parse(
+            "EUROSPIN SPA\nVIA MILANO 1\nTOTALE 7,90"
+        )
+        assertEquals("EUROSPIN SPA", parsed.merchant)
+    }
+
+    @Test
+    fun `esercente spa minuscolo con punti`() {
+        val parsed = ReceiptParser.parse(
+            "30 PIAZZA\nLIDL S.P.A.\nTOTALE 3,50"
+        )
+        assertEquals("LIDL S.P.A.", parsed.merchant)
+    }
+
+    @Test
+    fun `esercente snc in fondo alla ricevuta`() {
+        val parsed = ReceiptParser.parse(
+            "PANE 1,50\nLATTE 2,00\nGRAZIE\nFRATELLI BIANCHI S.N.C."
+        )
+        assertEquals("FRATELLI BIANCHI S.N.C.", parsed.merchant)
+    }
+
+    @Test
+    fun `esercente sas`() {
+        val parsed = ReceiptParser.parse(
+            "PASTICCERIA ROSSI S.A.S.\nTOTALE 4,00"
+        )
+        assertEquals("PASTICCERIA ROSSI S.A.S.", parsed.merchant)
+    }
+
+    @Test
+    fun `esercente cooperativa scarla con spazi`() {
+        val parsed = ReceiptParser.parse(
+            "IPERCOOP\nUNICOOP FIRENZE S.C. A R.L.\nTOTALE 23,40"
+        )
+        assertEquals("UNICOOP FIRENZE S.C. A R.L.", parsed.merchant)
+    }
+
+    @Test
+    fun `senza sigle resta la prima riga valida`() {
+        val parsed = ReceiptParser.parse(
+            "RICEVUTA FISCALE\nSUPERMERCATO ESSELUNGA\nTOTALE 12,50"
+        )
+        assertEquals("SUPERMERCATO ESSELUNGA", parsed.merchant)
+    }
+
+    @Test
+    fun `sigla societa vince anche se sopra c e una riga telefono`() {
+        val parsed = ReceiptParser.parse(
+            "RICEVUTA FISCALE\nTEL 3331234567\nCONAD S.R.L.\nTOTALE 5,00"
+        )
+        assertEquals("CONAD S.R.L.", parsed.merchant)
+    }
+
+    @Test
+    fun `riga di telefono non corrode una sigla srl`() {
+        val parsed = ReceiptParser.parse(
+            "CONAD TELECOMUNICAZIONI S.R.L.\nTOTALE 5,00"
+        )
+        assertEquals("CONAD TELECOMUNICAZIONI S.R.L.", parsed.merchant)
+    }
 }
