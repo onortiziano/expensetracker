@@ -188,4 +188,6 @@
     <string name="str_bisettimanale">Bi-weekly</string>
     <string name="str_mensile">Monthly</string>
     <string name="str_annuale">Annual</string>
+    <string name="str_promemoria_scadenza">Due-date reminder</string>
+    <string name="str_notifica_in_scadenza">Due today: %1$s</string>
 </resources>

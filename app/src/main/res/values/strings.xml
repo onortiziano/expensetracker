@@ -186,4 +186,6 @@
     <string name="str_bisettimanale">Bi-settimanale</string>
     <string name="str_mensile">Mensile</string>
     <string name="str_annuale">Annuale</string>
+    <string name="str_promemoria_scadenza">Promemoria scadenza</string>
+    <string name="str_notifica_in_scadenza">In scadenza oggi: %1$s</string>
 </resources>
