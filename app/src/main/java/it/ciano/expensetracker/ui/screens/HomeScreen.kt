@@ -33,6 +33,11 @@ import androidx.compose.material.icons.sharp.Settings
 import androidx.compose.material.icons.twotone.Home
 import androidx.compose.material.icons.twotone.Menu
 import androidx.compose.material.icons.twotone.Settings
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.sharp.Repeat
+import androidx.compose.material.icons.twotone.Repeat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,6 +130,17 @@ fun HomeScreen(navController: NavHostController) {
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.str_transazioni_ricorrenti)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Routes.RECURRING_TRANSACTIONS)
+                    },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.Repeat, Icons.Outlined.Repeat, Icons.Rounded.Repeat, Icons.Sharp.Repeat, Icons.TwoTone.Repeat), contentDescription = null) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.str_cronologia)) },
                     selected = false,

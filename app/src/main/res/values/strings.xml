@@ -188,4 +188,26 @@
     <string name="str_annuale">Annuale</string>
     <string name="str_promemoria_scadenza">Promemoria scadenza</string>
     <string name="str_notifica_in_scadenza">In scadenza oggi: %1$s</string>
+
+    <!-- Transazioni ricorrenti (UI) -->
+    <string name="str_transazioni_ricorrenti">Transazioni Ricorrenti</string>
+    <string name="str_nessuna_ricorrente">Nessuna transazione ricorrente</string>
+    <string name="str_nuova_ricorrente">Nuova Transazione Ricorrente</string>
+    <string name="str_modifica_ricorrente">Modifica Transazione Ricorrente</string>
+    <string name="str_frequenza">Frequenza</string>
+    <string name="str_data_inizio">Data Inizio</string>
+    <string name="str_data_fine">Data Fine (opzionale)</string>
+    <string name="str_attiva">Attiva</string>
+    <string name="str_in_pausa">In Pausa</string>
+    <string name="str_prossima_generazione">Prossima generazione: %1$s</string>
+    <string name="str_conferma_elimina_ricorrente">Eliminare questa transazione ricorrente?</string>
+    <string name="str_ricorrente_salvata">Transazione ricorrente salvata</string>
+    <string name="str_frequenza_obbligatoria">Selezionare una frequenza</string>
+    <string name="str_scadenze_mese">Scadenze</string>
+    <string name="str_nessuna_scadenza">Nessuna scadenza questo mese</string>
+    <string name="str_ricorrenze_il_giorno">Ricorrenze del %1$s</string>
+    <string name="str_in_scadenza_oggi">In scadenza oggi</string>
+    <string name="str_attiva_notifiche">Notifiche scadenza</string>
+    <string name="str_notifiche_concesse">Le notifiche sono state concesse</string>
+    <string name="str_notifiche_negate">Notifiche disattivate. Concedile dalle impostazioni di sistema</string>
 </resources>

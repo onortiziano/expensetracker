@@ -190,4 +190,26 @@
     <string name="str_annuale">Annual</string>
     <string name="str_promemoria_scadenza">Due-date reminder</string>
     <string name="str_notifica_in_scadenza">Due today: %1$s</string>
+
+    <!-- Recurring transactions (UI) -->
+    <string name="str_transazioni_ricorrenti">Recurring Transactions</string>
+    <string name="str_nessuna_ricorrente">No recurring transactions</string>
+    <string name="str_nuova_ricorrente">New Recurring Transaction</string>
+    <string name="str_modifica_ricorrente">Edit Recurring Transaction</string>
+    <string name="str_frequenza">Frequency</string>
+    <string name="str_data_inizio">Start Date</string>
+    <string name="str_data_fine">End Date (optional)</string>
+    <string name="str_attiva">Active</string>
+    <string name="str_in_pausa">Paused</string>
+    <string name="str_prossima_generazione">Next generation: %1$s</string>
+    <string name="str_conferma_elimina_ricorrente">Delete this recurring transaction?</string>
+    <string name="str_ricorrente_salvata">Recurring transaction saved</string>
+    <string name="str_frequenza_obbligatoria">Select a frequency</string>
+    <string name="str_scadenze_mese">Due dates</string>
+    <string name="str_nessuna_scadenza">No due dates this month</string>
+    <string name="str_ricorrenze_il_giorno">Occurrences on %1$s</string>
+    <string name="str_in_scadenza_oggi">Due today</string>
+    <string name="str_attiva_notifiche">Due-date notifications</string>
+    <string name="str_notifiche_concesse">Notifications granted</string>
+    <string name="str_notifiche_negate">Notifications disabled. Grant them from system settings</string>
 </resources>
