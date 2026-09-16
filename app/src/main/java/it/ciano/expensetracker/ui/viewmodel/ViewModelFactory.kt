@@ -36,6 +36,8 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
                 TagViewModel(tagRepository) as T
             modelClass.isAssignableFrom(AnalyticsViewModel::class.java) -> 
                 AnalyticsViewModel(application) as T
+            modelClass.isAssignableFrom(RecurringTransactionViewModel::class.java) ->
+                RecurringTransactionViewModel(application, recurringTransactionRepository) as T
             else -> throw IllegalArgumentException("Classe ViewModel sconosciuta: ${modelClass.name}")
         }
     }
