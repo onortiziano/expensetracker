@@ -1,6 +1,6 @@
 # Recurring Transactions Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add recurring transaction templates that auto-generate real transactions on app launch, with AlarmManager due-date notifications and a calendar preview of upcoming occurrences.
 
@@ -36,7 +36,7 @@
 **Interfaces:**
 - Produces: `RecurringTransaction` (table `recurring_transactions`), `RecurringTransactionTag` (table `recurring_transaction_tags`), `RecurringTransactionWithTags(recurring, tags)`. These types are used by every later task.
 
-- [ ] **Step 1: Create `RecurringTransaction.kt`**
+- [x] **Step 1: Create `RecurringTransaction.kt`**
 
 `data/model/RecurringTransaction.kt`:
 ```kotlin
@@ -63,7 +63,7 @@ data class RecurringTransaction(
 )
 ```
 
-- [ ] **Step 2: Create `RecurringTransactionTag.kt`**
+- [x] **Step 2: Create `RecurringTransactionTag.kt`**
 
 `data/model/RecurringTransactionTag.kt`:
 ```kotlin
@@ -98,7 +98,7 @@ data class RecurringTransactionTag(
 )
 ```
 
-- [ ] **Step 3: Create `RecurringTransactionWithTags.kt`**
+- [x] **Step 3: Create `RecurringTransactionWithTags.kt`**
 
 `data/model/RecurringTransactionWithTags.kt`:
 ```kotlin
@@ -110,7 +110,7 @@ data class RecurringTransactionWithTags(
 )
 ```
 
-- [ ] **Step 4: Register entities + migration in `AppDatabase.kt`**
+- [x] **Step 4: Register entities + migration in `AppDatabase.kt`**
 
 Edit `AppDatabase.kt`:
 - Add `RecurringTransaction::class, RecurringTransactionTag::class` to the `entities` array.
@@ -158,12 +158,12 @@ private val MIGRATION_4_5 = object : Migration(4, 5) {
 ```
 - Add `MIGRATION_4_5` to the `.addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)` call.
 
-- [ ] **Step 5: Verify it compiles**
+- [x] **Step 5: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/data/model/RecurringTransaction.kt app/src/main/java/it/ciano/expensetracker/data/model/RecurringTransactionTag.kt app/src/main/java/it/ciano/expensetracker/data/model/RecurringTransactionWithTags.kt app/src/main/java/it/ciano/expensetracker/data/AppDatabase.kt
@@ -190,7 +190,7 @@ git commit -m "feat: recurring transactions entities e migration v4->v5"
   - `RecurringTransactionTagDao.getTagIdsForRecurring(id: Int): List<Int>`
   - `RecurringTransactionTagDao.insertRecurringTag(link)`, `deleteTagsForRecurring(id)`
 
-- [ ] **Step 1: Create `RecurringTransactionDao.kt`**
+- [x] **Step 1: Create `RecurringTransactionDao.kt`**
 
 `data/dao/RecurringTransactionDao.kt`:
 ```kotlin
@@ -220,7 +220,7 @@ interface RecurringTransactionDao {
 }
 ```
 
-- [ ] **Step 2: Create `RecurringTransactionTagDao.kt`**
+- [x] **Step 2: Create `RecurringTransactionTagDao.kt`**
 
 `data/dao/RecurringTransactionTagDao.kt`:
 ```kotlin
@@ -247,7 +247,7 @@ interface RecurringTransactionTagDao {
 }
 ```
 
-- [ ] **Step 3: Register DAOs in `AppDatabase.kt`**
+- [x] **Step 3: Register DAOs in `AppDatabase.kt`**
 
 Add to `AppDatabase`:
 ```kotlin
@@ -256,12 +256,12 @@ abstract fun recurringTransactionTagDao(): RecurringTransactionTagDao
 ```
 (The `import it.ciano.expensetracker.data.dao.*` already covers the new DAOs.)
 
-- [ ] **Step 4: Verify it compiles**
+- [x] **Step 4: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/data/dao/RecurringTransactionDao.kt app/src/main/java/it/ciano/expensetracker/data/dao/RecurringTransactionTagDao.kt app/src/main/java/it/ciano/expensetracker/data/AppDatabase.kt
@@ -285,7 +285,7 @@ git commit -m "feat: DAO per transazioni ricorrenti"
   - `RecurringDateCalculator.FREQUENCIES: List<String>` = `["DAILY","WEEKLY","BIWEEKLY","MONTHLY","ANNUAL"]` (used by the UI dropdown).
   - `RecurringDateCalculator.FREQUENCY_LABELS: Map<String, Int>` = frequency → string resource id (used by the UI list).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `app/src/test/java/it/ciano/expensetracker/data/generation/RecurringDateCalculatorTest.kt`:
 ```kotlin
@@ -429,12 +429,12 @@ class RecurringDateCalculatorTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :app:testDebugUnitTest --tests "it.ciano.expensetracker.data.generation.RecurringDateCalculatorTest"`
 Expected: FAIL — `RecurringDateCalculator` unresolved.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `data/generation/RecurringDateCalculator.kt`:
 ```kotlin
@@ -524,12 +524,12 @@ object RecurringDateCalculator {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :app:testDebugUnitTest --tests "it.ciano.expensetracker.data.generation.RecurringDateCalculatorTest"`
 Expected: PASS (the two `str_*` resources must exist — they are added in Task 8; if they are missing, add them now from the Task 8 string table to keep this compiling).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/data/generation/RecurringDateCalculator.kt app/src/test/java/it/ciano/expensetracker/data/generation/RecurringDateCalculatorTest.kt
@@ -554,7 +554,7 @@ git commit -m "test: copertura RecurringDateCalculator piu advance e occurrences
   - `RecurringTransactionGenerator.generate(templates: List<RecurringTransaction>, tagIdsByRecurring: Map<Int, Set<Int>>, today: Long): GenerationResult`
   - Semantics: for each active template with `nextDueDate <= today`, generate occurrences at each due date from `nextDueDate` while `date <= today` AND `date <= endDate` (inclusive). After the loop set `nextDueDate = cursor` (first future occurrence), `lastGeneratedDate` = last generated date (or keep old value if none generated), and `isActive = false` when `cursor > endDate`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `app/src/test/java/it/ciano/expensetracker/data/generation/RecurringTransactionGeneratorTest.kt`:
 ```kotlin
@@ -686,12 +686,12 @@ class RecurringTransactionGeneratorTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :app:testDebugUnitTest --tests "it.ciano.expensetracker.data.generation.RecurringTransactionGeneratorTest"`
 Expected: FAIL — classes unresolved.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `data/generation/GeneratedOccurrence.kt`:
 ```kotlin
@@ -776,12 +776,12 @@ object RecurringTransactionGenerator {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :app:testDebugUnitTest --tests "it.ciano.expensetracker.data.generation.RecurringTransactionGeneratorTest"`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/data/generation/GeneratedOccurrence.kt app/src/main/java/it/ciano/expensetracker/data/generation/RecurringTransactionGenerator.kt app/src/test/java/it/ciano/expensetracker/data/generation/RecurringTransactionGeneratorTest.kt
@@ -807,7 +807,7 @@ git commit -m "feat: generatore transazioni ricorrenti con test"
   - `suspend fun deleteRecurring(r: RecurringTransaction)`
   - `suspend fun applyGeneration(occurrences: List<GeneratedOccurrence>, updated: List<RecurringTransaction>)` — atomic via `withTransaction`.
 
-- [ ] **Step 1: Write the implementation**
+- [x] **Step 1: Write the implementation**
 
 `data/repository/RecurringTransactionRepository.kt`:
 ```kotlin
@@ -910,7 +910,7 @@ class RecurringTransactionRepository(
 }
 ```
 
-- [ ] **Step 2: Register the repository in `ViewModelFactory.kt`**
+- [x] **Step 2: Register the repository in `ViewModelFactory.kt`**
 
 Edit `data/../ui/viewmodel/ViewModelFactory.kt` (AndroidViewModel flow is added in Task 6; here just wire the repository):
 
@@ -925,12 +925,12 @@ private val recurringTransactionRepository = RecurringTransactionRepository(
 )
 ```
 
-- [ ] **Step 3: Verify it compiles**
+- [x] **Step 3: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/data/repository/RecurringTransactionRepository.kt
@@ -959,7 +959,7 @@ git commit -m "feat: repository transazioni ricorrenti con persistenza atomica"
   - `RecurringReminderReceiver` handling actions `it.ciano.expensetracker.REMIND_RECURRING` (post notification) and `android.intent.action.BOOT_COMPLETED` (reschedule all).
   - `ACTION_REMIND: String` constant.
 
-- [ ] **Step 1: Write the failing test for the pure rules**
+- [x] **Step 1: Write the failing test for the pure rules**
 
 `app/src/test/java/it/ciano/expensetracker/data/reminder/RecurringReminderRulesTest.kt`:
 ```kotlin
@@ -1021,12 +1021,12 @@ class RecurringReminderRulesTest {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `./gradlew :app:testDebugUnitTest --tests "it.ciano.expensetracker.data.reminder.RecurringReminderRulesTest"`
 Expected: FAIL — classes unresolved.
 
-- [ ] **Step 3: Create the pure rules**
+- [x] **Step 3: Create the pure rules**
 
 `data/reminder/RecurringReminderRules.kt`:
 ```kotlin
@@ -1059,12 +1059,12 @@ object RecurringReminderRules {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `./gradlew :app:testDebugUnitTest --tests "it.ciano.expensetracker.data.reminder.RecurringReminderRulesTest"`
 Expected: PASS.
 
-- [ ] **Step 5: Create the scheduler**
+- [x] **Step 5: Create the scheduler**
 
 `data/reminder/RecurringReminderScheduler.kt`:
 ```kotlin
@@ -1126,7 +1126,7 @@ class RecurringReminderScheduler(private val context: Context) {
 }
 ```
 
-- [ ] **Step 6: Create the receiver**
+- [x] **Step 6: Create the receiver**
 
 `data/reminder/RecurringReminderReceiver.kt`:
 ```kotlin
@@ -1222,7 +1222,7 @@ CoroutineScope(Dispatchers.IO).launch {
 ```
 (Add `import kotlinx.coroutines.flow.first`.)
 
-- [ ] **Step 7: Add permissions + receiver to `AndroidManifest.xml`**
+- [x] **Step 7: Add permissions + receiver to `AndroidManifest.xml`**
 
 Insert after the existing `<uses-permission android:name="android.permission.CAMERA" />`:
 ```xml
@@ -1244,7 +1244,7 @@ Add inside `<application>` (after the ingest receiver):
 </receiver>
 ```
 
-- [ ] **Step 8: Create the notification channel in `ExpenseTrackerApp.kt`**
+- [x] **Step 8: Create the notification channel in `ExpenseTrackerApp.kt`**
 
 ```kotlin
 package it.ciano.expensetracker
@@ -1283,12 +1283,12 @@ class ExpenseTrackerApp : Application() {
 }
 ```
 
-- [ ] **Step 9: Verify it compiles**
+- [x] **Step 9: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/data/reminder/RecurringReminderRules.kt app/src/main/java/it/ciano/expensetracker/data/reminder/RecurringReminderScheduler.kt app/src/main/java/it/ciano/expensetracker/data/reminder/RecurringReminderReceiver.kt app/src/test/java/it/ciano/expensetracker/data/reminder/RecurringReminderRulesTest.kt app/src/main/AndroidManifest.xml app/src/main/java/it/ciano/expensetracker/ExpenseTrackerApp.kt
@@ -1312,7 +1312,7 @@ git commit -m "feat: promemoria scadenza ricorrenti con AlarmManager"
   - Updaters: `updateTitle`, `updateAmount`, `updateType`, `updateCategory`, `updateFrequency`, `updateStartDate`, `setEndDateEnabled`, `updateEndDate`, `updateNote`, `toggleTag`.
   - `startNew()`, `startEdit(item)`, `save(onSaved: () -> Unit)`, `setActive(item, active)`, `delete(item)`, `runPendingGeneration()`, `rescheduleReminders()`.
 
-- [ ] **Step 1: Write the implementation**
+- [x] **Step 1: Write the implementation**
 
 `ui/viewmodel/RecurringTransactionViewModel.kt`:
 ```kotlin
@@ -1558,7 +1558,7 @@ Note: remove the two helper stubs (`withContextList`, `selectNextDueDate` misuse
     }
 ```
 
-- [ ] **Step 2: Register in `ViewModelFactory.kt`**
+- [x] **Step 2: Register in `ViewModelFactory.kt`**
 
 Add to the `when` block:
 ```kotlin
@@ -1566,12 +1566,12 @@ modelClass.isAssignableFrom(RecurringTransactionViewModel::class.java) ->
     RecurringTransactionViewModel(application, recurringTransactionRepository) as T
 ```
 
-- [ ] **Step 3: Verify it compiles**
+- [x] **Step 3: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/ui/viewmodel/RecurringTransactionViewModel.kt app/src/main/java/it/ciano/expensetracker/ui/viewmodel/ViewModelFactory.kt
@@ -1592,7 +1592,7 @@ git commit -m "feat: viewmodel delle transazioni ricorrenti"
 **Interfaces:**
 - Produces: `Routes.RECURRING_TRANSACTIONS = "recurring_transactions"`. Drawer item in HomeScreen navigates to it.
 
-- [ ] **Step 1: Add Italian strings to `values/strings.xml`**
+- [x] **Step 1: Add Italian strings to `values/strings.xml`**
 
 Append before `</resources>`:
 ```xml
@@ -1626,7 +1626,7 @@ Append before `</resources>`:
     <string name="str_notifiche_negate">Notifiche disattivate. Concedile dalle impostazioni di sistema</string>
 ```
 
-- [ ] **Step 2: Add English strings to `values-en/strings.xml`**
+- [x] **Step 2: Add English strings to `values-en/strings.xml`**
 
 Append before `</resources>`:
 ```xml
@@ -1660,7 +1660,7 @@ Append before `</resources>`:
     <string name="str_notifiche_negate">Notifications disabled. Grant them from system settings</string>
 ```
 
-- [ ] **Step 3: Add the route to `AppNavigation.kt`**
+- [x] **Step 3: Add the route to `AppNavigation.kt`**
 
 In `Routes`:
 ```kotlin
@@ -1673,7 +1673,7 @@ composable(Routes.RECURRING_TRANSACTIONS) {
 }
 ```
 
-- [ ] **Step 4: Add the drawer item to `HomeScreen.kt`**
+- [x] **Step 4: Add the drawer item to `HomeScreen.kt`**
 
 Import `androidx.compose.material.icons.filled.Repeat`, `androidx.compose.material.icons.outlined.Repeat`, `androidx.compose.material.icons.rounded.Repeat`, `androidx.compose.material.icons.sharp.Repeat`, `androidx.compose.material.icons.twotone.Repeat`.
 
@@ -1691,12 +1691,12 @@ NavigationDrawerItem(
 )
 ```
 
-- [ ] **Step 5: Verify it compiles**
+- [x] **Step 5: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL (will fail until `RecurringTransactionsScreen` exists from Task 9 — acceptable if Task 9 is done before this check; otherwise sequence Task 9 first).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/src/main/res/values/strings.xml app/src/main/res/values-en/strings.xml app/src/main/java/it/ciano/expensetracker/ui/screens/AppNavigation.kt app/src/main/java/it/ciano/expensetracker/ui/screens/HomeScreen.kt
@@ -1715,7 +1715,7 @@ git commit -m "feat: route, stringhe e voce drawer per transazioni ricorrenti"
 - Consumes: `RecurringDateCalculator.occurrencesInMonth` (Task 3), `RecurringTransaction`, `GeneratedOccurrence`-independent (works on `List<RecurringTransaction>`), `MainViewModel.formatCurrency`, `Calendar`.
 - Produces: `@Composable fun RecurringCalendar(transactions: List<RecurringTransaction>, mainViewModel: MainViewModel)` — a tappable month grid.
 
-- [ ] **Step 1: Write the implementation**
+- [x] **Step 1: Write the implementation**
 
 `ui/components/RecurringCalendar.kt`:
 ```kotlin
@@ -1912,7 +1912,7 @@ private fun monthsName(month: Int): String {
 }
 ```
 
-- [ ] **Step 2: Add the month-name strings (both locales)**
+- [x] **Step 2: Add the month-name strings (both locales)**
 
 In `values/strings.xml` append:
 ```xml
@@ -1931,12 +1931,12 @@ In `values/strings.xml` append:
 ```
 In `values-en/strings.xml` append the English equivalents (January … December).
 
-- [ ] **Step 3: Verify it compiles**
+- [x] **Step 3: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/ui/components/RecurringCalendar.kt app/src/main/res/values/strings.xml app/src/main/res/values-en/strings.xml
@@ -1955,7 +1955,7 @@ git commit -m "feat: calendario scadenze ricorrenti"
 - Consumes: `RecurringTransactionViewModel` (Task 7), `CategoryViewModel`, `TagViewModel`, `SettingsViewModel`, `MainViewModel`, `RecurringCalendar` (Task 9), `RecurringDateCalculator.FREQUENCIES`/`FREQUENCY_LABELS` (Task 3), `RecurringTransactionWithTags`.
 - Produces: `@Composable fun RecurringTransactionsScreen(navController: NavHostController)`.
 
-- [ ] **Step 1: Write the implementation**
+- [x] **Step 1: Write the implementation**
 
 `ui/screens/RecurringTransactionsScreen.kt`:
 ```kotlin
@@ -2470,17 +2470,17 @@ private fun AddRecurringDialog(
 }
 ```
 
-- [ ] **Step 2: Verify it compiles**
+- [x] **Step 2: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 3: Run the full unit test suite**
+- [x] **Step 3: Run the full unit test suite**
 
 Run: `./gradlew :app:testDebugUnitTest`
 Expected: all tasks' tests PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/ui/screens/RecurringTransactionsScreen.kt
@@ -2498,7 +2498,7 @@ git commit -m "feat: schermata gestione transazioni ricorrenti"
 **Interfaces:**
 - Consumes: `RecurringTransactionViewModel.runPendingGeneration()` and `.rescheduleReminders()` (Task 7).
 
-- [ ] **Step 1: Add the launch hook to `HomeScreen.kt`**
+- [x] **Step 1: Add the launch hook to `HomeScreen.kt`**
 
 Get the VM at the top of the composable (after the existing ViewModels):
 ```kotlin
@@ -2512,12 +2512,12 @@ LaunchedEffect(Unit) {
 }
 ```
 
-- [ ] **Step 2: Verify it compiles**
+- [x] **Step 2: Verify it compiles**
 
 Run: `./gradlew :app:compileDebugKotlin`
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/src/main/java/it/ciano/expensetracker/ui/screens/HomeScreen.kt
@@ -2529,7 +2529,7 @@ git commit -m "feat: generazione ricorrenti e schedulazione promemoria all avvio
 
 ## Manual verification checklist (final task)
 
-- [ ] Build a release/debug APK: `./gradlew :app:assembleDebug`
+- [x] Build a release/debug APK: `./gradlew :app:assembleDebug`
 - [ ] Install on emulator/device: `adb install app/build/outputs/apk/debug/app-debug.apk`
 - [ ] Open the app → DATABASE v4→v5 migration applies without error.
 - [ ] Drawer shows "Transazioni Ricorrenti"; tap → screen opens with empty calendar + empty state.
