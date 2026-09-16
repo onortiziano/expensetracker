@@ -181,4 +181,11 @@
     <string name="str_camera_riprova">Retry</string>
     <string name="str_camera_permesso_negato">Camera permission denied. Grant it in settings to capture receipts.</string>
     <string name="str_camera_errore_acquisizione">Error while capturing photo.</string>
+
+    <!-- Recurring transactions -->
+    <string name="str_giornaliera">Daily</string>
+    <string name="str_settimanale">Weekly</string>
+    <string name="str_bisettimanale">Bi-weekly</string>
+    <string name="str_mensile">Monthly</string>
+    <string name="str_annuale">Annual</string>
 </resources>

@@ -179,4 +179,11 @@
     <string name="str_camera_riprova">Riprova</string>
     <string name="str_camera_permesso_negato">Permesso fotocamera negato. Concedilo dalle impostazioni per scattare la ricevuta.</string>
     <string name="str_camera_errore_acquisizione">Errore durante l\'acquisizione della foto.</string>
+
+    <!-- Transazioni ricorrenti -->
+    <string name="str_giornaliera">Giornaliera</string>
+    <string name="str_settimanale">Settimanale</string>
+    <string name="str_bisettimanale">Bi-settimanale</string>
+    <string name="str_mensile">Mensile</string>
+    <string name="str_annuale">Annuale</string>
 </resources>
