@@ -212,4 +212,18 @@
     <string name="str_attiva_notifiche">Due-date notifications</string>
     <string name="str_notifiche_concesse">Notifications granted</string>
     <string name="str_notifiche_negate">Notifications disabled. Grant them from system settings</string>
+
+    <!-- Month names (recurring calendar) -->
+    <string name="str_mese_gennaio">January</string>
+    <string name="str_mese_febbraio">February</string>
+    <string name="str_mese_marzo">March</string>
+    <string name="str_mese_aprile">April</string>
+    <string name="str_mese_maggio">May</string>
+    <string name="str_mese_giugno">June</string>
+    <string name="str_mese_luglio">July</string>
+    <string name="str_mese_agosto">August</string>
+    <string name="str_mese_settembre">September</string>
+    <string name="str_mese_ottobre">October</string>
+    <string name="str_mese_novembre">November</string>
+    <string name="str_mese_dicembre">December</string>
 </resources>

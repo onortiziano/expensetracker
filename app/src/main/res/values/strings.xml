@@ -210,4 +210,18 @@
     <string name="str_attiva_notifiche">Notifiche scadenza</string>
     <string name="str_notifiche_concesse">Le notifiche sono state concesse</string>
     <string name="str_notifiche_negate">Notifiche disattivate. Concedile dalle impostazioni di sistema</string>
+
+    <!-- Nomi mesi (calendario ricorrenti) -->
+    <string name="str_mese_gennaio">Gennaio</string>
+    <string name="str_mese_febbraio">Febbraio</string>
+    <string name="str_mese_marzo">Marzo</string>
+    <string name="str_mese_aprile">Aprile</string>
+    <string name="str_mese_maggio">Maggio</string>
+    <string name="str_mese_giugno">Giugno</string>
+    <string name="str_mese_luglio">Luglio</string>
+    <string name="str_mese_agosto">Agosto</string>
+    <string name="str_mese_settembre">Settembre</string>
+    <string name="str_mese_ottobre">Ottobre</string>
+    <string name="str_mese_novembre">Novembre</string>
+    <string name="str_mese_dicembre">Dicembre</string>
 </resources>
