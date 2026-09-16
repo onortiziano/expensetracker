@@ -29,6 +29,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun globalBudgetDao(): GlobalBudgetDao
     abstract fun tagDao(): TagDao
     abstract fun transactionTagDao(): TransactionTagDao
+    abstract fun recurringTransactionDao(): RecurringTransactionDao
+    abstract fun recurringTransactionTagDao(): RecurringTransactionTagDao
 
     companion object {
         @Volatile
