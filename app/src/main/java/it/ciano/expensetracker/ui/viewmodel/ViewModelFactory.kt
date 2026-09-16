@@ -12,6 +12,14 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
     private val transactionRepository = TransactionRepository(database.transactionDao(), database.transactionTagDao(), database.tagDao())
     private val categoryRepository = CategoryRepository(database.categoryDao())
     private val tagRepository = TagRepository(database.tagDao())
+    private val recurringTransactionRepository = RecurringTransactionRepository(
+        database = database,
+        recurringDao = database.recurringTransactionDao(),
+        recurringTagDao = database.recurringTransactionTagDao(),
+        transactionDao = database.transactionDao(),
+        transactionTagDao = database.transactionTagDao(),
+        tagDao = database.tagDao()
+    )
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
