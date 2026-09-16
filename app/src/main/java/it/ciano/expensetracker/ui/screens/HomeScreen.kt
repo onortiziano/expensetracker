@@ -63,6 +63,7 @@ import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import it.ciano.expensetracker.ui.viewmodel.CategoryViewModel
+import it.ciano.expensetracker.ui.viewmodel.RecurringTransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -74,6 +75,12 @@ fun HomeScreen(navController: NavHostController) {
     val transactionViewModel: TransactionViewModel = viewModel(factory = ViewModelFactory(app))
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     val categoryViewModel: CategoryViewModel = viewModel(factory = ViewModelFactory(app))
+    val recurringViewModel: RecurringTransactionViewModel = viewModel(factory = ViewModelFactory(app))
+
+    LaunchedEffect(Unit) {
+        recurringViewModel.runPendingGeneration()
+        recurringViewModel.rescheduleReminders()
+    }
     
     val categories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
 
