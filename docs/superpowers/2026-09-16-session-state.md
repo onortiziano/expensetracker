@@ -54,10 +54,25 @@ PRE-ESISTENTI in AddTransactionScreen/ModifyTransactionScreen/AndroidManifest, n
 Commit `02094cf` ("fix: code review PR #15") + push. CI GitHub: re-run in corso, il precedente su
 PR era SUCCESS (dopo fix tastiera). Per il merge servono i secrets keystore o lì CI fallisce.
 
+## Cosa è successo oggi (17/09) — TERZA PARTE: test utente + merge PR #15
+
+1. L'utente ha testato su device il nuovo APK (installato manualmente, NO adb): confermati M1
+   (pausa → modifica → resta in pausa) e I2 (Data Fine attiva senza data → Salva disabilitato).
+   Rinuncia alle verifiche con adb (non installato) e alla modifica dell'orologio.
+2. Test notifica DELEGATO al giorno della scadenza: l'utente ha creato una DAILY con inizio domani
+   → la notifica DEVE arrivare domani alle 09:00 (verifica su device del fix C1).
+3. Merge PR #15 eseguito con `gh pr merge --merge --delete-branch` → commit `33a6fc3`
+   ("Merge pull request #15"). NOTA: il primo push del merge ha dato errore objproxy locale
+   ma il merge su GitHub era già riuscito; ri-sync di main con `export GIT_OBJECT_DIRECTORY=/tmp/gitobjtest && git fetch && git merge --ff-only + materialize`.
+4. CI su main (`33a6fc3`): **completed/success**; la release automatica ha creato
+   **Release v50** (17/09 05:08) con `app-release.apk` firmato (stesso codice della debug
+   installata dall'utente; il debug APK locale è della release installata).
+5. Branch `feature/recurring-transactions` rimosso (remote + tracking locale prune).
+
 ### Dopo questo round
 
-- Prossimo: attendere esito CI, poi checklist manuale del piano (righe ~2533-2541) resta
-  unica attività aperta (notifica NON testata su device) prima di `finishing-a-development-branch`.
+- Unica attività aperta: **conferma notifica domani 09:00** su device (debug APK già installato
+  = stesso codice di v50). Se arriva → feature ricorrenze CHIUSA al 100%.
 
 ## Cosa è successo ieri (16/09)
 
@@ -100,20 +115,11 @@ Verifiche eseguite OGGI DOPO il fix:
 
 ## PROSSIMO PASSO (prossima sessione)
 
-1. Far testare all'utente il nuovo APK (17/09):
-   ```
-   adb install -r app/build/outputs/apk/debug/app-debug.apk
-   ```
-   Percorso di prova dei 2 fix:
-   a. Transazioni Ricorrenti → FAB → "Categoria Principale" → menu DEVE aprirsi
-   b. Nel menu → "+ Aggiungi Nuova" → creare una categoria con importo usando il separatore scelto →
-      la nuova categoria DEVE risultare selezionata → "Salva" DEVE attivarsi
-   c. Con separatore sbagliato nell'importo (es. "." quando è scelto ",") → "Salva" DEVE restare disabilitato
-   d. Modifica di una ricorrente: l'importo DEVE comparire col separatore scelto
-2. Completare la checklist manuale del piano (righe ~2533-2541 di
-   `docs/superpowers/plans/2026-09-11-recurring-transactions.md`): installazione, migration v4→v5, drawer,
-   creazione/modifica/pausa/eliminazione, swipe-to-delete, `dumpsys alarm`, generazione "Caffè" DAILY dopo force-stop.
-3. Poi: skill `finishing-a-development-branch` per integrare il branch (merge/push).
+1. **Conferma notifica** su device: domani alle 09:00 la DAILY creata oggi deve notificare
+   (debug APK già installato = stesso codice di v50). È l'ultima voce non confermata della feature.
+2. Se arriva: feature ricorrenze CHIUSA. La checklist manuale del piano
+   (righe ~2533-2541 di `docs/superpowers/plans/2026-09-11-recurring-transactions.md`) è da
+   segnare come completata nelle voci ora testate (creazione/modifica/pausa, swipe, tastiera, categoria).
 
 ## Ambiente / gotchas (IMPORTANTI)
 
@@ -136,14 +142,14 @@ Verifiche eseguite OGGI DOPO il fix:
 
 ## Stato git corrente
 
-- Branch: `feature/recurring-transactions`
-- Working tree: pulito (a parte il session-state doc aggiornato in questo round).
-- Ultimo commit: `02094cf fix: code review PR #15`
-- Commit della feature (dal più recente): 02094cf, fdaccdd, f116af8, 9ee6201, b4019b1, 377ddba, e4853f5, a463cb1, 4a09644, d4dd56f, e99d487, 619ed05, 1d7c7ba, ae1f294, 723d7f2, e959943.
+- Branch: `main` (aggiornato a `33a6fc3` = Merge pull request #15). Branch feature ELIMINATO.
+- Working tree: pulito (a parte questo session-state doc).
+- Ultimo commit: `33a6fc3 Merge pull request #15 from onortiziano/feature/recurring-transactions`
+- Commit principali integrati: 33a6fc3 (merge), 90db848, 02094cf, fdaccdd, f116af8, 9ee6201.
 
 ## File chiave ricorrenze (referenza)
 
-- UI: `app/src/main/java/it/ciano/expensetracker/ui/screens/RecurringTransactionsScreen.kt` (dialogo con il fix NON committato)
+- UI: `app/src/main/java/it/ciano/expensetracker/ui/screens/RecurringTransactionsScreen.kt`
 - Calendario: `app/src/main/java/it/ciano/expensetracker/ui/components/RecurringCalendar.kt`
 - VM: `app/src/main/java/it/ciano/expensetracker/ui/viewmodel/RecurringTransactionViewModel.kt`
 - Dati: `data/dao/*Dao.kt`, `data/generation/RecurringDateCalculator.kt` + `RecurringTransactionGenerator.kt`, `data/repository/RecurringTransactionRepository.kt`
