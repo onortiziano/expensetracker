@@ -22,6 +22,12 @@ A professional, lightweight, and privacy-focused expense tracking application de
 - **Dynamic Currency Support**: Choose your preferred currency symbol ($, €, £, ¥, etc.) to match your local or travel needs.
 - **Custom Decimal Separators**: Full control over decimal separators (`,` or `.`), ensuring the app adapts to your regional formatting preferences.
 
+### 🕐 Recurring Transactions
+- **Recurring Transactions**: define transactions that repeat on a fixed frequency (DAILY, WEEKLY, BIWEEKLY, MONTHLY, ANNUAL) with optional end date and category, in addition to tags.
+- **Automatic Generation**: recurring instances are materialized as normal transactions directly into the database; next-due dates and advances are computed calendar-aware.
+- **Scheduling & Reminders**: on app start, due recurring instances are generated and a system reminder is scheduled; overdue reminders are emitted and the app supervises any schedule changes.
+- **Management Screen**: dedicated screen with a due-dates calendar, list of recurring items (add via FAB, tap to edit, long-press/settings for edit, swipe-to-delete on either side), pause/resume and tags/category support.
+
 ### ⚙️ Organized Settings
 - The **Settings** screen is split into dedicated sub-screens for a cleaner experience: **Visual Preferences**, **Budget Management**, **Category/Tag Management** and **Data Management (Backup)**.
 
