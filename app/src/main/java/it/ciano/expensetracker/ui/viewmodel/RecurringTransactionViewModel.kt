@@ -105,12 +105,16 @@ class RecurringTransactionViewModel(
         if (_title.value.isBlank() || amountValue <= 0.0 || _categoryId.value == 0) return
         val start = _startDate.value
         if (start == 0L) return
-        if (_endDateEnabled.value && _endDate.value != 0L && _endDate.value < start) return
+        if (_endDateEnabled.value) {
+            if (_endDate.value == 0L) return
+            if (_endDate.value < start) return
+        }
 
         val existingId = _editId.value
-        val snapshotNextDue = existingId?.let { id ->
-            recurringWithTags.value.firstOrNull { it.recurring.id == id }?.recurring?.nextDueDate
+        val existing = existingId?.let { id ->
+            recurringWithTags.value.firstOrNull { it.recurring.id == id }?.recurring
         }
+        val snapshotNextDue = existing?.nextDueDate
 
         val recurring = RecurringTransaction(
             id = existingId ?: 0,
@@ -123,10 +127,8 @@ class RecurringTransactionViewModel(
             endDate = if (_endDateEnabled.value) _endDate.value else null,
             nextDueDate = snapshotNextDue ?: start,
             note = _note.value,
-            isActive = true,
-            lastGeneratedDate = existingId?.let { id ->
-                recurringWithTags.value.firstOrNull { it.recurring.id == id }?.recurring?.lastGeneratedDate
-            }
+            isActive = existing?.isActive ?: true,
+            lastGeneratedDate = existing?.lastGeneratedDate
         )
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -175,7 +177,7 @@ class RecurringTransactionViewModel(
 
     fun rescheduleReminders() {
         viewModelScope.launch(Dispatchers.IO) {
-            val all = recurringWithTags.value.map { it.recurring }
+            val all = repository.getAllRecurringWithTags().first().map { it.recurring }
             reminderScheduler.rescheduleAll(all)
         }
     }

@@ -32,17 +32,22 @@ class RecurringReminderReceiver : BroadcastReceiver() {
         when (intent.action) {
             ACTION_REMIND -> postReminder(context, intent)
             Intent.ACTION_BOOT_COMPLETED -> {
+                val pendingResult = goAsync()
                 CoroutineScope(Dispatchers.IO).launch {
-                    val db = AppDatabase.getDatabase(context)
-                    val all = RecurringTransactionRepository(
-                        database = db,
-                        recurringDao = db.recurringTransactionDao(),
-                        recurringTagDao = db.recurringTransactionTagDao(),
-                        transactionDao = db.transactionDao(),
-                        transactionTagDao = db.transactionTagDao(),
-                        tagDao = db.tagDao()
-                    ).getAllRecurringWithTags().first().map { it.recurring }
-                    RecurringReminderScheduler(context).rescheduleAll(all)
+                    try {
+                        val db = AppDatabase.getDatabase(context)
+                        val all = RecurringTransactionRepository(
+                            database = db,
+                            recurringDao = db.recurringTransactionDao(),
+                            recurringTagDao = db.recurringTransactionTagDao(),
+                            transactionDao = db.transactionDao(),
+                            transactionTagDao = db.transactionTagDao(),
+                            tagDao = db.tagDao()
+                        ).getAllRecurringWithTags().first().map { it.recurring }
+                        RecurringReminderScheduler(context).rescheduleAll(all)
+                    } finally {
+                        pendingResult.finish()
+                    }
                 }
             }
         }

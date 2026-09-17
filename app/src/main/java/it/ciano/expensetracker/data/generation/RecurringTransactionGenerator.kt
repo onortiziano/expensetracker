@@ -17,7 +17,15 @@ object RecurringTransactionGenerator {
         val updated = mutableListOf<RecurringTransaction>()
 
         for (t in templates) {
-            if (!t.isActive || t.nextDueDate > today) continue
+            if (!t.isActive) continue
+
+            // Un template la cui endDate è già prima della prossima scadenza è scaduto
+            if (t.endDate != null && t.nextDueDate > t.endDate) {
+                updated.add(t.copy(isActive = false))
+                continue
+            }
+
+            if (t.nextDueDate > today) continue
 
             val endBoundary = t.endDate ?: Long.MAX_VALUE
             val tagIds = tagIdsByRecurring[t.id] ?: emptySet()

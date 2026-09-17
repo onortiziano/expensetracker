@@ -560,7 +560,7 @@ private fun AddRecurringDialog(
         confirmButton = {
             Button(
                 onClick = { vm.save(onSave) },
-                enabled = title.isNotBlank() && (parseAmountText(amount, separator) ?: 0.0) > 0.0 && categoryId != 0 && startDate != 0L
+                enabled = title.isNotBlank() && (parseAmountText(amount, separator) ?: 0.0) > 0.0 && categoryId != 0 && startDate != 0L && (!endDateEnabled || endDate != 0L)
             ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {

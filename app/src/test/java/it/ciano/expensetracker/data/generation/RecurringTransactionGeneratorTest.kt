@@ -57,6 +57,28 @@ class RecurringTransactionGeneratorTest {
     }
 
     @Test
+    fun `template con endDate precedente a nextDueDate viene disattivato senza generare`() {
+        val today = millis(2026, Calendar.SEPTEMBER, 10)
+        val t = template(
+            1, "MONTHLY", millis(2026, Calendar.SEPTEMBER, 15),
+            endDate = millis(2026, Calendar.SEPTEMBER, 1)
+        )
+        val result = RecurringTransactionGenerator.generate(listOf(t), emptyMap(), today)
+        assertTrue(result.occurrences.isEmpty())
+        val updated = result.updated.single()
+        assertFalse(updated.isActive)
+    }
+
+    @Test
+    fun `template attivo con nextDueDate futura e endDate nulla non viene toccato`() {
+        val today = millis(2026, Calendar.SEPTEMBER, 10)
+        val t = template(1, "MONTHLY", millis(2026, Calendar.SEPTEMBER, 15))
+        val result = RecurringTransactionGenerator.generate(listOf(t), emptyMap(), today)
+        assertTrue(result.occurrences.isEmpty())
+        assertTrue(result.updated.isEmpty())
+    }
+
+    @Test
     fun `endDate inclusiva genera l ultima occorrenza e poi disattiva`() {
         val today = millis(2026, Calendar.FEBRUARY, 15)
         val t = template(
