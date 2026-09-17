@@ -26,6 +26,39 @@ Fix applicato e COMMITTATO come `9ee6201` (`fix: categoria inline e separatore d
 Verifiche: `compileDebugKotlin`, `testDebugUnitTest` (tutti PASS, inclusi i 9 nuovi test), `assembleDebug`
 → APK `app/build/outputs/apk/debug/app-debug.apk` (17/09 03:00, ~60 MB). `git fsck --no-dangling` pulito.
 
+## Cosa è successo oggi (17/09) — SECONDA PARTE: code review PR #15
+
+L'utente in locale: "verifichiamola" → PR #15 (https://github.com/onortiziano/expensetracker/pull/15),
+skill `requesting-code-review`, code reviewer subagent auto-invocato. Esito: 1 Critical, 3 Important, 1 Minor.
+
+### Issue verificate (verificare sul codice prima di implementare — skill receiving-code-review)
+
+- **C1 (CRITICAL — confermata vera)**: `rescheduleReminders()` leggeva `recurringWithTags.value`
+  (StateFlow `WhileSubscribed(5000)` con initial `emptyList()`). All'avvio da `HomeScreen` nessuno
+  colleziona il flow → a freddo `rescheduleAll([])` non programmava nessun reminder.
+  FIX: legge il DB direttamente (`repository.getAllRecurringWithTags().first().map{it.recurring}`),
+  stesso pattern già usato dal boot receiver.
+- **I1**: il boot receiver usava `CoroutineScope(Dispatchers.IO).launch` senza `goAsync()`
+  → rischio kill del processo. FIX: `goAsync()` + `pendingResult.finish()` in `finally`.
+- **I2**: "Data Fine" attivata senza data scelta → `save()` salvava `endDate = 0` (guard `!= 0L`)
+  → template zombie attivo per sempre. FIX: `save()` rifiuta `endDateEnabled && endDate == 0L`,
+  e il bottone Salva viene disabilitato (`!endDateEnabled || endDate != 0L`).
+- **I3 (TDD rosso→verde)**: il generatore non disattivava template con `endDate < nextDueDate`.
+  FIX: branch esplicito in `RecurringTransactionGenerator.generate()` che lo disattiva + 2 test
+  nuovi (scaduto viene disattivato; futura con endDate null non toccata).
+- **M1**: modificare un template in pausa forzava `isActive = true`. FIX: preserva `existing.isActive`.
+
+Verifiche POST-fix: `testDebugUnitTest` (28 PASS), `assembleDebug`, `lintDebug` (solo 3 errori
+PRE-ESISTENTI in AddTransactionScreen/ModifyTransactionScreen/AndroidManifest, non toccati).
+
+Commit `02094cf` ("fix: code review PR #15") + push. CI GitHub: re-run in corso, il precedente su
+PR era SUCCESS (dopo fix tastiera). Per il merge servono i secrets keystore o lì CI fallisce.
+
+### Dopo questo round
+
+- Prossimo: attendere esito CI, poi checklist manuale del piano (righe ~2533-2541) resta
+  unica attività aperta (notifica NON testata su device) prima di `finishing-a-development-branch`.
+
 ## Cosa è successo ieri (16/09)
 
 Implementazione ricorrenze COMPLETATA (11 task del piano), testata e committata nella sessione precedente.
@@ -104,9 +137,9 @@ Verifiche eseguite OGGI DOPO il fix:
 ## Stato git corrente
 
 - Branch: `feature/recurring-transactions`
-- Working tree: pulito. Il session-state doc è untracked.
-- Ultimo commit: `9ee6201 fix: categoria inline e separatore decimale nel dialogo ricorrenze`
-- Commit della feature (dal più recente): 9ee6201, b4019b1, 377ddba, e4853f5, a463cb1, 4a09644, d4dd56f, e99d487, 619ed05, 1d7c7ba, ae1f294, 723d7f2, e959943.
+- Working tree: pulito (a parte il session-state doc aggiornato in questo round).
+- Ultimo commit: `02094cf fix: code review PR #15`
+- Commit della feature (dal più recente): 02094cf, fdaccdd, f116af8, 9ee6201, b4019b1, 377ddba, e4853f5, a463cb1, 4a09644, d4dd56f, e99d487, 619ed05, 1d7c7ba, ae1f294, 723d7f2, e959943.
 
 ## File chiave ricorrenze (referenza)
 
