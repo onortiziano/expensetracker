@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -229,17 +230,28 @@ private fun RecurringCard(
         }
     )
 
+    val cardShape = MaterialTheme.shapes.medium
+
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {
+            val isSwipingLeft = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
+            val isSwipingRight = dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd
+            val color = if (isSwipingLeft || isSwipingRight) Color(0xFFD32F2F) else Color.Transparent
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFD32F2F))
+                    .clip(cardShape)
+                    .background(color)
                     .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterEnd
+                contentAlignment = if (isSwipingLeft) Alignment.CenterEnd else Alignment.CenterStart
             ) {
-                Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.str_elimina), tint = Color.White)
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(R.string.str_elimina),
+                    tint = Color.White
+                )
             }
         }
     ) {
