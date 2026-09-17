@@ -60,6 +60,7 @@
     <string name="str_entrata">Entrata</string>
     <string name="str_categoria_principale">Categoria Principale</string>
     <string name="str_scegli_categoria">Scegli Categoria</string>
+    <string name="str_nessuna_categoria_disponibile">Nessuna categoria disponibile. Creane una in Gestione Categorie.</string>
     <string name="str_scegli_sottocategoria">Scegli Sottocategoria</string>
     <string name="str_aggiungi_nuova">+ Aggiungi Nuova</string>
     <string name="str_sottocategoria">Sottocategoria</string>

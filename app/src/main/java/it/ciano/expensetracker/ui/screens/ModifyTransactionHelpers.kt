@@ -39,3 +39,26 @@ fun datePickerInitialValues(millis: Long): Triple<Int, Int, Int> {
         cal.get(Calendar.DAY_OF_MONTH)
     )
 }
+
+/**
+ * Interpreta il testo dell'importo rispettando il separatore decimale scelto
+ * dall'utente (`,` o `.`). Restituisce il valore numerico, oppure null se il
+ * testo non è un importo valido (separatore sbagliato, più separatori o
+ * caratteri non numerici).
+ */
+fun parseAmountText(text: String, separator: String): Double? {
+    if (text.isBlank()) return null
+    val sep = separator.firstOrNull() ?: ','
+    if (text.any { !it.isDigit() && it != sep }) return null
+    if (text.count { it == sep } > 1) return null
+    return text.replace(separator, ".").toDoubleOrNull()
+}
+
+/**
+ * Formatta l'importo per la precompilazione del campo modifica usando il
+ * separatore decimale scelto dall'utente (`,` o `.`).
+ */
+fun formatAmountForEdit(amount: Double, separator: String): String {
+    val sep = separator.firstOrNull() ?: ','
+    return if (sep == ',') amount.toString().replace('.', ',') else amount.toString()
+}

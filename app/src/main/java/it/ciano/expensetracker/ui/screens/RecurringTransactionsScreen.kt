@@ -42,6 +42,7 @@ import it.ciano.expensetracker.data.model.RecurringTransactionWithTags
 import it.ciano.expensetracker.ui.components.RecurringCalendar
 import it.ciano.expensetracker.ui.viewmodel.*
 import java.util.Calendar
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -65,6 +66,9 @@ fun RecurringTransactionsScreen(navController: NavHostController) {
     var showAddDialog by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<RecurringTransactionWithTags?>(null) }
     var deleteCandidate by remember { mutableStateOf<RecurringTransactionWithTags?>(null) }
+
+    // --- CREAZIONE CATEGORIA INLINE (come AddTransactionScreen) ---
+    var showAddCategoryDialog by remember { mutableStateOf(false) }
 
     // --- PERMESSO NOTIFICHE ---
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -152,16 +156,30 @@ fun RecurringTransactionsScreen(navController: NavHostController) {
     if (showAddDialog) {
         AddRecurringDialog(
             vm = vm,
-            allCategories = allCategories,
             mainCategories = mainCategories,
+            allCategories = allCategories,
             allTags = allTags,
             separator = separator,
             dateFormat = dateFormat,
             isEdit = editingItem != null,
+            onAddCategoryClick = { showAddCategoryDialog = true },
             onDismiss = { showAddDialog = false },
             onSave = {
                 showAddDialog = false
                 editingItem = null
+            }
+        )
+    }
+
+    if (showAddCategoryDialog) {
+        AddCategoryDialog(
+            categoryViewModel = categoryViewModel,
+            allCategories = allCategories,
+            separator = separator,
+            onDismiss = { showAddCategoryDialog = false },
+            onCategoryCreated = { newId ->
+                vm.updateCategory(newId.toInt())
+                showAddCategoryDialog = false
             }
         )
     }
@@ -308,6 +326,7 @@ private fun AddRecurringDialog(
     separator: String,
     dateFormat: java.text.DateFormat,
     isEdit: Boolean,
+    onAddCategoryClick: () -> Unit,
     onDismiss: () -> Unit,
     onSave: () -> Unit
 ) {
@@ -401,36 +420,59 @@ private fun AddRecurringDialog(
                 }
 
                 var categoryExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = categoryExpanded, onExpandedChange = { categoryExpanded = it }) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         readOnly = true,
                         value = categoryMap[categoryId]?.name ?: stringResource(R.string.str_scegli_categoria),
                         onValueChange = {},
                         label = { Text(stringResource(R.string.str_categoria_principale)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    ExposedDropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
-                        mainCategories.forEach { c ->
+                    Box(modifier = Modifier.matchParentSize().clickable { categoryExpanded = true })
+                    DropdownMenu(
+                        expanded = categoryExpanded,
+                        onDismissRequest = { categoryExpanded = false }
+                    ) {
+                        if (mainCategories.isEmpty()) {
                             DropdownMenuItem(
-                                text = { Text(c.name) },
-                                onClick = { vm.updateCategory(c.id); categoryExpanded = false }
+                                text = { Text(stringResource(R.string.str_nessuna_categoria_disponibile)) },
+                                enabled = false,
+                                onClick = {}
                             )
+                        } else {
+                            mainCategories.forEach { c ->
+                                DropdownMenuItem(
+                                    text = { Text(c.name) },
+                                    onClick = { vm.updateCategory(c.id); categoryExpanded = false }
+                                )
+                            }
                         }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.str_aggiungi_nuova), color = MaterialTheme.colorScheme.primary) },
+                            onClick = {
+                                categoryExpanded = false
+                                onAddCategoryClick()
+                            }
+                        )
                     }
                 }
 
                 var frequencyExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = frequencyExpanded, onExpandedChange = { frequencyExpanded = it }) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         readOnly = true,
                         value = stringResource(RecurringDateCalculator.FREQUENCY_LABELS[frequency] ?: R.string.str_frequenza_obbligatoria),
                         onValueChange = {},
                         label = { Text(stringResource(R.string.str_frequenza)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = frequencyExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    ExposedDropdownMenu(expanded = frequencyExpanded, onDismissRequest = { frequencyExpanded = false }) {
+                    Box(modifier = Modifier.matchParentSize().clickable { frequencyExpanded = true })
+                    DropdownMenu(
+                        expanded = frequencyExpanded,
+                        onDismissRequest = { frequencyExpanded = false }
+                    ) {
                         RecurringDateCalculator.FREQUENCIES.forEach { f ->
                             DropdownMenuItem(
                                 text = { Text(stringResource(RecurringDateCalculator.FREQUENCY_LABELS[f] ?: R.string.str_frequenza_obbligatoria)) },
@@ -503,11 +545,93 @@ private fun AddRecurringDialog(
         confirmButton = {
             Button(
                 onClick = { vm.save(onSave) },
-                enabled = title.isNotBlank() && (amount.toDoubleOrNull() ?: 0.0) > 0.0 && categoryId != 0 && startDate != 0L
+                enabled = title.isNotBlank() && (parseAmountText(amount, separator) ?: 0.0) > 0.0 && categoryId != 0 && startDate != 0L
             ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.str_annulla)) }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddCategoryDialog(
+    categoryViewModel: CategoryViewModel,
+    allCategories: List<Category>,
+    separator: String,
+    onDismiss: () -> Unit,
+    onCategoryCreated: (Long) -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    var name by remember { mutableStateOf("") }
+    var budget by remember { mutableStateOf("") }
+
+    val normalizedBudget = budget.replace(separator, ".")
+    val containsWrongSeparator =
+        (separator == "," && budget.contains(".")) || (separator == "." && budget.contains(","))
+    val isBudgetValid =
+        budget.isEmpty() || (!containsWrongSeparator && normalizedBudget.toDoubleOrNull() != null)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(stringResource(R.string.str_nuova_categoria), fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.str_nome_categoria)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = budget,
+                    onValueChange = { budget = it },
+                    label = { Text(stringResource(R.string.str_budget_opzionale)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    isError = !isBudgetValid,
+                    singleLine = true
+                )
+                if (!isBudgetValid) {
+                    Text(
+                        text = stringResource(R.string.str_numero_non_valido),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    scope.launch {
+                        val isDuplicate = allCategories.any {
+                            it.name == name && it.parentCategoryId == null
+                        }
+                        if (isDuplicate) return@launch
+
+                        if (name.isNotBlank()) {
+                            val budgetValue = budget.replace(separator, ".").toDoubleOrNull()
+                            val newId = categoryViewModel.addCategory(
+                                Category(name = name, budget = budgetValue)
+                            )
+                            onCategoryCreated(newId)
+                        }
+                    }
+                },
+                enabled = name.isNotBlank() && isBudgetValid
+            ) { Text(stringResource(R.string.str_salva)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.str_annulla))
+            }
         }
     )
 }

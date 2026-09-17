@@ -6,8 +6,11 @@ import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.data.generation.RecurringTransactionGenerator
 import it.ciano.expensetracker.data.model.RecurringTransaction
 import it.ciano.expensetracker.data.model.RecurringTransactionWithTags
+import it.ciano.expensetracker.data.preferences.UserPreferences
 import it.ciano.expensetracker.data.reminder.RecurringReminderScheduler
 import it.ciano.expensetracker.data.repository.RecurringTransactionRepository
+import it.ciano.expensetracker.ui.screens.formatAmountForEdit
+import it.ciano.expensetracker.ui.screens.parseAmountText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,6 +22,7 @@ class RecurringTransactionViewModel(
 ) : AndroidViewModel(application) {
 
     private val reminderScheduler = RecurringReminderScheduler(application)
+    private val userPreferences = UserPreferences(application)
 
     val recurringWithTags: StateFlow<List<RecurringTransactionWithTags>> =
         repository.getAllRecurringWithTags()
@@ -85,7 +89,7 @@ class RecurringTransactionViewModel(
         val r = item.recurring
         _editId.value = r.id
         _title.value = r.title
-        _amount.value = r.amount.toString()
+        _amount.value = formatAmountForEdit(r.amount, userPreferences.getDecimalSeparator())
         _type.value = r.type
         _categoryId.value = r.categoryId
         _frequency.value = r.frequency
@@ -97,8 +101,7 @@ class RecurringTransactionViewModel(
     }
 
     fun save(onSaved: () -> Unit) {
-        val normalizedAmount = _amount.value.replaceFirst(',', '.')
-        val amountValue = normalizedAmount.toDoubleOrNull() ?: 0.0
+        val amountValue = parseAmountText(_amount.value, userPreferences.getDecimalSeparator()) ?: 0.0
         if (_title.value.isBlank() || amountValue <= 0.0 || _categoryId.value == 0) return
         val start = _startDate.value
         if (start == 0L) return

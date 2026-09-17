@@ -60,6 +60,7 @@
     <string name="str_entrata">Income</string>
     <string name="str_categoria_principale">Main Category</string>
     <string name="str_scegli_categoria">Choose Category</string>
+    <string name="str_nessuna_categoria_disponibile">No categories available. Create one in Category Management.</string>
     <string name="str_scegli_sottocategoria">Choose Subcategory</string>
     <string name="str_aggiungi_nuova">+ Add New</string>
     <string name="str_sottocategoria">Subcategory</string>
