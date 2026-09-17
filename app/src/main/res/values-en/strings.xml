@@ -60,6 +60,7 @@
     <string name="str_entrata">Income</string>
     <string name="str_categoria_principale">Main Category</string>
     <string name="str_scegli_categoria">Choose Category</string>
+    <string name="str_nessuna_categoria_disponibile">No categories available. Create one in Category Management.</string>
     <string name="str_scegli_sottocategoria">Choose Subcategory</string>
     <string name="str_aggiungi_nuova">+ Add New</string>
     <string name="str_sottocategoria">Subcategory</string>
@@ -181,4 +182,49 @@
     <string name="str_camera_riprova">Retry</string>
     <string name="str_camera_permesso_negato">Camera permission denied. Grant it in settings to capture receipts.</string>
     <string name="str_camera_errore_acquisizione">Error while capturing photo.</string>
+
+    <!-- Recurring transactions -->
+    <string name="str_giornaliera">Daily</string>
+    <string name="str_settimanale">Weekly</string>
+    <string name="str_bisettimanale">Bi-weekly</string>
+    <string name="str_mensile">Monthly</string>
+    <string name="str_annuale">Annual</string>
+    <string name="str_promemoria_scadenza">Due-date reminder</string>
+    <string name="str_notifica_in_scadenza">Due today: %1$s</string>
+
+    <!-- Recurring transactions (UI) -->
+    <string name="str_transazioni_ricorrenti">Recurring Transactions</string>
+    <string name="str_nessuna_ricorrente">No recurring transactions</string>
+    <string name="str_nuova_ricorrente">New Recurring Transaction</string>
+    <string name="str_modifica_ricorrente">Edit Recurring Transaction</string>
+    <string name="str_frequenza">Frequency</string>
+    <string name="str_data_inizio">Start Date</string>
+    <string name="str_data_fine">End Date (optional)</string>
+    <string name="str_attiva">Active</string>
+    <string name="str_in_pausa">Paused</string>
+    <string name="str_prossima_generazione">Next generation: %1$s</string>
+    <string name="str_conferma_elimina_ricorrente">Delete this recurring transaction?</string>
+    <string name="str_ricorrente_salvata">Recurring transaction saved</string>
+    <string name="str_frequenza_obbligatoria">Select a frequency</string>
+    <string name="str_scadenze_mese">Due dates</string>
+    <string name="str_nessuna_scadenza">No due dates this month</string>
+    <string name="str_ricorrenze_il_giorno">Occurrences on %1$s</string>
+    <string name="str_in_scadenza_oggi">Due today</string>
+    <string name="str_attiva_notifiche">Due-date notifications</string>
+    <string name="str_notifiche_concesse">Notifications granted</string>
+    <string name="str_notifiche_negate">Notifications disabled. Grant them from system settings</string>
+
+    <!-- Month names (recurring calendar) -->
+    <string name="str_mese_gennaio">January</string>
+    <string name="str_mese_febbraio">February</string>
+    <string name="str_mese_marzo">March</string>
+    <string name="str_mese_aprile">April</string>
+    <string name="str_mese_maggio">May</string>
+    <string name="str_mese_giugno">June</string>
+    <string name="str_mese_luglio">July</string>
+    <string name="str_mese_agosto">August</string>
+    <string name="str_mese_settembre">September</string>
+    <string name="str_mese_ottobre">October</string>
+    <string name="str_mese_novembre">November</string>
+    <string name="str_mese_dicembre">December</string>
 </resources>

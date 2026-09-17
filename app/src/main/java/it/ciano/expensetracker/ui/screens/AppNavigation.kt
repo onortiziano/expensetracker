@@ -24,6 +24,7 @@ object Routes {
     const val SETTINGS_BUDGET_MANAGEMENT = "settings_budget_management"
     const val SETTINGS_CATEGORY_TAG_MANAGEMENT = "settings_category_tag_management"
     const val SETTINGS_DATA_MANAGEMENT = "settings_data_management"
+    const val RECURRING_TRANSACTIONS = "recurring_transactions"
 }
 
 @Composable
@@ -81,6 +82,10 @@ fun AppNavigation() {
 
         composable(Routes.SETTINGS_DATA_MANAGEMENT) {
             SettingsDataScreen(navController)
+        }
+
+        composable(Routes.RECURRING_TRANSACTIONS) {
+            RecurringTransactionsScreen(navController)
         }
 
         // Per la Modifica

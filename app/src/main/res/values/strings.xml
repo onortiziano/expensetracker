@@ -60,6 +60,7 @@
     <string name="str_entrata">Entrata</string>
     <string name="str_categoria_principale">Categoria Principale</string>
     <string name="str_scegli_categoria">Scegli Categoria</string>
+    <string name="str_nessuna_categoria_disponibile">Nessuna categoria disponibile. Creane una in Gestione Categorie.</string>
     <string name="str_scegli_sottocategoria">Scegli Sottocategoria</string>
     <string name="str_aggiungi_nuova">+ Aggiungi Nuova</string>
     <string name="str_sottocategoria">Sottocategoria</string>
@@ -179,4 +180,49 @@
     <string name="str_camera_riprova">Riprova</string>
     <string name="str_camera_permesso_negato">Permesso fotocamera negato. Concedilo dalle impostazioni per scattare la ricevuta.</string>
     <string name="str_camera_errore_acquisizione">Errore durante l\'acquisizione della foto.</string>
+
+    <!-- Transazioni ricorrenti -->
+    <string name="str_giornaliera">Giornaliera</string>
+    <string name="str_settimanale">Settimanale</string>
+    <string name="str_bisettimanale">Bi-settimanale</string>
+    <string name="str_mensile">Mensile</string>
+    <string name="str_annuale">Annuale</string>
+    <string name="str_promemoria_scadenza">Promemoria scadenza</string>
+    <string name="str_notifica_in_scadenza">In scadenza oggi: %1$s</string>
+
+    <!-- Transazioni ricorrenti (UI) -->
+    <string name="str_transazioni_ricorrenti">Transazioni Ricorrenti</string>
+    <string name="str_nessuna_ricorrente">Nessuna transazione ricorrente</string>
+    <string name="str_nuova_ricorrente">Nuova Transazione Ricorrente</string>
+    <string name="str_modifica_ricorrente">Modifica Transazione Ricorrente</string>
+    <string name="str_frequenza">Frequenza</string>
+    <string name="str_data_inizio">Data Inizio</string>
+    <string name="str_data_fine">Data Fine (opzionale)</string>
+    <string name="str_attiva">Attiva</string>
+    <string name="str_in_pausa">In Pausa</string>
+    <string name="str_prossima_generazione">Prossima generazione: %1$s</string>
+    <string name="str_conferma_elimina_ricorrente">Eliminare questa transazione ricorrente?</string>
+    <string name="str_ricorrente_salvata">Transazione ricorrente salvata</string>
+    <string name="str_frequenza_obbligatoria">Selezionare una frequenza</string>
+    <string name="str_scadenze_mese">Scadenze</string>
+    <string name="str_nessuna_scadenza">Nessuna scadenza questo mese</string>
+    <string name="str_ricorrenze_il_giorno">Ricorrenze del %1$s</string>
+    <string name="str_in_scadenza_oggi">In scadenza oggi</string>
+    <string name="str_attiva_notifiche">Notifiche scadenza</string>
+    <string name="str_notifiche_concesse">Le notifiche sono state concesse</string>
+    <string name="str_notifiche_negate">Notifiche disattivate. Concedile dalle impostazioni di sistema</string>
+
+    <!-- Nomi mesi (calendario ricorrenti) -->
+    <string name="str_mese_gennaio">Gennaio</string>
+    <string name="str_mese_febbraio">Febbraio</string>
+    <string name="str_mese_marzo">Marzo</string>
+    <string name="str_mese_aprile">Aprile</string>
+    <string name="str_mese_maggio">Maggio</string>
+    <string name="str_mese_giugno">Giugno</string>
+    <string name="str_mese_luglio">Luglio</string>
+    <string name="str_mese_agosto">Agosto</string>
+    <string name="str_mese_settembre">Settembre</string>
+    <string name="str_mese_ottobre">Ottobre</string>
+    <string name="str_mese_novembre">Novembre</string>
+    <string name="str_mese_dicembre">Dicembre</string>
 </resources>

@@ -15,9 +15,11 @@ import it.ciano.expensetracker.data.model.*
         Transaction::class, 
         Tag::class, 
         TransactionTag::class, 
-        GlobalBudget::class
+        GlobalBudget::class, 
+        RecurringTransaction::class, 
+        RecurringTransactionTag::class
     ], 
-    version = 4, 
+    version = 5, 
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +29,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun globalBudgetDao(): GlobalBudgetDao
     abstract fun tagDao(): TagDao
     abstract fun transactionTagDao(): TransactionTagDao
+    abstract fun recurringTransactionDao(): RecurringTransactionDao
+    abstract fun recurringTransactionTagDao(): RecurringTransactionTagDao
 
     companion object {
         @Volatile
@@ -61,6 +65,44 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v4 -> v5: tabelle per le transazioni ricorrenti
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS recurring_transactions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        title TEXT NOT NULL,
+                        amount REAL NOT NULL,
+                        type TEXT NOT NULL,
+                        categoryId INTEGER NOT NULL,
+                        frequency TEXT NOT NULL,
+                        startDate INTEGER NOT NULL,
+                        endDate INTEGER,
+                        nextDueDate INTEGER NOT NULL,
+                        note TEXT NOT NULL DEFAULT '',
+                        isActive INTEGER NOT NULL DEFAULT 1,
+                        lastGeneratedDate INTEGER
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS recurring_transaction_tags (
+                        recurringTransactionId INTEGER NOT NULL,
+                        tagId INTEGER NOT NULL,
+                        PRIMARY KEY(recurringTransactionId, tagId),
+                        FOREIGN KEY(recurringTransactionId) REFERENCES recurring_transactions(id) ON DELETE CASCADE,
+                        FOREIGN KEY(tagId) REFERENCES tags(tagId) ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_recurring_transaction_tags_tagId ON recurring_transaction_tags (tagId)"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -68,7 +110,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "expense_tracker_db"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .fallbackToDestructiveMigration() // Ultima risorsa in caso di schema non gestito
                 .build()
                 INSTANCE = instance
