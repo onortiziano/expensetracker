@@ -38,6 +38,8 @@ class ViewModelFactory(private val application: Application) : ViewModelProvider
                 AnalyticsViewModel(application) as T
             modelClass.isAssignableFrom(RecurringTransactionViewModel::class.java) ->
                 RecurringTransactionViewModel(application, recurringTransactionRepository) as T
+            modelClass.isAssignableFrom(ImportTransactionsViewModel::class.java) ->
+                ImportTransactionsViewModel(application, transactionRepository, categoryRepository) as T
             else -> throw IllegalArgumentException("Classe ViewModel sconosciuta: ${modelClass.name}")
         }
     }
