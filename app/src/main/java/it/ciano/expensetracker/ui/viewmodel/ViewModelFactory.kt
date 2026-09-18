@@ -9,7 +9,7 @@ import it.ciano.expensetracker.data.repository.*
 class ViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     
     private val database = AppDatabase.getDatabase(application)
-    private val transactionRepository = TransactionRepository(database.transactionDao(), database.transactionTagDao(), database.tagDao())
+    private val transactionRepository = TransactionRepository(database, database.transactionDao(), database.transactionTagDao(), database.tagDao())
     private val categoryRepository = CategoryRepository(database.categoryDao())
     private val tagRepository = TagRepository(database.tagDao())
     private val recurringTransactionRepository = RecurringTransactionRepository(
