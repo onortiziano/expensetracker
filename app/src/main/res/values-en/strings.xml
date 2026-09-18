@@ -227,4 +227,23 @@
     <string name="str_mese_ottobre">October</string>
     <string name="str_mese_novembre">November</string>
     <string name="str_mese_dicembre">December</string>
+
+    <!-- Transaction import -->
+    <string name="str_importa_transazioni">Import Transactions</string>
+    <string name="str_seleziona_file">Select CSV/OFX file</string>
+    <string name="str_nessun_file">No file selected</string>
+    <string name="str_anteprima_import">Import Preview</string>
+    <string name="str_salta_duplicati">Skip duplicates</string>
+    <string name="str_categoria_riga">Category</string>
+    <string name="str_importa_n">Import %1$d transactions</string>
+    <string name="str_errore_formato">Unrecognized file format</string>
+    <string name="str_colonne_mancanti">Required columns missing</string>
+    <string name="str_data_non_valida">Invalid date</string>
+    <string name="str_risultato_import">Imported: %1$d · Skipped: %2$d · Errors: %3$d</string>
+    <string name="str_dettaglio_errori">Error details</string>
+    <string name="str_importazione_completata">%1$d transactions imported</string>
+    <string name="str_errore_generico">Error during import</string>
+    <string name="str_nessuna_categoria">No category</string>
+    <string name="str_errore_riga">Row %1$d: %2$s</string>
+    <string name="str_conferma_esci_import">Exit without importing? Changes will be lost.</string>
 </resources>

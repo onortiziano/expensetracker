@@ -225,4 +225,23 @@
     <string name="str_mese_ottobre">Ottobre</string>
     <string name="str_mese_novembre">Novembre</string>
     <string name="str_mese_dicembre">Dicembre</string>
+
+    <!-- Importa transazioni -->
+    <string name="str_importa_transazioni">Importa Transazioni</string>
+    <string name="str_seleziona_file">Seleziona file CSV/OFX</string>
+    <string name="str_nessun_file">Nessun file selezionato</string>
+    <string name="str_anteprima_import">Anteprima Import</string>
+    <string name="str_salta_duplicati">Salta duplicati</string>
+    <string name="str_categoria_riga">Categoria</string>
+    <string name="str_importa_n">Importa %1$d transazioni</string>
+    <string name="str_errore_formato">Formato file non riconosciuto</string>
+    <string name="str_colonne_mancanti">Colonne obbligatorie mancanti</string>
+    <string name="str_data_non_valida">Data non valida</string>
+    <string name="str_risultato_import">Importate: %1$d · Saltate: %2$d · Errori: %3$d</string>
+    <string name="str_dettaglio_errori">Dettaglio errori</string>
+    <string name="str_importazione_completata">%1$d transazioni importate</string>
+    <string name="str_errore_generico">Errore durante l\'importazione</string>
+    <string name="str_nessuna_categoria">Nessuna categoria</string>
+    <string name="str_errore_riga">Riga %1$d: %2$s</string>
+    <string name="str_conferma_esci_import">Uscire senza importare? Le modifiche andranno perse.</string>
 </resources>
