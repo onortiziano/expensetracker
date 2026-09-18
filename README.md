@@ -72,6 +72,16 @@ adb shell am start -a android.intent.action.VIEW \
 - **Accurate Merchant Detection**: the parser searches for Italian company/legal suffixes (`S.R.L.`, `S.P.A.`, `S.N.C.`, `S.A.S.`, `S.A.P.A.`, `S.S.`, `S.C. A R.L.`, `S.C.R.L.`, `S.C.S.`, `S.T.S.`, `S.T.P.`, `S.R.L.S.`, *Ditta Individuale*) and picks that line as the merchant, falling back to the first valid receipt line when no suffix is found.
 - **Guided Flow**: after the shot you confirm the photo, then OCR and parsing run on the next screen; a dedicated diagnostic screen helps verify the capture → recognition pipeline.
 
+## 📥 CSV / OFX Import
+
+- **Manual Import**: select a `CSV` or `OFX` file from your device (Storage Access Framework); the app never auto-syncs — import is always manual and local-first.
+- **Supported Formats**:
+  - **CSV**: any separator (comma, semicolon, tab); columns are auto-detected from the header (`data`/`date`, `descrizione`/`description`, `importo`/`amount`, optional `categoria`/`category` and `tipo`/`type`). Decimal separator follows your app preference.
+  - **OFX**: legacy SGML (pre-2000) and modern XML (v1.x / v2.x) for bank statement exports — parsed with the platform XML engine, no cloud APIs.
+- **Preview & Categories**: before saving you can review every parsed row, assign a per-row category (or create a new one inline), and even apply one category to all rows from the same file category.
+- **Deduplication**: the "Skip duplicates" toggle (ON by default) avoids re-importing transactions that already exist with the same title, amount, date, and type.
+- **Atomic Insert**: imported transactions are written in a single database transaction — nothing is partially imported.
+
 ## 🛠️ Tech Stack
 
 - **Language**: [Kotlin](https://kotlinlang.org/)
