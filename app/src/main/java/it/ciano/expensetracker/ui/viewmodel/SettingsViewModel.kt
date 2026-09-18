@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.data.preferences.UserPreferences
 import it.ciano.expensetracker.data.repository.GlobalBudgetRepository
 import it.ciano.expensetracker.data.model.GlobalBudget
+import it.ciano.expensetracker.data.ocr.ReceiptStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -98,6 +99,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                             addFileToZip(prefsFile, "user_prefs.xml", zipOut)
                             filesAdded++
                         }
+                        if (addReceiptsToZip(zipOut) > 0) {
+                            filesAdded++
+                        }
                     }
                 }
                 
@@ -118,6 +122,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         zipOut.putNextEntry(entry)
         FileInputStream(file).use { it.copyTo(zipOut) }
         zipOut.closeEntry()
+    }
+
+    private fun addReceiptsToZip(zipOut: ZipOutputStream): Int {
+        val receiptsDir = File(context.filesDir, ReceiptStorage.RECEIPT_DIR)
+        if (!receiptsDir.exists()) return 0
+        var count = 0
+        receiptsDir.listFiles()?.forEach { file ->
+            if (file.isFile) {
+                addFileToZip(file, "receipts/${file.name}", zipOut)
+                count++
+            }
+        }
+        return count
     }
 
     private fun isSafeZipEntryName(name: String): Boolean {
@@ -168,6 +185,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 if (tempFiles.containsKey("user_prefs.xml")) {
                     if (!prefsDir.exists()) prefsDir.mkdirs()
                     tempFiles["user_prefs.xml"]?.copyTo(prefsPath, overwrite = true)
+                }
+
+                val receiptsDir = File(context.filesDir, ReceiptStorage.RECEIPT_DIR)
+                tempFiles.filter { it.key.startsWith("receipts/") }.forEach { (name, tempFile) ->
+                    if (!receiptsDir.exists()) receiptsDir.mkdirs()
+                    tempFile.copyTo(File(receiptsDir, name.removePrefix("receipts/")), overwrite = true)
                 }
 
                 zipTempFile.delete()
