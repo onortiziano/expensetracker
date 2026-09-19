@@ -6,6 +6,7 @@ import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.R
+import it.ciano.expensetracker.data.import.CsvParser
 import it.ciano.expensetracker.data.import.ImportError
 import it.ciano.expensetracker.data.import.ImportOutcome
 import it.ciano.expensetracker.data.import.ImportRow
@@ -28,7 +29,7 @@ class ImportTransactionsViewModel(
     private val categoryRepository: CategoryRepository
 ) : AndroidViewModel(application) {
 
-    enum class Phase { IDLE, PARSING, PREVIEW }
+    enum class Phase { IDLE, PARSING, MAPPING, PREVIEW }
 
     private val userPreferences = UserPreferences(application)
 
@@ -37,6 +38,9 @@ class ImportTransactionsViewModel(
 
     private val _fileName = MutableStateFlow<String?>(null)
     val fileName: StateFlow<String?> = _fileName.asStateFlow()
+
+    private val _csvInfo = MutableStateFlow<CsvParser.CsvFileInfo?>(null)
+    val csvInfo: StateFlow<CsvParser.CsvFileInfo?> = _csvInfo.asStateFlow()
 
     private val _rows = MutableStateFlow<List<ImportRow>>(emptyList())
     val rows: StateFlow<List<ImportRow>> = _rows.asStateFlow()
@@ -53,6 +57,9 @@ class ImportTransactionsViewModel(
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message.asStateFlow()
 
+    /** Contenuto del CSV letto: serve a ri-parsare dopo il mapping. */
+    private var csvContent: String = ""
+
     fun clearMessage() { _message.value = null }
 
     fun loadFile(uri: Uri) {
@@ -68,13 +75,59 @@ class ImportTransactionsViewModel(
                         _phase.value = Phase.IDLE
                         return@withContext
                     }
-                    val parseResult = TransactionImportParser.parseFile(name, bytes, userPreferences.getDecimalSeparator())
+                    val text = bytes.toString(Charsets.UTF_8)
+                    val ext = name.substringAfterLast('.', "").lowercase()
+
+                    // CSV/TSV/TXT: rileviamo le colonne e chiediamo il mapping manuale.
+                    // Anche un CSV "pulito" passa dal mapping: ogni app ha il suo formato.
+                    val csvFile = CsvParser.detectFile(text)
+                    if ((ext == "csv" || ext == "tsv" || ext == "txt") && csvFile != null) {
+                        csvContent = text
+                        _csvInfo.value = csvFile
+                        _rows.value = emptyList()
+                        _errors.value = emptyList()
+                        _fileName.value = name
+                        _phase.value = Phase.MAPPING
+                        return@withContext
+                    }
+
+                    // OFX / altri: parsing automatico come prima.
+                    val parseResult = TransactionImportParser.parseFile(name, text, userPreferences.getDecimalSeparator())
                     val categories = categoryRepository.getAllCategories().first()
                     _rows.value = parseResult.transactions.map { t ->
                         ImportRow(t, matchCategoryId(t.categoryName, categories))
                     }
                     _errors.value = parseResult.errors
+                    _csvInfo.value = null
                     _fileName.value = name
+                    _phase.value = Phase.PREVIEW
+                } catch (e: Exception) {
+                    _message.value = app.getString(R.string.str_errore_generico)
+                    _phase.value = Phase.IDLE
+                }
+            }
+        }
+    }
+
+    /** Ri-parsa il contenuto CSV con il mapping scelto dall'utente e passa all'anteprima. */
+    fun buildRows(mapping: CsvParser.ImportMapping) {
+        viewModelScope.launch {
+            val app = getApplication<Application>()
+            withContext(Dispatchers.IO) {
+                try {
+                    if (csvContent.isBlank()) {
+                        _message.value = app.getString(R.string.str_errore_generico)
+                        _phase.value = Phase.IDLE
+                        return@withContext
+                    }
+                    val parseResult = CsvParser.parse(csvContent, userPreferences.getDecimalSeparator(), mapping)
+                    val categories = categoryRepository.getAllCategories().first()
+                    _rows.value = parseResult.transactions.map { t ->
+                        ImportRow(t, matchCategoryId(t.categoryName, categories))
+                    }
+                    _errors.value = parseResult.errors
+                    _csvInfo.value = null
+                    _fileName.value = app.getString(R.string.str_nessun_file)
                     _phase.value = Phase.PREVIEW
                 } catch (e: Exception) {
                     _message.value = app.getString(R.string.str_errore_generico)
@@ -113,9 +166,11 @@ class ImportTransactionsViewModel(
     fun reset() {
         _phase.value = Phase.IDLE
         _fileName.value = null
+        _csvInfo.value = null
         _rows.value = emptyList()
         _errors.value = emptyList()
         _outcome.value = null
+        csvContent = ""
     }
 
     private fun matchCategoryId(categoryName: String?, categories: List<Category>): Int {

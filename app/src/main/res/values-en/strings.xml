@@ -249,4 +249,19 @@
     <string name="str_nessuna_categoria">No category</string>
     <string name="str_errore_riga">Row %1$d: %2$s</string>
     <string name="str_conferma_esci_import">Exit without importing? Changes will be lost.</string>
+    <string name="str_mapping_colonne">Column mapping</string>
+    <string name="str_mapping_sugg_at">Match the file columns to the fields. Every app has its own layout; you choose the right ones.</string>
+    <string name="str_mapping_campo_importo">Amount</string>
+    <string name="str_mapping_campo_data">Date</string>
+    <string name="str_mapping_campo_descrizione">Description</string>
+    <string name="str_mapping_campo_categoria">Category</string>
+    <string name="str_mapping_campo_tipo">Type (expense/income)</string>
+    <string name="str_mapping_tipo_uscite">All as expense</string>
+    <string name="str_mapping_tipo_entrate">All as income</string>
+    <string name="str_mapping_tipo_segno">From sign/value column</string>
+    <string name="str_mapping_non_usata">Do not import this column</string>
+    <string name="str_mapping_esempio">Example: %1$s</string>
+    <string name="str_mapping_conferma">Confirm and import</string>
+    <string name="str_mapping_importo_obbligatorio">Select a column for the amount</string>
+    <string name="str_importo_mancante">Amount not mapped</string>
 </resources>

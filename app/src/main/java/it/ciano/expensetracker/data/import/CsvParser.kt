@@ -12,13 +12,69 @@ object CsvParser {
 
     private enum class Role { DATE, DESCRIPTION, AMOUNT, TYPE, CATEGORY }
 
+    /** Titolo segnaposto usato quando il file non ha una colonna descrizione. */
+    const val PLACEHOLDER_TITLE = "Importato da file"
+
+    /** Ragione canonica quando la colonna Importo non viene mappata. */
+    const val REASON_AMOUNT_NOT_MAPPED = "Importo non mappato"
+
+    /** Mapping manuale colonne file → campi app. -1 = colonna non usata.
+     *  [typeDefault]: se valorizzato ("EXPENSE"/"INCOME") forza il tipo su tutte
+     *  le righe, ignorando colonna tipo e segno. null = comportamento normale. */
+    data class ImportMapping(
+        val dateIdx: Int = -1,
+        val descIdx: Int = -1,
+        val amountIdx: Int = -1,
+        val typeIdx: Int = -1,
+        val catIdx: Int = -1,
+        val typeDefault: String? = null
+    )
+
+    /** Esito della rilevazione: header, riga di esempio e suggerimenti di mapping. */
+    data class CsvFileInfo(
+        val headers: List<String>,
+        val sampleRow: List<String>,
+        val suggested: ImportMapping
+    )
+
+    /**
+     * Rileva struttura del CSV senza bloccarsi: header, prima riga dati e
+     * mapping suggerito (euristiche). Il chiamante mostra la UI di mapping.
+     * null se il contenuto non è CSV riconoscibile (vuoto o senza separatore).
+     */
+    fun detectFile(content: String): CsvFileInfo? {
+        if (content.isBlank()) return null
+        val records = toCsvRecords(content)
+        val firstLine = records.firstOrNull() ?: return null
+        val delimiter = listOf(',', ';', '\t').firstOrNull { splitLine(firstLine, it).size >= 3 }
+            ?: return null
+        val headers = splitLine(firstLine, delimiter)
+        val roles = detectRoles(headers)
+
+        var suggested = ImportMapping(
+            dateIdx = roles.entries.firstOrNull { it.value == Role.DATE }?.key ?: -1,
+            descIdx = roles.entries.firstOrNull { it.value == Role.DESCRIPTION }?.key ?: -1,
+            amountIdx = roles.entries.firstOrNull { it.value == Role.AMOUNT }?.key ?: -1,
+            typeIdx = roles.entries.firstOrNull { it.value == Role.TYPE }?.key ?: -1,
+            catIdx = roles.entries.firstOrNull { it.value == Role.CATEGORY }?.key ?: -1
+        )
+
+        // Nessun ruolo rilevato ma >= 3 colonne -> molto probabile file senza header:
+        // suggeriamo il mapping posizionale (data;desc;importo).
+        if (roles.isEmpty() && headers.size >= 3) {
+            suggested = ImportMapping(dateIdx = 0, descIdx = 1, amountIdx = 2)
+        }
+
+        val sampleRow = records.getOrNull(1)?.let { splitLine(it, delimiter) } ?: emptyList()
+        return CsvFileInfo(headers, sampleRow, suggested)
+    }
+
+    /** Parsing automatico (legacy): euristiche + fallback posizionale.
+     *  Rifiuta il file quando data/descrizione/importo non sono individuabili. */
     fun parse(content: String, decimalSeparator: String): ImportParseResult {
         if (content.isBlank()) return ImportParseResult(emptyList(), emptyList())
 
-        // 1. Suddividiamo il contenuto in record rispettando le virgolette.
         val records = toCsvRecords(content)
-
-        // 2. Rileviamo il separatore di colonna: primo tra , ; \t che divide in >= 3 colonne.
         val firstLine = records.firstOrNull() ?: return ImportParseResult(emptyList(), emptyList())
         val delimiter = listOf(',', ';', '\t').firstOrNull { splitLine(firstLine, it).size >= 3 }
             ?: return ImportParseResult(emptyList(), listOf(ImportError(0, "Separatore non riconosciuto")))
@@ -47,42 +103,79 @@ object CsvParser {
             return ImportParseResult(emptyList(), listOf(ImportError(0, "Colonne obbligatorie mancanti")))
         }
 
-        // 3. Parsing riga per riga.
+        return parseRecords(
+            records, delimiter, decimalSeparator,
+            ImportMapping(dateIdx, descIdx, amountIdx, typeIdx, catIdx),
+            headerLines
+        )
+    }
+
+    /** Parsing con mapping esplicito (UI di mapping). headerLines = 1 per default. */
+    fun parse(content: String, decimalSeparator: String, mapping: ImportMapping, headerLines: Int = 1): ImportParseResult {
+        if (content.isBlank()) return ImportParseResult(emptyList(), emptyList())
+        val records = toCsvRecords(content)
+        val firstLine = records.firstOrNull() ?: return ImportParseResult(emptyList(), emptyList())
+        // Con mapping esplicito basta che il separatore divida in >= 2 colonne
+        // (file minimi tipo "Importo;Data" sono leciti, a differenza dell'auto-detect).
+        val delimiter = listOf(',', ';', '\t').firstOrNull { splitLine(firstLine, it).size >= 2 }
+            ?: return ImportParseResult(emptyList(), listOf(ImportError(0, "Separatore non riconosciuto")))
+
+        if (mapping.amountIdx < 0) {
+            return ImportParseResult(emptyList(), listOf(ImportError(0, REASON_AMOUNT_NOT_MAPPED)))
+        }
+        return parseRecords(records, delimiter, decimalSeparator, mapping, headerLines)
+    }
+
+    private fun parseRecords(
+        records: List<String>,
+        delimiter: Char,
+        decimalSeparator: String,
+        mapping: ImportMapping,
+        headerLines: Int
+    ): ImportParseResult {
         val transactions = mutableListOf<ParsedImportTransaction>()
         val errors = mutableListOf<ImportError>()
+        val maxIdx = maxOf(mapping.dateIdx, mapping.descIdx, mapping.amountIdx, mapping.typeIdx, mapping.catIdx)
+
         for ((i, record) in records.withIndex()) {
             if (i < headerLines) continue // header
             if (record.isBlank()) continue
             val cols = splitLine(record, delimiter)
-            if (cols.size <= maxOf(dateIdx, descIdx, amountIdx, typeIdx, catIdx)) {
+            if (cols.size <= maxIdx) {
                 errors.add(ImportError(i + 1, "Numero di colonne insufficiente"))
                 continue
             }
 
-            val date = parseDate(cols[dateIdx])
+            val date = if (mapping.dateIdx >= 0) {
+                parseDate(cols[mapping.dateIdx])
+            } else {
+                todayStartOfDay()
+            }
             if (date == null) {
                 errors.add(ImportError(i + 1, "Data non valida"))
                 continue
             }
-            val amount = parseAmount(cols[amountIdx], decimalSeparator)
+            val amount = if (mapping.amountIdx >= 0) parseAmount(cols[mapping.amountIdx], decimalSeparator) else null
             if (amount == null) {
                 errors.add(ImportError(i + 1, "Importo non valido"))
                 continue
             }
 
-            val type = if (typeIdx >= 0) {
-                mapType(cols[typeIdx]) ?: inferType(amount)
-            } else {
-                inferType(amount)
+            val title = if (mapping.descIdx >= 0) cols[mapping.descIdx].trim() else PLACEHOLDER_TITLE
+
+            val type = when {
+                mapping.typeDefault != null -> mapping.typeDefault
+                mapping.typeIdx >= 0 -> mapType(cols[mapping.typeIdx]) ?: inferType(amount)
+                else -> inferType(amount)
             }
 
             transactions.add(
                 ParsedImportTransaction(
-                    title = cols[descIdx].trim(),
+                    title = title.ifBlank { PLACEHOLDER_TITLE },
                     amount = kotlin.math.abs(amount),
                     type = type,
                     date = date,
-                    categoryName = if (catIdx >= 0 && cols[catIdx].isNotBlank()) cols[catIdx].trim() else null,
+                    categoryName = if (mapping.catIdx >= 0 && cols[mapping.catIdx].isNotBlank()) cols[mapping.catIdx].trim() else null,
                     sourceLine = i + 1
                 )
             )
@@ -90,11 +183,22 @@ object CsvParser {
         return ImportParseResult(transactions, errors)
     }
 
-    /** Raggruppa le righe fisiche in record CSV, unendo quelle chiuse da una virgoletta. */
+    private fun todayStartOfDay(): Long {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
+    }
+
+    /** Raggruppa le righe fisiche in record CSV, unendo quelle chiuse da una virgoletta.
+     *  Normalizza i delimitatori di riga (\r\n, \r, \n): alcuni export usano solo CR. */
     private fun toCsvRecords(content: String): List<String> {
+        val normalized = content.replace("\r\n", "\n").replace('\r', '\n')
         val records = mutableListOf<String>()
         var pending = ""
-        for (line in content.split("\n")) {
+        for (line in normalized.split("\n")) {
             val candidate = if (pending.isEmpty()) line else "$pending\n$line"
             if (candidate.count { it == '"' } % 2 == 1) {
                 pending = candidate
@@ -147,10 +251,11 @@ object CsvParser {
                 .replace('à', 'a').replace('è', 'e').replace('ì', 'i')
                 .replace('ò', 'o').replace('ù', 'u')
             val role = when {
-                // data: date/data/fecha, oppure "trans date", "data operazione", "data valuta"
+                // data: date/data/fecha, "data e ora", "trans date", "data operazione", "data valuta", "date time", ...
                 h == "date" || h == "data" || h == "fecha" ||
-                    (h.contains("date") && (h.contains("trans") || h.contains("post") || h.contains("value") || h.contains("booking"))) ||
-                    (h.contains("data") && (h.contains("valuta") || h.contains("operaz"))) -> Role.DATE
+                    (h.contains("date") && (h.contains("trans") || h.contains("post") || h.contains("value") || h.contains("booking") || h.contains(" time") || h.contains("time "))) ||
+                    (h.contains("data") && (h.contains("valuta") || h.contains("operaz") || h.contains(" ora"))) ||
+                    h.contains("data e ora") || h.contains("data/ora") -> Role.DATE
                 // descrizione: desc*, memo, notes, payee/merchant/name, titolo/concepto
                 h.contains("desc") || h.contains("memo") || h.contains("note") ||
                     h == "name" || h.contains("payee") || h.contains("merchant") ||
@@ -170,14 +275,14 @@ object CsvParser {
         return roles
     }
 
-    /** Tenta i formati: ISO yyyy-MM-dd, Europeo dd/MM/yyyy, Americano MM/dd/yyyy (solo se ambiguo), compatto yyyyMMdd. */
+    /** Tenta i formati: ISO yyyy-MM-dd, Europeo dd/MM/yyyy, Americano MM/dd/yyyy (solo se ambiguo), compatto yyyyMMdd, con nome mese. */
     private fun parseDate(raw: String): Long? {
         val s = raw.trim()
         if (s.isEmpty()) return null
 
-        fun tryFormat(pattern: String): Long? {
+        fun tryFormat(pattern: String, locale: Locale = Locale.ROOT): Long? {
             return try {
-                val fmt = SimpleDateFormat(pattern, Locale.ROOT)
+                val fmt = SimpleDateFormat(pattern, locale)
                 fmt.isLenient = false
                 fmt.parse(s)?.time
             } catch (e: Exception) {
@@ -194,6 +299,24 @@ object CsvParser {
         // MM/dd/yyyy solo quando il "giorno" europeo supererebbe 12 (file americani).
         val american = parseSlashDate(s, european = false)
         if (american != null) return american
+
+        // Date con nome del mese locale, es. "20 lug 2026", "5 lug 2026, 13:17", "20 Jul 2026".
+        // L'ora viene azzerata: per l'import conta solo il giorno.
+        val mese = listOf("dd MMM yyyy, HH:mm", "dd MMM yyyy").firstNotNullOfOrNull { pattern ->
+            listOf(Locale.ITALIAN, Locale.ENGLISH).firstNotNullOfOrNull { locale ->
+                tryFormat(pattern, locale)
+            }
+        }
+        if (mese != null) {
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = mese
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            return cal.timeInMillis
+        }
 
         tryFormat("yyyyMMdd")?.let { return it }
         return null

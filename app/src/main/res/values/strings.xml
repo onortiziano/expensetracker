@@ -247,4 +247,19 @@
     <string name="str_nessuna_categoria">Nessuna categoria</string>
     <string name="str_errore_riga">Riga %1$d: %2$s</string>
     <string name="str_conferma_esci_import">Uscire senza importare? Le modifiche andranno perse.</string>
+    <string name="str_mapping_colonne">Mappatura colonne</string>
+    <string name="str_mapping_sugg_at">Abbina le colonne del file ai campi. Le colonne con ogni app sono diverse; scegli tu quelle giuste.</string>
+    <string name="str_mapping_campo_importo">Importo</string>
+    <string name="str_mapping_campo_data">Data</string>
+    <string name="str_mapping_campo_descrizione">Descrizione</string>
+    <string name="str_mapping_campo_categoria">Categoria</string>
+    <string name="str_mapping_campo_tipo">Tipo (spesa/entrata)</string>
+    <string name="str_mapping_tipo_uscite">Tutte come uscite</string>
+    <string name="str_mapping_tipo_entrate">Tutte come entrate</string>
+    <string name="str_mapping_tipo_segno">Dalla colonna segno/valore</string>
+    <string name="str_mapping_non_usata">Non importare questa colonna</string>
+    <string name="str_mapping_esempio">Esempio: %1$s</string>
+    <string name="str_mapping_conferma">Conferma e importa</string>
+    <string name="str_mapping_importo_obbligatorio">Seleziona una colonna per l\'importo</string>
+    <string name="str_importo_mancante">Importo non mappato</string>
 </resources>

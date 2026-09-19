@@ -30,6 +30,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import it.ciano.expensetracker.R
+import it.ciano.expensetracker.data.import.CsvParser
 import it.ciano.expensetracker.data.model.Category
 import it.ciano.expensetracker.ui.viewmodel.*
 import kotlinx.coroutines.launch
@@ -50,6 +51,7 @@ fun ImportTransactionsScreen(navController: NavHostController) {
     val skipDuplicates by vm.skipDuplicates.collectAsState()
     val outcome by vm.outcome.collectAsState()
     val message by vm.message.collectAsState()
+    val csvInfo by vm.csvInfo.collectAsState()
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -145,6 +147,111 @@ fun ImportTransactionsScreen(navController: NavHostController) {
                 ImportTransactionsViewModel.Phase.PARSING -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
+                    }
+                }
+                ImportTransactionsViewModel.Phase.MAPPING -> {
+                    csvInfo?.let { info ->
+                        val headers = info.headers
+                        val sample = info.sampleRow
+                        var amountIdx by remember { mutableStateOf(info.suggested.amountIdx) }
+                        var dateIdx by remember { mutableStateOf(info.suggested.dateIdx) }
+                        var descIdx by remember { mutableStateOf(info.suggested.descIdx) }
+                        var catIdx by remember { mutableStateOf(info.suggested.catIdx) }
+                        var typeChoice by remember {
+                            mutableStateOf(
+                                if (info.suggested.typeIdx >= 0) TypeChoice.Column(info.suggested.typeIdx)
+                                else TypeChoice.AllExpense
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.str_mapping_colonne),
+                            style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.str_mapping_sugg_at),
+                            style = MaterialTheme.typography.bodySmall, color = Color.Gray
+                        )
+
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
+                            item {
+                                MappingField(
+                                    label = stringResource(R.string.str_mapping_campo_importo),
+                                    required = true,
+                                    headers = headers,
+                                    sample = sample,
+                                    selected = amountIdx,
+                                    onSelected = { amountIdx = it }
+                                )
+                            }
+                            item {
+                                MappingField(
+                                    label = stringResource(R.string.str_mapping_campo_data),
+                                    required = false,
+                                    headers = headers,
+                                    sample = sample,
+                                    selected = dateIdx,
+                                    onSelected = { dateIdx = it }
+                                )
+                            }
+                            item {
+                                MappingField(
+                                    label = stringResource(R.string.str_mapping_campo_descrizione),
+                                    required = false,
+                                    headers = headers,
+                                    sample = sample,
+                                    selected = descIdx,
+                                    onSelected = { descIdx = it }
+                                )
+                            }
+                            item {
+                                MappingField(
+                                    label = stringResource(R.string.str_mapping_campo_categoria),
+                                    required = false,
+                                    headers = headers,
+                                    sample = sample,
+                                    selected = catIdx,
+                                    onSelected = { catIdx = it }
+                                )
+                            }
+                            item {
+                                TypeChoiceField(
+                                    headers = headers,
+                                    sample = sample,
+                                    selected = typeChoice,
+                                    onSelected = { typeChoice = it }
+                                )
+                            }
+                            if (amountIdx < 0) {
+                                item {
+                                    Text(
+                                        text = stringResource(R.string.str_mapping_importo_obbligatorio),
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                val (typeIdx, typeDefault) = when (val tc = typeChoice) {
+                                    is TypeChoice.Column -> tc.idx to null
+                                    TypeChoice.AllExpense -> -1 to "EXPENSE"
+                                    TypeChoice.AllIncome -> -1 to "INCOME"
+                                    TypeChoice.FromSign -> -1 to null
+                                }
+                                vm.buildRows(
+                                    CsvParser.ImportMapping(
+                                        dateIdx = dateIdx, descIdx = descIdx,
+                                        amountIdx = amountIdx, typeIdx = typeIdx, catIdx = catIdx,
+                                        typeDefault = typeDefault
+                                    )
+                                )
+                            },
+                            enabled = amountIdx >= 0,
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.str_mapping_conferma)) }
                     }
                 }
                 ImportTransactionsViewModel.Phase.PREVIEW -> {
@@ -307,11 +414,144 @@ fun ImportTransactionsScreen(navController: NavHostController) {
 @Composable
 private fun localizedError(reason: String): String = when (reason) {
     "Colonne obbligatorie mancanti" -> stringResource(R.string.str_colonne_mancanti)
+    CsvParser.REASON_AMOUNT_NOT_MAPPED -> stringResource(R.string.str_importo_mancante)
     "Data non valida" -> stringResource(R.string.str_data_non_valida)
     "Importo non valido" -> stringResource(R.string.str_importo_non_valido)
     "Formato file non riconosciuto" -> stringResource(R.string.str_errore_formato)
     "Separatore non riconosciuto" -> stringResource(R.string.str_errore_formato)
     else -> reason
+}
+
+/** Come classificare il tipo quando il file può non avere una colonna tipo. */
+private sealed interface TypeChoice {
+    data object AllExpense : TypeChoice
+    data object AllIncome : TypeChoice
+    data object FromSign : TypeChoice
+    data class Column(val idx: Int) : TypeChoice
+}
+
+/** Menu Tipo: forza tutte uscite/entrate, inferenza dal segno o colonna del file. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TypeChoiceField(
+    headers: List<String>,
+    sample: List<String>,
+    selected: TypeChoice,
+    onSelected: (TypeChoice) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val label = stringResource(R.string.str_mapping_campo_tipo)
+    val display = when (val s = selected) {
+        TypeChoice.AllExpense -> stringResource(R.string.str_mapping_tipo_uscite)
+        TypeChoice.AllIncome -> stringResource(R.string.str_mapping_tipo_entrate)
+        TypeChoice.FromSign -> stringResource(R.string.str_mapping_tipo_segno)
+        is TypeChoice.Column -> if (s.idx in headers.indices) headers[s.idx] else stringResource(R.string.str_mapping_non_usata)
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = label,
+            fontSize = 12.sp, fontWeight = FontWeight.Bold,
+            color = Color.Unspecified
+        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                readOnly = true,
+                value = display,
+                onValueChange = {},
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Box(modifier = Modifier.matchParentSize().clickable { expanded = true })
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.str_mapping_tipo_uscite)) },
+                    onClick = { onSelected(TypeChoice.AllExpense); expanded = false }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.str_mapping_tipo_entrate)) },
+                    onClick = { onSelected(TypeChoice.AllIncome); expanded = false }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.str_mapping_tipo_segno)) },
+                    onClick = { onSelected(TypeChoice.FromSign); expanded = false }
+                )
+                HorizontalDivider()
+                headers.forEachIndexed { index, h ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(h, fontWeight = FontWeight.Medium)
+                                if (index < sample.size && sample[index].isNotBlank()) {
+                                    Text(
+                                        text = stringResource(R.string.str_mapping_esempio, sample[index]),
+                                        fontSize = 11.sp, color = Color.Gray
+                                    )
+                                }
+                            }
+                        },
+                        onClick = { onSelected(TypeChoice.Column(index)); expanded = false }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Dropdown per abbinare un campo dell'app a una colonna del file. -1 = non usata. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MappingField(
+    label: String,
+    required: Boolean,
+    headers: List<String>,
+    sample: List<String>,
+    selected: Int,
+    onSelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val display = if (selected in headers.indices) headers[selected]
+        else stringResource(R.string.str_mapping_non_usata)
+
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = if (required) "$label *" else label,
+            fontSize = 12.sp, fontWeight = FontWeight.Bold,
+            color = if (required && selected < 0) MaterialTheme.colorScheme.error else Color.Unspecified
+        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                readOnly = true,
+                value = display,
+                onValueChange = {},
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Box(modifier = Modifier.matchParentSize().clickable { expanded = true })
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.str_mapping_non_usata)) },
+                    onClick = { onSelected(-1); expanded = false }
+                )
+                headers.forEachIndexed { index, h ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(h, fontWeight = FontWeight.Medium)
+                                if (index < sample.size && sample[index].isNotBlank()) {
+                                    Text(
+                                        text = stringResource(R.string.str_mapping_esempio, sample[index]),
+                                        fontSize = 11.sp, color = Color.Gray
+                                    )
+                                }
+                            }
+                        },
+                        onClick = { onSelected(index); expanded = false }
+                    )
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
