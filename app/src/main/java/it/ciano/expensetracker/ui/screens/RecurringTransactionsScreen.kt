@@ -581,12 +581,16 @@ private fun AddCategoryDialog(
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf("") }
     var budget by remember { mutableStateOf("") }
+    var categoryType by remember { mutableStateOf("MAIN") }
+    var parentId by remember { mutableStateOf<Int?>(null) }
 
     val normalizedBudget = budget.replace(separator, ".")
     val containsWrongSeparator =
         (separator == "," && budget.contains(".")) || (separator == "." && budget.contains(","))
     val isBudgetValid =
         budget.isEmpty() || (!containsWrongSeparator && normalizedBudget.toDoubleOrNull() != null)
+
+    val parentCandidates = allCategories.filter { it.parentCategoryId == null }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -625,6 +629,68 @@ private fun AddCategoryDialog(
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = stringResource(R.string.str_tipo_categoria), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = categoryType == "MAIN",
+                            onClick = {
+                                categoryType = "MAIN"
+                                parentId = null
+                            },
+                            label = { Text(stringResource(R.string.str_principale)) }
+                        )
+                        FilterChip(
+                            selected = categoryType == "SUB",
+                            onClick = { categoryType = "SUB" },
+                            label = { Text(stringResource(R.string.str_sottocategoria)) }
+                        )
+                    }
+                }
+
+                if (categoryType == "SUB") {
+                    var parentExpanded by remember { mutableStateOf(false) }
+                    val parentName = parentId?.let { pid -> parentCandidates.find { it.id == pid }?.name }
+                        ?: stringResource(R.string.str_scegli_padre)
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(text = stringResource(R.string.str_sottocategoria_di), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                readOnly = true,
+                                value = parentName,
+                                onValueChange = {},
+                                label = { Text(stringResource(R.string.str_seleziona_padre)) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = parentExpanded) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Box(modifier = Modifier.matchParentSize().clickable { parentExpanded = true })
+                            DropdownMenu(
+                                expanded = parentExpanded,
+                                onDismissRequest = { parentExpanded = false }
+                            ) {
+                                if (parentCandidates.isEmpty()) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.str_nessuna_categoria_disponibile)) },
+                                        enabled = false,
+                                        onClick = {}
+                                    )
+                                } else {
+                                    parentCandidates.forEach { p ->
+                                        DropdownMenuItem(
+                                            text = { Text(p.name) },
+                                            onClick = {
+                                                parentId = p.id
+                                                parentExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
@@ -632,20 +698,20 @@ private fun AddCategoryDialog(
                 onClick = {
                     scope.launch {
                         val isDuplicate = allCategories.any {
-                            it.name == name && it.parentCategoryId == null
+                            it.name == name && it.parentCategoryId == parentId
                         }
                         if (isDuplicate) return@launch
 
-                        if (name.isNotBlank()) {
+                        if (name.isNotBlank() && (categoryType == "MAIN" || parentId != null)) {
                             val budgetValue = budget.replace(separator, ".").toDoubleOrNull()
                             val newId = categoryViewModel.addCategory(
-                                Category(name = name, budget = budgetValue)
+                                Category(name = name, budget = budgetValue, parentCategoryId = parentId)
                             )
                             onCategoryCreated(newId)
                         }
                     }
                 },
-                enabled = name.isNotBlank() && isBudgetValid
+                enabled = name.isNotBlank() && isBudgetValid && (categoryType == "MAIN" || parentId != null)
             ) { Text(stringResource(R.string.str_salva)) }
         },
         dismissButton = {
