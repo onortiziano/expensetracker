@@ -90,7 +90,9 @@ fun ImportTransactionsScreen(navController: NavHostController) {
             TopAppBar(
                 title = { Text(stringResource(R.string.str_importa_transazioni), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { showExitConfirm = true }) {
+                    IconButton(onClick = {
+                        if (phase == ImportTransactionsViewModel.Phase.IDLE) exit() else showExitConfirm = true
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.str_torna_indietro))
                     }
                 }
