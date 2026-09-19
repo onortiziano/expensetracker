@@ -111,9 +111,12 @@
     <string name="str_categorie">Categories</string>
     <string name="str_gestione_dati">Data Management</string>
     <string name="str_backup">Backup</string>
+    <string name="str_backup_completato">Backup completed</string>
+    <string name="str_errore_backup">Backup error</string>
     <string name="str_importa">Import</string>
     <string name="str_salva_impostazioni">Save Settings</string>
     <string name="str_ripristino_completato">Restore Completed</string>
+    <string name="str_errore_ripristino">Error during restore</string>
     <string name="str_riavvio_necessario">The app needs to restart to apply the new settings.</string>
     <string name="str_riavvia_ora">Restart Now</string>
 

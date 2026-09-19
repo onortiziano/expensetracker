@@ -2,9 +2,11 @@ package it.ciano.expensetracker.ui.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import it.ciano.expensetracker.data.backup.BackupRestoreLogic
 import it.ciano.expensetracker.data.preferences.UserPreferences
 import it.ciano.expensetracker.data.repository.GlobalBudgetRepository
 import it.ciano.expensetracker.data.model.GlobalBudget
@@ -12,9 +14,9 @@ import it.ciano.expensetracker.data.ocr.ReceiptStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.*
 import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
@@ -73,15 +75,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun backupAll(uri: Uri, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
+            val tempZip = File(context.cacheDir, "backup_${System.currentTimeMillis()}.zip")
             try {
                 val dbFile = context.getDatabasePath("expense_tracker_db")
                 val walFile = File(dbFile.absolutePath + "-wal")
                 val shmFile = File(dbFile.absolutePath + "-shm")
                 val prefsFile = File(context.filesDir.parent, "shared_prefs/user_prefs.xml")
-                
-                var filesAdded = 0
 
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                // 1. Costruiamo lo zip completo in cache locale (filesystem affidabile).
+                var filesAdded = 0
+                tempZip.outputStream().use { outputStream ->
                     ZipOutputStream(outputStream).use { zipOut ->
                         if (dbFile.exists()) {
                             addFileToZip(dbFile, "expense_tracker_db", zipOut)
@@ -104,15 +107,37 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                         }
                     }
                 }
-                
-                if (filesAdded == 0) {
-                    onComplete(false)
-                } else {
-                    onComplete(true)
+
+                if (filesAdded == 0 || !tempZip.exists()) {
+                    withContext(Dispatchers.Main) { runCatching { onComplete(false) } }
+                    return@launch
                 }
+
+                // 2. Estendiamo la permission sulla Uri: su alcuni OEM il write via
+                //    ContentResolver dopo CreateDocument fallisce senza persistable grant.
+                runCatching {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                }
+
+                // 3. Copiamo il file locale verso la destinazione SAF.
+                val outputStream = context.contentResolver.openOutputStream(uri)
+                if (outputStream == null) {
+                    withContext(Dispatchers.Main) { runCatching { onComplete(false) } }
+                    return@launch
+                }
+                outputStream.use { out ->
+                    tempZip.inputStream().use { it.copyTo(out) }
+                    out.flush()
+                }
+                withContext(Dispatchers.Main) { runCatching { onComplete(true) } }
             } catch (e: Exception) {
                 e.printStackTrace()
-                onComplete(false)
+                withContext(Dispatchers.Main) { runCatching { onComplete(false) } }
+            } finally {
+                tempZip.delete()
             }
         }
     }
@@ -137,73 +162,30 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         return count
     }
 
-    private fun isSafeZipEntryName(name: String): Boolean {
-        return name != ".." &&
-            !name.startsWith("../") &&
-            !name.startsWith("/") &&
-            !name.contains("..")
-    }
-
     fun restoreAll(uri: Uri, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val dbPath = context.getDatabasePath("expense_tracker_db")
-                val prefsDir = File(context.filesDir.parentFile, "shared_prefs")
-                val prefsPath = File(prefsDir, "user_prefs.xml")
-                
+                val prefsPath = File(context.filesDir.parentFile, "shared_prefs/user_prefs.xml")
+                val receiptsDir = File(context.filesDir, ReceiptStorage.RECEIPT_DIR)
+
                 val zipTempFile = File(context.cacheDir, "import_temp.zip")
-                val tempFiles = mutableMapOf<String, File>()
-                
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     zipTempFile.outputStream().use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
                 }
 
-                ZipInputStream(FileInputStream(zipTempFile)).use { zipIn ->
-                    var entry = zipIn.nextEntry
-                    while (entry != null) {
-                        if (!entry.isDirectory && isSafeZipEntryName(entry.name)) {
-                            val tempFile = File(context.cacheDir, "restore_${entry.name}.tmp")
-                            tempFile.outputStream().use { zipIn.copyTo(it) }
-                            tempFiles[entry.name] = tempFile
-                        }
-                        entry = zipIn.nextEntry
-                    }
-                }
-
-                if (tempFiles.containsKey("expense_tracker_db")) {
-                    val dbDir = dbPath.parentFile
-                    dbDir?.listFiles { _, name -> name.startsWith("expense_tracker_db") }?.forEach { it.delete() }
-                    
-                    tempFiles.filter { it.key.startsWith("expense_tracker_db") }.forEach { (name, tempFile) ->
-                        val destFile = File(dbDir, name)
-                        tempFile.copyTo(destFile, overwrite = true)
-                    }
-                }
-
-                if (tempFiles.containsKey("user_prefs.xml")) {
-                    if (!prefsDir.exists()) prefsDir.mkdirs()
-                    tempFiles["user_prefs.xml"]?.copyTo(prefsPath, overwrite = true)
-                }
-
-                val receiptsDir = File(context.filesDir, ReceiptStorage.RECEIPT_DIR)
-                tempFiles.filter { it.key.startsWith("receipts/") }.forEach { (name, tempFile) ->
-                    if (!receiptsDir.exists()) receiptsDir.mkdirs()
-                    tempFile.copyTo(File(receiptsDir, name.removePrefix("receipts/")), overwrite = true)
-                }
+                val tempFiles = BackupRestoreLogic.extractToTempDir(zipTempFile, context.cacheDir)
+                val success = BackupRestoreLogic.applyToStorage(tempFiles, dbPath, prefsPath, receiptsDir)
 
                 zipTempFile.delete()
                 tempFiles.values.forEach { it.delete() }
 
-                if (tempFiles.isEmpty()) {
-                    onComplete(false)
-                } else {
-                    onComplete(true)
-                }
+                withContext(Dispatchers.Main) { runCatching { onComplete(success) } }
             } catch (e: Exception) {
                 e.printStackTrace()
-                onComplete(false)
+                withContext(Dispatchers.Main) { runCatching { onComplete(false) } }
             }
         }
     }

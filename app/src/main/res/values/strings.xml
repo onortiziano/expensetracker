@@ -111,9 +111,12 @@
     <string name="str_categorie">Categorie</string>
     <string name="str_gestione_dati">Gestione Dati</string>
     <string name="str_backup">Backup</string>
+    <string name="str_backup_completato">Backup completato</string>
+    <string name="str_errore_backup">Errore durante il backup</string>
     <string name="str_importa">Importa</string>
     <string name="str_salva_impostazioni">Salva Impostazioni</string>
     <string name="str_ripristino_completato">Ripristino Completato</string>
+    <string name="str_errore_ripristino">Errore durante il ripristino</string>
     <string name="str_riavvio_necessario">L\'app deve riavviarsi per applicare le nuove impostazioni.</string>
     <string name="str_riavvia_ora">Riavvia Ora</string>
 

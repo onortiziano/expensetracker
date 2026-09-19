@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -32,11 +33,13 @@ fun SettingsDataScreen(navController: NavHostController) {
     val settingsViewModel: SettingsViewModel = viewModel()
     val mainViewModel: MainViewModel = viewModel(factory = ViewModelFactory(app))
     var showRestartDialog by remember { mutableStateOf(false) }
+    var backupResult by remember { mutableStateOf<Boolean?>(null) }
+    var showRestoreError by remember { mutableStateOf(false) }
 
     val backupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
         onResult = { uri ->
-            uri?.let { settingsViewModel.backupAll(it) { _ -> } }
+            uri?.let { settingsViewModel.backupAll(it) { success -> backupResult = success } }
         }
     )
 
@@ -44,7 +47,7 @@ fun SettingsDataScreen(navController: NavHostController) {
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri ->
             uri?.let { settingsViewModel.restoreAll(it) { success ->
-                if (success) showRestartDialog = true
+                if (success) showRestartDialog = true else showRestoreError = true
             } }
         }
     )
@@ -106,4 +109,25 @@ fun SettingsDataScreen(navController: NavHostController) {
     }
 
     RestartDialog(show = showRestartDialog, onRestart = { restartApp(context) })
+
+    backupResult?.let { success ->
+        val message = stringResource(if (success) R.string.str_backup_completato else R.string.str_errore_backup)
+        AlertDialog(
+            onDismissRequest = { backupResult = null },
+            confirmButton = {
+                TextButton(onClick = { backupResult = null }) { Text(stringResource(R.string.str_ok)) }
+            },
+            title = { Text(message, fontWeight = FontWeight.Bold) }
+        )
+    }
+
+    if (showRestoreError) {
+        AlertDialog(
+            onDismissRequest = { showRestoreError = false },
+            confirmButton = {
+                TextButton(onClick = { showRestoreError = false }) { Text(stringResource(R.string.str_ok)) }
+            },
+            title = { Text(stringResource(R.string.str_errore_ripristino), fontWeight = FontWeight.Bold) }
+        )
+    }
 }
