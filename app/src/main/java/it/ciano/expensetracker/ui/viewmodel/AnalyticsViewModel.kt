@@ -23,6 +23,7 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
     private val db = AppDatabase.getDatabase(application)
     private val globalBudgetRepo = GlobalBudgetRepository(application)
     private val transactionRepo = TransactionRepository(
+        db,
         db.transactionDao(),
         db.transactionTagDao(),
         db.tagDao()

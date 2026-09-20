@@ -398,7 +398,14 @@ fun AddTransactionScreen(
                                     selected = selectedTags.contains(tag.tagId),
                                     onClick = { transactionViewModel.toggleTag(tag.tagId) },
                                     label = { Text(tag.name) },
-                                    modifier = Modifier.background(Color(tag.color))
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        containerColor = Color(tag.color),
+                                        labelColor = Color.White,
+                                        iconColor = Color.White,
+                                        selectedContainerColor = Color(tag.color),
+                                        selectedLabelColor = Color.White,
+                                        selectedLeadingIconColor = Color.White
+                                    )
                                 )
                             }
                         }

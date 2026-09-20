@@ -25,6 +25,7 @@ object Routes {
     const val SETTINGS_CATEGORY_TAG_MANAGEMENT = "settings_category_tag_management"
     const val SETTINGS_DATA_MANAGEMENT = "settings_data_management"
     const val RECURRING_TRANSACTIONS = "recurring_transactions"
+    const val IMPORT_TRANSACTIONS = "import_transactions"
 }
 
 @Composable
@@ -86,6 +87,10 @@ fun AppNavigation() {
 
         composable(Routes.RECURRING_TRANSACTIONS) {
             RecurringTransactionsScreen(navController)
+        }
+
+        composable(Routes.IMPORT_TRANSACTIONS) {
+            ImportTransactionsScreen(navController)
         }
 
         // Per la Modifica

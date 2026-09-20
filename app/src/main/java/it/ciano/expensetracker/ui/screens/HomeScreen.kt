@@ -38,6 +38,11 @@ import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.sharp.Repeat
 import androidx.compose.material.icons.twotone.Repeat
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.rounded.FileUpload
+import androidx.compose.material.icons.sharp.FileUpload
+import androidx.compose.material.icons.twotone.FileUpload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -156,6 +161,17 @@ fun HomeScreen(navController: NavHostController) {
                         navController.navigate(Routes.HISTORY) 
                     },
                     icon = { Icon(mainViewModel.getIcon(Icons.AutoMirrored.Filled.List, Icons.AutoMirrored.Outlined.List, Icons.AutoMirrored.Rounded.List, Icons.AutoMirrored.Sharp.List, Icons.AutoMirrored.TwoTone.List), contentDescription = null) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.str_importa_transazioni)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Routes.IMPORT_TRANSACTIONS)
+                    },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.FileUpload, Icons.Outlined.FileUpload, Icons.Rounded.FileUpload, Icons.Sharp.FileUpload, Icons.TwoTone.FileUpload), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
                 

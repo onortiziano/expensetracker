@@ -24,7 +24,7 @@ object ExpenseIngest {
                     val db = AppDatabase.getDatabase(appContext)
                     val repository = ExpenseIngestRepository(
                         CategoryRepository(db.categoryDao()),
-                        TransactionRepository(db.transactionDao(), db.transactionTagDao(), db.tagDao())
+                        TransactionRepository(db, db.transactionDao(), db.transactionTagDao(), db.tagDao())
                     )
                     repository.insertExpense(result.expense)
                     val formattedAmount = DecimalFormat(

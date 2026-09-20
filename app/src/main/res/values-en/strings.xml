@@ -111,9 +111,12 @@
     <string name="str_categorie">Categories</string>
     <string name="str_gestione_dati">Data Management</string>
     <string name="str_backup">Backup</string>
+    <string name="str_backup_completato">Backup completed</string>
+    <string name="str_errore_backup">Backup error</string>
     <string name="str_importa">Import</string>
     <string name="str_salva_impostazioni">Save Settings</string>
     <string name="str_ripristino_completato">Restore Completed</string>
+    <string name="str_errore_ripristino">Error during restore</string>
     <string name="str_riavvio_necessario">The app needs to restart to apply the new settings.</string>
     <string name="str_riavvia_ora">Restart Now</string>
 
@@ -227,4 +230,38 @@
     <string name="str_mese_ottobre">October</string>
     <string name="str_mese_novembre">November</string>
     <string name="str_mese_dicembre">December</string>
+
+    <!-- Transaction import -->
+    <string name="str_importa_transazioni">Import Transactions</string>
+    <string name="str_seleziona_file">Select CSV/OFX file</string>
+    <string name="str_nessun_file">No file selected</string>
+    <string name="str_anteprima_import">Import Preview</string>
+    <string name="str_salta_duplicati">Skip duplicates</string>
+    <string name="str_categoria_riga">Category</string>
+    <string name="str_importa_n">Import %1$d transactions</string>
+    <string name="str_errore_formato">Unrecognized file format</string>
+    <string name="str_colonne_mancanti">Required columns missing</string>
+    <string name="str_data_non_valida">Invalid date</string>
+    <string name="str_risultato_import">Imported: %1$d · Skipped: %2$d · Errors: %3$d</string>
+    <string name="str_dettaglio_errori">Error details</string>
+    <string name="str_importazione_completata">%1$d transactions imported</string>
+    <string name="str_errore_generico">Error during import</string>
+    <string name="str_nessuna_categoria">No category</string>
+    <string name="str_errore_riga">Row %1$d: %2$s</string>
+    <string name="str_conferma_esci_import">Exit without importing? Changes will be lost.</string>
+    <string name="str_mapping_colonne">Column mapping</string>
+    <string name="str_mapping_sugg_at">Match the file columns to the fields. Every app has its own layout; you choose the right ones.</string>
+    <string name="str_mapping_campo_importo">Amount</string>
+    <string name="str_mapping_campo_data">Date</string>
+    <string name="str_mapping_campo_descrizione">Description</string>
+    <string name="str_mapping_campo_categoria">Category</string>
+    <string name="str_mapping_campo_tipo">Type (expense/income)</string>
+    <string name="str_mapping_tipo_uscite">All as expense</string>
+    <string name="str_mapping_tipo_entrate">All as income</string>
+    <string name="str_mapping_tipo_segno">From sign/value column</string>
+    <string name="str_mapping_non_usata">Do not import this column</string>
+    <string name="str_mapping_esempio">Example: %1$s</string>
+    <string name="str_mapping_conferma">Confirm and import</string>
+    <string name="str_mapping_importo_obbligatorio">Select a column for the amount</string>
+    <string name="str_importo_mancante">Amount not mapped</string>
 </resources>

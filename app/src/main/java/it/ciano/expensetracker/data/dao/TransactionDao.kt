@@ -29,4 +29,9 @@ interface TransactionDao {
 
     @Update
     suspend fun updateTransaction(transaction: Transaction)
+
+    @Query(
+        "SELECT COUNT(*) FROM transactions WHERE title = :title AND amount = :amount AND date = :date AND type = :type"
+    )
+    suspend fun countExactMatch(title: String, amount: Double, date: Long, type: String): Int
 }
