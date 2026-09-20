@@ -253,6 +253,61 @@ class CsvParserTest {
     }
 
     @Test
+    fun `file reale carta di debito Unicredit con Importo con suffisso euro e punto decimale`() {
+        // File reale movimenti carta: uscite negative con virgola decimale,
+        // entrata positiva con punto ("203.80" = 203,80 EUR). Il parser NON deve
+        // leggere il punto come migliaia (prima: 20380 -> importi delle entrate piu alti).
+        val content = "Data operazione,Data contabile,Iban,Tipologia,Nome,Descrizione,Importo ( € )\n" +
+            "26/08/2026,28/08/2026,IT13E03268223000EMH00177414,Pagamento,bar Autostazione Caorle,BAR AUTOSTAZIONE CAORLE CAORLE     VE,\"-1,3\"\n" +
+            "24/08/2026,26/08/2026,IT13E03268223000EMH00177414,Pagamento,bar Andrea,BAR ANDREA CAORLE     VE,\"-1,5\"\n" +
+            "20/08/2026,20/08/2026,IT13E03268223000EMH00177414,Commissione,Comm. Prelievo atm del 18/08/2026,Comm. prelievo Atm del 18/08/2026,-2\n" +
+            "18/08/2026,20/08/2026,IT13E03268223000EMH00177414,Prelievo,Unicredit,UNICREDIT - CAORLE R SAN GIORGIO D,\"-105,71\"\n" +
+            "18/08/2026,18/08/2026,IT13E03268223000EMH00177414,Bonifico ordinario,Inps,ASSEGNO UNICO PER 1 FIGLI/O PER IL PERIODO DA 01-08-2026 A 31-08-2026,203.80\n"
+        val mapping = CsvParser.ImportMapping(dateIdx = 0, descIdx = 5, amountIdx = 6)
+        val result = CsvParser.parse(content, ",", mapping)
+        assertEquals(0, result.errors.size)
+        assertEquals(5, result.transactions.size)
+        assertEquals(1.3, result.transactions[0].amount, 0.001)
+        assertEquals("EXPENSE", result.transactions[0].type)
+        assertEquals(1.5, result.transactions[1].amount, 0.001)
+        assertEquals(2.0, result.transactions[2].amount, 0.001)
+        assertEquals(105.71, result.transactions[3].amount, 0.001)
+        assertEquals("EXPENSE", result.transactions[3].type)
+        assertEquals(203.8, result.transactions[4].amount, 0.001)
+        assertEquals("INCOME", result.transactions[4].type)
+        assertEquals(millis(2026, Calendar.AUGUST, 26), result.transactions[0].date)
+    }
+
+    @Test
+    fun `separatore decimale con 1-2 cifre e migliaia con 3 o piu cifre`() {
+        val content = "data;descrizione;importo\n" +
+            "26/08/2026;Bar;103,50\n" +
+            "27/08/2026;Panificio;103.5\n" +
+            "28/08/2026;Negozio;1.234\n" +
+            "29/08/2026;Centro;1,234\n" +
+            "30/08/2026;Grande;12.345.678\n"
+        val mapping = CsvParser.ImportMapping(dateIdx = 0, descIdx = 1, amountIdx = 2)
+        val result = CsvParser.parse(content, ",", mapping)
+        assertEquals(0, result.errors.size)
+        assertEquals(103.5, result.transactions[0].amount, 0.001)
+        assertEquals(103.5, result.transactions[1].amount, 0.001)
+        assertEquals(1234.0, result.transactions[2].amount, 0.001)
+        assertEquals(1234.0, result.transactions[3].amount, 0.001)
+        assertEquals(12345678.0, result.transactions[4].amount, 0.001)
+    }
+
+    @Test
+    fun `detectFile suggerisce Importo anche con suffisso euro tra parentesi`() {
+        val content = "Data operazione,Data contabile,Iban,Tipologia,Nome,Descrizione,Importo ( € )\n" +
+            "26/08/2026,28/08/2026,IT13E03268223000EMH00177414,Pagamento,bar,\"-1,3\"\n"
+        val info = CsvParser.detectFile(content)!!
+        assertEquals(7, info.headers.size)
+        assertEquals(0, info.suggested.dateIdx)
+        assertEquals(5, info.suggested.descIdx)
+        assertEquals(6, info.suggested.amountIdx)
+    }
+
+    @Test
     fun `parse senza importo mappato non produce transazioni`() {
         val content = "Data;Descrizione\n03/09/2026;A\n"
         val mapping = CsvParser.ImportMapping(dateIdx = 0, descIdx = 1)

@@ -74,11 +74,13 @@ adb shell am start -a android.intent.action.VIEW \
 
 ## 📥 CSV / OFX Import
 
-- **Manual Import**: select a `CSV` or `OFX` file from your device (Storage Access Framework); the app never auto-syncs — import is always manual and local-first.
-- **Supported Formats**:
-  - **CSV**: any separator (comma, semicolon, tab); columns are auto-detected from the header (`data`/`date`, `descrizione`/`description`, `importo`/`amount`, optional `categoria`/`category` and `tipo`/`type`). Decimal separator follows your app preference.
-  - **OFX**: legacy SGML (pre-2000) and modern XML (v1.x / v2.x) for bank statement exports — parsed with the platform XML engine, no cloud APIs.
+- **Manual Import**: select a `CSV`, `TSV` or `OFX` file from your device (Storage Access Framework); the app never auto-syncs — import is always manual and local-first.
+- **Column Mapping Screen**: for CSV/TSV/TXT a dedicated mapping step runs between file selection and preview: you match file columns to app fields (Date, Description, Amount, Category, Type). Every bank/app has its own layout, so nothing is forced; only **Amount** is mandatory — a missing date falls back to today and a missing description to the placeholder *"Importato da file"*.
+- **Type Selection**: in the mapping screen you choose how income/expense is derived — *all as expenses*, *all as income*, *from the sign/value* (negative → expense, positive → income), or from a dedicated type column when the file has one.
+- **Robust Parsing**: headers are auto-detected in Italian and English (`Data operazione`, `Importo ( € )`, `Descrizione`, …); dates support ISO, `dd/MM/yyyy`, `MM/dd/yyyy` and Italian month names (`20 lug 2026, 07:00`); amounts accept mixed separators — the last `,`/`.` followed by 1–2 digits is the decimal (`203.80` = 203,80 €) while 3+ digits are thousands (`1.234` = 1234); row endings `\r`, `\n` and `\r\n` are all handled.
+- **OFX**: legacy SGML (pre-2000) and modern XML (v1.x / v2.x) for bank statement exports — parsed with the platform XML engine, no cloud APIs.
 - **Preview & Categories**: before saving you can review every parsed row, assign a per-row category (or create a new one inline), and even apply one category to all rows from the same file category.
+- **Row-level errors**: rows with an invalid date or amount are skipped and reported, without blocking the rest of the import.
 - **Deduplication**: the "Skip duplicates" toggle (ON by default) avoids re-importing transactions that already exist with the same title, amount, date, and type.
 - **Atomic Insert**: imported transactions are written in a single database transaction — nothing is partially imported.
 

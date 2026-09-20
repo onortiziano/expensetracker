@@ -261,8 +261,9 @@ object CsvParser {
                     h == "name" || h.contains("payee") || h.contains("merchant") ||
                     h.contains("titolo") || h.contains("concepto") ||
                     h == "dettagli" || h == "descr" -> Role.DESCRIPTION
-                // importo: importo/amount/value/trnamt, oppure debit/credit separati
-                h == "amount" || h == "importo" || h == "value" || h == "trnamt" ||
+                // importo: importo/amount/value/trnamt, oppure debit/credit separati.
+                // contains: "Importo ( € )" deve essere riconosciuto.
+                h.contains("amount") || h.contains("importo") || h == "value" || h == "trnamt" ||
                     h == "debit" || h == "credit" || h == "addebito" || h == "accredito" -> Role.AMOUNT
                 // tipo
                 h == "type" || h == "tipo" || h.contains("trntype") -> Role.TYPE
@@ -344,17 +345,45 @@ object CsvParser {
         return cal.timeInMillis
     }
 
-    private fun parseAmount(raw: String, decimalSeparator: String): Double? {
+    private fun parseAmount(raw: String, _decimalSeparator: String): Double? {
         val s = raw.trim()
         if (s.isEmpty()) return null
         // Rimuove simboli valuta, spazi e lettere
         val cleaned = s.filter { it.isDigit() || it == ',' || it == '.' || it == '-' }
         if (cleaned.isEmpty()) return null
-        val normalized = when (decimalSeparator) {
-            "," -> cleaned.replace(".", "").replace(",", ".").toDoubleOrNull()
-            else -> cleaned.replace(",", "").toDoubleOrNull()
+        return normalizeAmountToDouble(cleaned)
+    }
+
+    /** Normalizza un importo (solo cifre, [','] ['.'] ['-']) a Double.
+     *  Euristica robusta sui file bancari reali, che spesso mescolano i separatori:
+     *  - separatore decimale = l'ultimo tra , e . seguito da AL MASSIMO 2 cifre
+     *    (non importa il separatore preferito: "203.80" e "103.5" restano 203,80 e 103,5
+     *    anche se la preferenza è la virgola);
+     *  - ogni altro separatore con >= 3 cifre finali è un separatore dei migliaia
+     *    (es. "1.234" = 1234). */
+    private fun normalizeAmountToDouble(cleaned: String): Double? {
+        val negative = cleaned.startsWith('-')
+        val body = cleaned.removePrefix("-")
+        if (body.isEmpty()) return null
+
+        val lastSep = maxOf(body.lastIndexOf(','), body.lastIndexOf('.'))
+        val frac = if (lastSep >= 0) body.substring(lastSep + 1) else ""
+
+        // Separatore decimale = l'ultimo tra , e . seguito da 1-2 cifre finali
+        // (es. "203.80", "-1,3", "1,234.56"). Copre i file che mescolano i separatori.
+        val decChar: Char? = if (lastSep >= 0 && frac.length in 1..2) body[lastSep] else null
+
+        if (decChar != null) {
+            val intPart = body.substring(0, lastSep).replace(".", "").replace(",", "")
+            if (intPart.isEmpty()) return null
+            val sign = if (negative) "-" else ""
+            return "$sign$intPart.$frac".toDoubleOrNull()
         }
-        return normalized
+        // Nessun decimale: ogni separatore con 3+ cifre finali è dei migliaia (es. "1.234").
+        val n = body.replace(".", "").replace(",", "")
+        if (n.isEmpty()) return null
+        val sign = if (negative) "-" else ""
+        return (sign + n).toDoubleOrNull()
     }
 
     private fun mapType(raw: String): String? {
