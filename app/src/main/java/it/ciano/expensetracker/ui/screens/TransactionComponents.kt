@@ -27,6 +27,15 @@ import it.ciano.expensetracker.data.model.Tag
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import it.ciano.expensetracker.ui.viewmodel.MainViewModel
 
+@Composable
+fun formatTransactionDate(dateMillis: Long): String {
+    val locale = java.util.Locale.getDefault()
+    return remember(dateMillis, locale) {
+        java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, locale)
+            .format(java.util.Date(dateMillis))
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun TransactionItem(
@@ -119,6 +128,12 @@ fun TransactionItem(
                                 )
                             }
                         }
+                        
+                        Text(
+                            text = formatTransactionDate(transaction.date),
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
                         
                         val category = categories.find { it.id == transaction.categoryId }
                         val categoryDisplayName = if (category != null) {
