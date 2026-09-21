@@ -3,8 +3,16 @@ name: Android CI/CD
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'README.md'
+      - 'TESTING_GUIDE.md'
+      - 'docs/**'
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - 'README.md'
+      - 'TESTING_GUIDE.md'
+      - 'docs/**'
 
 permissions:
   contents: write

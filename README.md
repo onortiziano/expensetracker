@@ -28,6 +28,12 @@ A professional, lightweight, and privacy-focused expense tracking application de
 - **Scheduling & Reminders**: on app start, due recurring instances are generated and a system reminder is scheduled; overdue reminders are emitted and the app supervises any schedule changes.
 - **Management Screen**: dedicated screen with a due-dates calendar, list of recurring items (add via FAB, tap to edit, long-press/settings for edit, swipe-to-delete on either side), pause/resume and tags/category support.
 
+### 💸 Split Expenses & Credits
+- **Two Ways to Split**: record a group expense from the *New transaction* screen in two modes — **A "Everyone pays their share"** saves a single transaction with only your share (total ÷ participants, rounded half-even so the sum never drifts) plus a note showing the split, or **B1 "I pay for everyone"** saves the full amount as an expense and automatically creates a debt for each other participant.
+- **Automatic Debts**: each participant is stored as a personal debt; the expense and its debts are written atomically in a single database transaction, so they can never be out of sync.
+- **Credits Screen**: a dedicated screen in the navigation drawer lists all open debts with their remaining balances; tapping a debt lets you confirm the reimbursement, which atomically marks it as settled and books an automatic **income** transaction (the credit return) — no double-income and no data loss.
+- **Rich Transaction Dates**: every transaction now shows its date on the Home list, in the history and in the detail screen, formatted with your system locale.
+
 ### ⚙️ Organized Settings
 - The **Settings** screen is split into dedicated sub-screens for a cleaner experience: **Visual Preferences**, **Budget Management**, **Category/Tag Management** and **Data Management (Backup)**.
 
