@@ -20,6 +20,6 @@ interface DebtDao {
     @Query("SELECT amount FROM debts WHERE id = :debtId")
     suspend fun getAmountById(debtId: Int): Double?
 
-    @Query("UPDATE debts SET isSettled = 1, settledDate = :date WHERE id = :debtId")
-    suspend fun markSettled(debtId: Int, date: Long)
+    @Query("UPDATE debts SET isSettled = 1, settledDate = :date WHERE id = :debtId AND isSettled = 0")
+    suspend fun markSettled(debtId: Int, date: Long): Int
 }

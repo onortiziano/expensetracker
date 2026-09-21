@@ -518,7 +518,7 @@ fun AddTransactionScreen(
             val count = localCount.toIntOrNull() ?: 0
             val countValid = count >= 2
             val perPerson = if (countValid) SplitMath.share(totalValue, count) else 0.0
-            val notaSuffix = ", " + stringResource(R.string.str_dividi_nota, count)
+            val nota = stringResource(R.string.str_dividi_nota, count)
             val namesMissing = (count - 1 - localNames.size).coerceAtLeast(0)
 
             AlertDialog(
@@ -634,14 +634,20 @@ fun AddTransactionScreen(
                             if (localMode == "A") {
                                 val share = SplitMath.share(totalValue, count)
                                 transactionViewModel.updateAmount(transactionViewModel.formatSplitAmount(share, separator))
-                                if (!note.contains(notaSuffix)) {
-                                    transactionViewModel.updateNote(note + notaSuffix)
+                                if (note.isBlank()) {
+                                    transactionViewModel.updateNote(nota)
+                                } else {
+                                    val suffix = ", $nota"
+                                    if (!note.endsWith(suffix)) {
+                                        transactionViewModel.updateNote(note + suffix)
+                                    }
                                 }
                                 transactionViewModel.resetSplit()
                             } else {
                                 transactionViewModel.setSplitMode("B1")
                                 transactionViewModel.setSplitCount(count)
                                 transactionViewModel.setSplitNames(localNames)
+                                transactionViewModel.updateType("EXPENSE")
                             }
                             showSplitDialog = false
                         },

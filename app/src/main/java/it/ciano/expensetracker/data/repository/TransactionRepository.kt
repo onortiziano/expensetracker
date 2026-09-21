@@ -16,7 +16,6 @@ import it.ciano.expensetracker.data.model.TransactionTag
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 
 class TransactionRepository(
     private val database: AppDatabase,
@@ -92,7 +91,7 @@ class TransactionRepository(
      * Settles an open debt: marks it settled and inserts an automatic INCOME
      * right-back transaction, atomically. If the debt is already settled it is
      * a no-op (no duplicate INCOME, no toggle-back). Returns the settled amount
-     * (as a Long) or -1 when the debt was not found / already settled.
+     * or -1 when the debt was not found / already settled.
      */
     suspend fun settleDebt(
         debtId: Int,
@@ -100,22 +99,24 @@ class TransactionRepository(
         rightBackDate: Long,
         incomeCategoryId: Int
     ): Long {
-        // Already settled → no-op (no duplicate INCOME, no toggle-back).
-        val open = debtDao.getAllOpenDebts().first().firstOrNull { it.id == debtId } ?: return -1L
         database.withTransaction {
-            debtDao.markSettled(debtId, rightBackDate)
-            transactionDao.insertTransaction(
-                Transaction(
-                    title = rightBackTitle,
-                    amount = open.amount,
-                    type = "INCOME",
-                    categoryId = incomeCategoryId,
-                    date = rightBackDate,
-                    note = ""
+            // Atomic guard: markSettled aggiorna solo debt aperte → no duplicate INCOME.
+            val settled = debtDao.markSettled(debtId, rightBackDate) > 0
+            if (settled) {
+                val amount = debtDao.getAmountById(debtId) ?: return@withTransaction
+                transactionDao.insertTransaction(
+                    Transaction(
+                        title = rightBackTitle,
+                        amount = amount,
+                        type = "INCOME",
+                        categoryId = incomeCategoryId,
+                        date = rightBackDate,
+                        note = ""
+                    )
                 )
-            )
+            }
         }
-        return open.amount.toLong()
+        return debtDao.getAmountById(debtId)?.toLong() ?: -1L
     }
 
     /**

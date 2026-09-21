@@ -7,7 +7,7 @@ import java.math.RoundingMode
  * Matematica di divisione spese — pura, testabile su JVM, nessuna dipendenza Android.
  *
  * Regole (convenzione repo: money = Double, arrotondamento per-task):
- * - [share] : quota a persona = round(total / n, 2) con HALE_EVEN — usata in modalità A
+ * - [share] : quota a persona = round(total / n, 2) con HALF_EVEN — usata in modalità A
  *   ("ognuno paga il suo": la mia parte è [share]) e come quota di ciascun altro in B1.
  * - [myShare] : in B1 la MIA parte assorbe il resto così che
  *   shares(n-1) + myShare == total ESATTAMENTE — zero drift centesimi.
