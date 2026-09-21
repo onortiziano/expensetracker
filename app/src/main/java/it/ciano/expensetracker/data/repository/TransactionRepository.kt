@@ -27,6 +27,8 @@ class TransactionRepository(
     private val debtDao = database.debtDao()
     fun getAllTransactions(): Flow<List<Transaction>> = transactionDao.getAllTransactions()
 
+    fun getAllOpenDebts(): Flow<List<Debt>> = debtDao.getAllOpenDebts()
+
     fun getAllTransactionsWithTags(): Flow<List<TransactionWithTags>> {
         return combine(
             transactionDao.getAllTransactions(),
