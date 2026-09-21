@@ -41,6 +41,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.core.content.FileProvider
 import it.ciano.expensetracker.R
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.Debt
+import it.ciano.expensetracker.data.model.SplitMath
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.ocr.ReceiptOcrEngine
 import it.ciano.expensetracker.data.ocr.ReceiptParser
@@ -73,6 +75,8 @@ fun AddTransactionScreen(
     val selectedMainCategoryId by transactionViewModel.selectedMainCategoryId.collectAsState()
     val selectedSubCategoryId by transactionViewModel.selectedSubCategoryId.collectAsState()
     val selectedTags by transactionViewModel.selectedTags.collectAsState()
+    val splitMode by transactionViewModel.splitMode.collectAsState()
+    val splitCount by transactionViewModel.splitCount.collectAsState()
 
     val allCategories by categoryViewModel.allCategories.collectAsState(initial = emptyList())
     val mainCategories by categoryViewModel.mainCategories.collectAsState(initial = emptyList())
@@ -102,6 +106,7 @@ fun AddTransactionScreen(
 
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
+    var showSplitDialog by remember { mutableStateOf(false) }
     
     var newCategoryName by remember { mutableStateOf("") }
     var newCategoryBudget by remember { mutableStateOf("") }
@@ -235,6 +240,32 @@ fun AddTransactionScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true
                         )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TextButton(onClick = { showSplitDialog = true }) {
+                                Icon(Icons.Filled.People, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (splitMode == "B1")
+                                        stringResource(R.string.str_dividi_pendente, splitCount)
+                                    else
+                                        stringResource(R.string.str_dividi_spesa),
+                                    fontSize = 12.sp
+                                )
+                            }
+                            if (splitMode == "B1" && splitCount >= 2) {
+                                Text(
+                                    text = stringResource(R.string.str_dividi_b1_persone, splitCount),
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF4CAF50),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
 
                         OutlinedTextField(
                             value = note,
@@ -444,7 +475,22 @@ fun AddTransactionScreen(
                                 date = effectiveDate,
                                 receiptUri = transactionViewModel.receiptUri.value
                             )
-                            transactionViewModel.addTransaction(transaction, transactionViewModel.selectedTags.value)
+                            if (splitMode == "B1" && splitCount >= 2) {
+                                val names = transactionViewModel.splitNames.value
+                                val othersShares = SplitMath.shares(amountValue, splitCount)
+                                val debts = names.take(othersShares.size).mapIndexed { index, name ->
+                                    Debt(
+                                        transactionId = 0,
+                                        name = name,
+                                        amount = othersShares[index],
+                                        isSettled = 0,
+                                        settledDate = 0L
+                                    )
+                                }
+                                transactionViewModel.addSplitTransaction(transaction, debts, selectedTags)
+                            } else {
+                                transactionViewModel.addTransaction(transaction, selectedTags)
+                            }
                             navController.popBackStack()
                         },
                         enabled = isFormValid,
@@ -460,6 +506,156 @@ fun AddTransactionScreen(
                 
                 Spacer(modifier = Modifier.height(32.dp))
             }
+        }
+
+        if (showSplitDialog) {
+            var localMode by remember { mutableStateOf("A") }
+            var localCount by remember { mutableStateOf("") }
+            var localNames by remember { mutableStateOf(listOf<String>()) }
+            var localNameInput by remember { mutableStateOf("") }
+
+            val totalValue = amount.replace(separator, ".").toDoubleOrNull() ?: 0.0
+            val count = localCount.toIntOrNull() ?: 0
+            val countValid = count >= 2
+            val perPerson = if (countValid) SplitMath.share(totalValue, count) else 0.0
+            val notaSuffix = ", " + stringResource(R.string.str_dividi_nota, count)
+            val namesMissing = (count - 1 - localNames.size).coerceAtLeast(0)
+
+            AlertDialog(
+                onDismissRequest = { showSplitDialog = false },
+                title = { Text(stringResource(R.string.str_dividi_spesa), fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterChip(
+                                selected = localMode == "A",
+                                onClick = { localMode = "A" },
+                                label = { Text(stringResource(R.string.str_dividi_o)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilterChip(
+                                selected = localMode == "B1",
+                                onClick = { localMode = "B1" },
+                                label = { Text(stringResource(R.string.str_dividi_pago_io)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        OutlinedTextField(
+                            value = localCount,
+                            onValueChange = { localCount = it.filter(Char::isDigit) },
+                            label = { Text(stringResource(R.string.str_dividi_num_persone)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            isError = localCount.isNotBlank() && !countValid,
+                            singleLine = true
+                        )
+                        if (localCount.isNotBlank() && !countValid) {
+                            Text(
+                                text = stringResource(R.string.str_numero_non_valido),
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.str_dividi_totale, transactionViewModel.formatSplitAmount(totalValue, separator)),
+                            fontSize = 13.sp
+                        )
+                        Text(
+                            text = stringResource(R.string.str_dividi_quota, transactionViewModel.formatSplitAmount(perPerson, separator)),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        if (localMode == "B1") {
+                            HorizontalDivider()
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = localNameInput,
+                                    onValueChange = { localNameInput = it },
+                                    label = { Text(stringResource(R.string.str_dividi_nome)) },
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                                TextButton(
+                                    onClick = {
+                                        val trimmed = localNameInput.trim()
+                                        if (trimmed.isNotBlank() && !localNames.contains(trimmed)) {
+                                            localNames = localNames + trimmed
+                                            localNameInput = ""
+                                        }
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.str_dividi_aggiungi))
+                                }
+                            }
+
+                            if (localNames.isNotEmpty()) {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    localNames.forEach { name ->
+                                        InputChip(
+                                            selected = false,
+                                            onClick = {},
+                                            label = { Text(name) },
+                                            trailingIcon = {
+                                                IconButton(
+                                                    onClick = { localNames = localNames - name },
+                                                    modifier = Modifier.size(18.dp)
+                                                ) {
+                                                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.str_elimina), modifier = Modifier.size(14.dp))
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (countValid && namesMissing > 0) {
+                                Text(
+                                    text = stringResource(R.string.str_dividi_restano, namesMissing),
+                                    fontSize = 12.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (localMode == "A") {
+                                val share = SplitMath.share(totalValue, count)
+                                transactionViewModel.updateAmount(transactionViewModel.formatSplitAmount(share, separator))
+                                if (!note.contains(notaSuffix)) {
+                                    transactionViewModel.updateNote(note + notaSuffix)
+                                }
+                                transactionViewModel.resetSplit()
+                            } else {
+                                transactionViewModel.setSplitMode("B1")
+                                transactionViewModel.setSplitCount(count)
+                                transactionViewModel.setSplitNames(localNames)
+                            }
+                            showSplitDialog = false
+                        },
+                        enabled = countValid && totalValue > 0.0 && (localMode == "A" || localNames.size == count - 1)
+                    ) {
+                        Text(stringResource(R.string.str_conferma))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showSplitDialog = false }) {
+                        Text(stringResource(R.string.str_annulla))
+                    }
+                }
+            )
         }
 
         if (showAddCategoryDialog) {

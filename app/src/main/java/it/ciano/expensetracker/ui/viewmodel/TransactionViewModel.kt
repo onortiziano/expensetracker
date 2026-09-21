@@ -3,6 +3,7 @@ package it.ciano.expensetracker.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.ciano.expensetracker.data.model.Category
+import it.ciano.expensetracker.data.model.Debt
 import it.ciano.expensetracker.data.model.Transaction
 import it.ciano.expensetracker.data.model.TransactionWithTags
 import it.ciano.expensetracker.data.repository.TransactionRepository
@@ -69,6 +70,16 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     private val _receiptUri = MutableStateFlow("")
     val receiptUri: StateFlow<String> = _receiptUri
 
+    // --- STATO SPLIT (A: prefill quota / B1: divisione con debiti) ---
+    private val _splitMode = MutableStateFlow("")
+    val splitMode: StateFlow<String> = _splitMode
+
+    private val _splitCount = MutableStateFlow(0)
+    val splitCount: StateFlow<Int> = _splitCount
+
+    private val _splitNames = MutableStateFlow(listOf<String>())
+    val splitNames: StateFlow<List<String>> = _splitNames
+
     // --- FUNZIONI DI AGGIORNAMENTO ---
     fun updateTitle(value: String) { _title.value = value }
     fun updateAmount(value: String) { _amount.value = value }
@@ -84,6 +95,23 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         val current = _selectedTags.value
         val next = if (current.contains(tagId)) current - tagId else current + tagId
         _selectedTags.value = next
+    }
+
+    fun setSplitMode(mode: String) { _splitMode.value = mode }
+    fun setSplitCount(count: Int) { _splitCount.value = count }
+    fun setSplitNames(names: List<String>) { _splitNames.value = names.distinct() }
+    fun resetSplit() {
+        _splitMode.value = ""
+        _splitCount.value = 0
+        _splitNames.value = emptyList()
+    }
+
+    fun formatSplitAmount(value: Double, decimalSeparator: String = ","): String {
+        val sep = decimalSeparator.ifBlank { "," }
+        val df = java.text.DecimalFormat("0.00", java.text.DecimalFormatSymbols(java.util.Locale.getDefault()).apply {
+            this.decimalSeparator = sep[0]
+        })
+        return df.format(value)
     }
 
     fun updateReceipt(uri: String) {
@@ -143,8 +171,13 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
     fun addTransaction(transaction: Transaction, tagIds: Set<Int>) {
         viewModelScope.launch {
             repository.insertTransaction(transaction, tagIds)
-            // Nota: Per salvare i tag servirebbe l'ID generato. 
-            // Implementeremo la logica di recupero ID nel ViewModel o aggiorneremo il DAO.
+            resetForm()
+        }
+    }
+
+    fun addSplitTransaction(transaction: Transaction, debts: List<Debt>, tagIds: Set<Int>) {
+        viewModelScope.launch {
+            repository.insertSplitWithDebts(transaction, debts, tagIds)
             resetForm()
         }
     }
@@ -171,5 +204,6 @@ class TransactionViewModel(private val repository: TransactionRepository) : View
         _selectedTags.value = emptySet()
         _selectedDate.value = 0L
         _receiptUri.value = ""
+        resetSplit()
     }
 }

@@ -40,6 +40,20 @@
     <string name="str_rientro_conferma">%1$s ti ha ridato %2$s?</string>
     <string name="str_conferma">Conferma</string>
 
+    <!-- Dividi spesa -->
+    <string name="str_dividi_spesa">Dividi spesa</string>
+    <string name="str_dividi_pendente">Divisa in %1$d</string>
+    <string name="str_dividi_b1_persone">Pago io per %1$d</string>
+    <string name="str_dividi_o">Ognuno paga il suo</string>
+    <string name="str_dividi_pago_io">Pago io per tutti</string>
+    <string name="str_dividi_num_persone">Numero persone</string>
+    <string name="str_dividi_totale">Totale: %1$s</string>
+    <string name="str_dividi_quota">Quota a persona: %1$s</string>
+    <string name="str_dividi_nome">Nome persona</string>
+    <string name="str_dividi_aggiungi">Aggiungi</string>
+    <string name="str_dividi_nota">divisa in %1$d</string>
+    <string name="str_dividi_restano">Mancano %1$d nomi</string>
+
     <!-- Categorie -->
     <string name="str_sconosciuto">Sconosciuto</string>
     <string name="str_senza_categoria">Senza Categoria</string>

@@ -40,6 +40,20 @@
     <string name="str_rientro_conferma">Did %1$s pay you back %2$s?</string>
     <string name="str_conferma">Confirm</string>
 
+    <!-- Split expense -->
+    <string name="str_dividi_spesa">Split expense</string>
+    <string name="str_dividi_pendente">Split in %1$d</string>
+    <string name="str_dividi_b1_persone">I pay for %1$d</string>
+    <string name="str_dividi_o">Each pays their own</string>
+    <string name="str_dividi_pago_io">I\'ll pay for everyone</string>
+    <string name="str_dividi_num_persone">Number of people</string>
+    <string name="str_dividi_totale">Total: %1$s</string>
+    <string name="str_dividi_quota">Per person: %1$s</string>
+    <string name="str_dividi_nome">Person name</string>
+    <string name="str_dividi_aggiungi">Add</string>
+    <string name="str_dividi_nota">split in %1$d</string>
+    <string name="str_dividi_restano">Add %1$d more</string>
+
     <!-- Categories -->
     <string name="str_sconosciuto">Unknown</string>
     <string name="str_senza_categoria">No Category</string>
