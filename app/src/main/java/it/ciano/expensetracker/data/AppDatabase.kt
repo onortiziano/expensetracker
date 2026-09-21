@@ -17,9 +17,10 @@ import it.ciano.expensetracker.data.model.*
         TransactionTag::class, 
         GlobalBudget::class, 
         RecurringTransaction::class, 
-        RecurringTransactionTag::class
+        RecurringTransactionTag::class,
+        Debt::class
     ], 
-    version = 5, 
+    version = 6, 
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionTagDao(): TransactionTagDao
     abstract fun recurringTransactionDao(): RecurringTransactionDao
     abstract fun recurringTransactionTagDao(): RecurringTransactionTagDao
+    abstract fun debtDao(): DebtDao
 
     companion object {
         @Volatile
@@ -103,6 +105,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v5 -> v6: tabella debts per la suddivisione spese (FK -> transactions, CASCADE)
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS debts (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        transactionId INTEGER NOT NULL,
+                        name TEXT NOT NULL,
+                        amount REAL NOT NULL,
+                        isSettled INTEGER NOT NULL DEFAULT 0,
+                        settledDate INTEGER NOT NULL DEFAULT 0,
+                        FOREIGN KEY(transactionId) REFERENCES transactions(id) ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_debts_transactionId ON debts (transactionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_debts_isSettled ON debts (isSettled)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -110,7 +133,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "expense_tracker_db"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .fallbackToDestructiveMigration() // Ultima risorsa in caso di schema non gestito
                 .build()
                 INSTANCE = instance
