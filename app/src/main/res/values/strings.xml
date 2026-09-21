@@ -31,6 +31,14 @@
     <string name="str_entrate">Entrate</string>
     <string name="str_uscite">Uscite</string>
     <string name="str_importo_con">Importo: %1$s</string>
+    <string name="str_data_con">Data: %1$s</string>
+
+    <!-- Crediti -->
+    <string name="str_crediti">Crediti</string>
+    <string name="str_nessun_credito">Nessun credito in sospeso</string>
+    <string name="str_rientro_da">Rientro da %1$s</string>
+    <string name="str_rientro_conferma">%1$s ti ha ridato %2$s?</string>
+    <string name="str_conferma">Conferma</string>
 
     <!-- Categorie -->
     <string name="str_sconosciuto">Sconosciuto</string>

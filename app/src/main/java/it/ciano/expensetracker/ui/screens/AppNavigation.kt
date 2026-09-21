@@ -26,6 +26,7 @@ object Routes {
     const val SETTINGS_DATA_MANAGEMENT = "settings_data_management"
     const val RECURRING_TRANSACTIONS = "recurring_transactions"
     const val IMPORT_TRANSACTIONS = "import_transactions"
+    const val CREDITS = "credits"
 }
 
 @Composable
@@ -91,6 +92,10 @@ fun AppNavigation() {
 
         composable(Routes.IMPORT_TRANSACTIONS) {
             ImportTransactionsScreen(navController)
+        }
+
+        composable(Routes.CREDITS) {
+            CreditsScreen(navController)
         }
 
         // Per la Modifica

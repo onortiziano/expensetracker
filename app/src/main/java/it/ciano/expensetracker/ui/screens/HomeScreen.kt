@@ -43,6 +43,11 @@ import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.rounded.FileUpload
 import androidx.compose.material.icons.sharp.FileUpload
 import androidx.compose.material.icons.twotone.FileUpload
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.outlined.Payments
+import androidx.compose.material.icons.rounded.Payments
+import androidx.compose.material.icons.sharp.Payments
+import androidx.compose.material.icons.twotone.Payments
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -174,6 +179,17 @@ fun HomeScreen(navController: NavHostController) {
                     icon = { Icon(mainViewModel.getIcon(Icons.Filled.FileUpload, Icons.Outlined.FileUpload, Icons.Rounded.FileUpload, Icons.Sharp.FileUpload, Icons.TwoTone.FileUpload), contentDescription = null) },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
+
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.str_crediti)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate(Routes.CREDITS)
+                    },
+                    icon = { Icon(mainViewModel.getIcon(Icons.Filled.Payments, Icons.Outlined.Payments, Icons.Rounded.Payments, Icons.Sharp.Payments, Icons.TwoTone.Payments), contentDescription = null) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
                 
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.str_impostazioni)) },
@@ -284,6 +300,7 @@ fun HomeScreen(navController: NavHostController) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(text = stringResource(R.string.str_importo_con, mainViewModel.formatCurrency(details.transaction.amount)), fontWeight = FontWeight.Medium)
+                    Text(text = stringResource(R.string.str_data_con, formatTransactionDate(details.transaction.date)))
                     val category = categories.find { it.id == details.transaction.categoryId }
                     val categoryDisplayName = if (category != null) {
                         if (category.parentCategoryId != null && category.parentCategoryId != 0) {

@@ -31,6 +31,14 @@
     <string name="str_entrate">Income</string>
     <string name="str_uscite">Expenses</string>
     <string name="str_importo_con">Amount: %1$s</string>
+    <string name="str_data_con">Date: %1$s</string>
+
+    <!-- Credits -->
+    <string name="str_crediti">Credits</string>
+    <string name="str_nessun_credito">No outstanding credits</string>
+    <string name="str_rientro_da">Payback from %1$s</string>
+    <string name="str_rientro_conferma">Did %1$s pay you back %2$s?</string>
+    <string name="str_conferma">Confirm</string>
 
     <!-- Categories -->
     <string name="str_sconosciuto">Unknown</string>
