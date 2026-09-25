@@ -6,6 +6,10 @@
 
 A professional, lightweight, and privacy-focused expense tracking application designed for Android. **Expense Tracker** combines a clean Material 3 interface with powerful data management features, ensuring your financial records are always accurate, customizable, and safe.
 
+## 🌐 Project Showcase
+
+Explore the [ExpenseTracker project website](https://onortiziano.github.io/sito-expensetracker/) for a visual overview of the app, its privacy-first approach, real in-app screenshots, the v55 release notes, and direct links to download the latest APK or browse the source code. The site complements this README with a concise presentation of how the app works in everyday use.
+
 ## ✨ Key Features
 
 ### 📊 Smart Classification & Budgeting
